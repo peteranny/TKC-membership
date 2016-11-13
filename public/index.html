@@ -1,0 +1,100 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    </head>
+      <body>
+    <div id="authorize-div" style="display: none">
+      <span>Authorize access to Google Sheets API</span>
+      <button id="authorize-button" onclick="handleAuthClick(event)">Authorize</button>
+    </div>
+    <div id="loading" style="display: none"></div>
+    <div id="main" style="display: none">
+      <div>
+        <input placeholder="輸入搜尋的名字" v-model="query"><label><input type="checkbox" v-model="showValid">只顯示有效會員</label>
+        <table bgcolor="yellow" border="1">
+          <tr>
+            <td>No.</td>
+            <td>Nickname</td>
+            <td>Name</td>
+            <td v-for="d in dates">{{simpleDate(d)}}</td>
+            <td>Sum</td>
+            <td>isValid</td>
+          </tr>
+          <tr :bgcolor="row.isValid?'skyblue':''" v-for="row in queried_rows(query)">
+            <td>{{row.no}}</td>
+            <td>{{row.nickname}}</td>
+            <td>{{row.name}}</td>
+            <td v-if="row.attendance.length>0" v-for="(i,d) in dates">{{row.attendance[i]}}</td>
+            <td id="member{{row.no}}" v-if="dates.length>0&&row.attendance.length==0" :colspan="dates.length"></td>
+            <td>{{row.attendSum}}</td>
+            <td>{{isValidText(row.isValid)}}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <!-- promise -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.4.6/bluebird.min.js"></script>
+    <!-- Loading -->
+    <script>
+      var CONSTANTS = {
+        LIST:"1TDcdilPsHpnRJ6MjAZO7ifHvbrrW-0UA38UupMlO-zA",
+        ATTENDANCE:[
+          "1X5oma_O_i32wjRiILgVKCbNsf9qnSeu-vc9npZSnbOI",
+          "1Bqam_dHyxn78JhYosgO2VN4x_91EKb01EdbI2A9foUI",
+        ],
+      };
+    </script>
+    <script src="loading.js"></script>
+    <script src="google-sheet.js"></script>
+    <!-- Google sheet -->
+    <script src="https://apis.google.com/js/client.js?onload=checkAuth"></script>
+    <!--
+    <script src="load_list.js"></script>
+    <script src="load_attendance.js"></script>
+    -->
+    <!-- Vue.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.26/vue.min.js"></script>
+    <script>
+      var vm = new Vue({
+        el:"#main",
+        data:{
+          rows:[],
+          dates:[],
+          query:"",
+          showValid:false,
+        },
+        computed:{
+          validMembers:function(){
+            return this.rows.filter(function(row){
+              return row.isValid;
+            })
+          }
+        },
+        methods:{
+          queried_rows:function(query){
+            var ret = this.rows;
+            if(this.showValid) ret = ret.filter(function(row){
+              return row.isValid || row.attendance.length==0&&row.isValid!=undefined;
+            });
+            return ret.filter(function(row){
+              return row.nickname&&row.nickname.toLowerCase().indexOf(query.toLowerCase())!=-1
+              || row.name&&row.name.toLowerCase().indexOf(query.toLowerCase())!=-1
+              || row.attendance.length==0&&row.isValid!=undefined;
+            });
+          },
+          isValidText:function(isValid){
+            return isValid==undefined?"":isValid?"有效會員":"無效會員";
+          },
+          simpleDate: function(d){
+            return (d.getMonth()+1)+"/"+d.getDate();
+          }
+        },
+      });
+    </script>
+
+  </body>
+</html>
+
