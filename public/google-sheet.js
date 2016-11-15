@@ -2,6 +2,39 @@
 // Developer Console, https://console.developers.google.com
 var CLIENT_ID = '354856638975-pnjlmu0d866uf774kop1k787vjmkqqri.apps.googleusercontent.com';
 var SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"];
+var LIST = "1TDcdilPsHpnRJ6MjAZO7ifHvbrrW-0UA38UupMlO-zA";
+var ATTENDANCE = [
+  "1X5oma_O_i32wjRiILgVKCbNsf9qnSeu-vc9npZSnbOI",
+  "1Bqam_dHyxn78JhYosgO2VN4x_91EKb01EdbI2A9foUI",
+];
+
+var loading = {
+  timer:null,
+  text:"LOADING",
+  num_dots:3,
+  dt:100,
+  run:function(isRun){
+    var tgt = $("#loading");
+    tgt.text(loading.text);
+    if(isRun){
+      tgt.show();
+      timer = setInterval(function(){
+        if(tgt.text().length<loading.text.length+loading.num_dots){
+          tgt.text(tgt.text()+".")
+        }
+        else{
+          tgt.text(loading.text);
+        }
+      }, loading.dt);
+    }
+    else{
+      tgt.hide();
+      tgt.text("");
+      timer = clearInterval(loading.timer);
+    }
+  }
+};
+
 
 // called on page load
 function checkAuth() {
@@ -61,7 +94,7 @@ function loadSheetsApi() {
 function listMembers() {
   return new Promise(function(resolve, reject){
     gapi.client.sheets.spreadsheets.values.get({
-      spreadsheetId: CONSTANTS.LIST,
+      spreadsheetId: LIST,
       range: "Registered!A2:Z",
     }).then(function(response) {
       var range = response.result;
@@ -139,7 +172,7 @@ function fetchAttendance(i){
   return Promise.map(fellowships, function(fs, j){
     return new Promise(function(resolve, reject){
       gapi.client.sheets.spreadsheets.values.get({
-        spreadsheetId: CONSTANTS.ATTENDANCE[i],
+        spreadsheetId: ATTENDANCE[i],
         range: "'"+fs+"'!A1:Y",
         valueRenderOption: "FORMULA",
         dateTimeRenderOption: "FORMATTED_STRING",
