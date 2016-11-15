@@ -8,33 +8,6 @@ var ATTENDANCE = [
   "1Bqam_dHyxn78JhYosgO2VN4x_91EKb01EdbI2A9foUI",
 ];
 
-var loading = {
-  timer:null,
-  text:"LOADING",
-  num_dots:3,
-  dt:100,
-  run:function(isRun){
-    var tgt = $("#loading");
-    tgt.text(loading.text);
-    if(isRun){
-      tgt.show();
-      timer = setInterval(function(){
-        if(tgt.text().length<loading.text.length+loading.num_dots){
-          tgt.text(tgt.text()+".")
-        }
-        else{
-          tgt.text(loading.text);
-        }
-      }, loading.dt);
-    }
-    else{
-      tgt.hide();
-      tgt.text("");
-      timer = clearInterval(loading.timer);
-    }
-  }
-};
-
 
 // called on page load
 function checkAuth() {
@@ -71,14 +44,16 @@ function handleAuthResult(authResult){
 function run(){
   loading.run(true);
   loadSheetsApi()
-    .then(listMembers)
-    .then(fetchFellowships)
-    .then(fetchAttendance_wraper)
-    .then(cropAttendance)
-    .then(nameAsKey)
-    .then(combineListAndAttendance)
+    .then(listMembers, Promise.reject)
+    .then(fetchFellowships, Promise.reject)
+    .then(fetchAttendance_wraper, Promise.reject)
+    .then(cropAttendance, Promise.reject)
+    .then(nameAsKey, Promise.reject)
+    .then(combineListAndAttendance, Promise.reject)
     .then(function(){
       loading.run(false);
+    }, function(err){
+      alert(err);
     });
 }
 
@@ -87,6 +62,8 @@ function loadSheetsApi() {
   return new Promise(function(resolve, reject){
     gapi.client.load(discoveryUrl).then(function(){
       resolve();
+    }, function(){
+      reject();
     });
   });
 }
@@ -96,7 +73,8 @@ function listMembers() {
     gapi.client.sheets.spreadsheets.values.get({
       spreadsheetId: LIST,
       range: "Registered!A2:Z",
-    }).then(function(response) {
+    })
+    .then(function(response) {
       var range = response.result;
       if (range.values.length > 0) {
         for (i = 0; i < range.values.length; i++) {
@@ -105,11 +83,11 @@ function listMembers() {
           vm.rows.push(transformRow(row));
         }
       } else {
-        appendPre('No data found.');
+        alert('No data found.');
       }
       resolve();
     }, function(response) {
-      appendPre('Error: ' + response.result.error.message);
+      alert('Error: ' + response.result.error.message);
       reject();
     });
   });
@@ -137,13 +115,16 @@ function transformRow(row){
 var fellowships = null;
 function fetchFellowships(){
   return new Promise(function(resolve, reject){
-    var obj = gapi.client.sheets.spreadsheets.get({
+    gapi.client.sheets.spreadsheets.get({
       spreadsheetId: '1X5oma_O_i32wjRiILgVKCbNsf9qnSeu-vc9npZSnbOI'
-    }).then(function(response){
+    })
+    .then(function(response){
       fellowships = response.result.sheets.map(function(sh){
         return sh.properties.title;
       });
       resolve();
+    }, function(err){
+      reject(err);
     });
   });
 }
@@ -176,7 +157,9 @@ function fetchAttendance(i){
         range: "'"+fs+"'!A1:Y",
         valueRenderOption: "FORMULA",
         dateTimeRenderOption: "FORMATTED_STRING",
-      }).then(function(response){
+      })
+      
+      .then(function(response){
         var dates = response.result.values[0].slice(1).map(serial2date);
         if(j==0){
           vm.dates = dates.concat(vm.dates);
@@ -196,10 +179,10 @@ function fetchAttendance(i){
           });
         }
         resolve();
+      }, function(err){
+        reject(err);
       });
     });
-  }).then(function(){
-    return Promise.resolve();
   });
 }
 
@@ -228,6 +211,7 @@ function nameAsKey(){
     resolve();
   });
 }
+
 function solveConflict(i){
   return function(){
     var row = vm.rows[i];
@@ -238,10 +222,10 @@ function solveConflict(i){
     do{
       choice = parseInt(prompt(msg));
     }while( !(choice>0 && choice<=choice_fs.length) );
-    choice--;
-    row.attendance = attend_list[choice].attendance;
+    row.attendance = attend_list[choice-1].attendance;
   };
 }
+
 function combineListAndAttendance(){
   return new Promise(function(resolve, reject){
     for(var i=0;i<vm.rows.length;i++){
@@ -253,7 +237,7 @@ function combineListAndAttendance(){
             row.attendance = attend_list[0].attendance;
           }
           else{
-            $('#member'+(i+1)).html($('<button>').text('有資料衝突，點選我解決...').click(solveConflict(i)));
+            addConflictButton(i);
           }
           row.attendance = row.attendance.map(function(n){
             return (n==""?0:parseInt(n));
@@ -266,11 +250,13 @@ function combineListAndAttendance(){
     resolve();
   });
 }
+
 function computeAttendance(attend){
   return attend.reduce(function(prevValue, value, index){
     return prevValue + value;
   }, 0);
 }
+
 function computeIsValid(n){
   return n>=6;
 }
@@ -287,6 +273,7 @@ function cropAttendance(){
       reject();
       return;
     }
+
     ((i-valid_num_max+1<0)? fetchAttendance(1): Promise.resolve()).then(function(){
       var valid_i_range = [i-valid_num_max+1, i+1];
       for(k in attendance_name_list) if(attendance_name_list.hasOwnProperty(k)){
@@ -295,6 +282,8 @@ function cropAttendance(){
         });
       }
       resolve();
+    }, function(){
+      reject();
     });
   });
 }

@@ -1,25 +1,74 @@
 <html>
   <head>
     <meta charset="utf-8">
-    </head>
-      <body>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css" integrity="sha384-AysaV+vQoT3kOAXZkl02PThvDr8HYKPZhNT5h/CXfBThSRXQ6jW5DO2ekP5ViFdi" crossorigin="anonymous">
+    <style>
+input[type='checkbox'] {
+  transform: scale(2);
+  margin-right: 1em;
+}
+thead{
+  font-weight:bold;
+}
+td{
+  text-align:center;
+  white-space:nowrap;
+  padding-left:0px !important;
+  padding-right:0px !important;
+}
+#search-bar{
+  position:fixed;
+  top:0px;
+}
+#loading{
+  position:fixed;
+  top:0px;
+  left:0px;
+  width:100%;
+  height:100%;
+  background-color:rgba(0,0,0,0.5);
+  color:white;
+  font-size:100pt;
+  overflow:hidden;
+}
+#content{
+  margin-top:2em;
+}
+    </style>
+  </head>
+  <body>
+
     <div id="authorize-div" style="display: none">
-      <span>Authorize access to Google Sheets API</span>
-      <button id="authorize-button" onclick="handleAuthClick(event)">Authorize</button>
+      <div class="alert alert-success" role="alert">
+        <strong>Authorize access to Google Sheets API</strong>
+      </div>
+      <button id="authorize-button" class="btn btn-success" onclick="handleAuthClick(event)">Authorize</button>
     </div>
-    <div id="loading" style="display: none"></div>
+
     <div id="main" style="display: none">
-      <div>
-        <input placeholder="輸入搜尋的名字" v-model="query"><label><input type="checkbox" v-model="showValid">只顯示有效會員</label>
-        <table bgcolor="yellow" border="1">
-          <tr>
-            <td>No.</td>
-            <td>Nickname</td>
-            <td>Name</td>
-            <td v-for="d in dates">{{simpleDate(d)}}</td>
-            <td>Sum</td>
-            <td>isValid</td>
-          </tr>
+
+      <div id="search-bar" class="input-group">
+        <input type="text" class="form-control" placeholder="輸入搜尋的名字" v-model="query">
+        <span class="input-group-addon">
+          <input type="checkbox" v-model="showValid" id="show-valid">
+          只顯示有效會員
+        </span>
+      </div>
+
+      <div id="loading" style="display: none"></div>
+
+      <div id="content" class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <td>No.</td>
+              <td>Nickname</td>
+              <td>Name</td>
+              <td v-for="d in dates"><span class="tag tag-default">{{simpleDate(d)}}</span></td>
+              <td>Sum</td>
+              <td>isValid</td>
+            </tr>
+          </thead>
           <tr :bgcolor="row.isValid?'skyblue':''" v-for="row in queried_rows(query)">
             <td>{{row.no}}</td>
             <td>{{row.nickname}}</td>
@@ -31,10 +80,13 @@
           </tr>
         </table>
       </div>
+
     </div>
 
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+    <!-- Bootstrap -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/js/bootstrap.min.js" integrity="sha384-BLiI7JTZm+JWlgKa0M0kGRpJbF2J8q+qreVrKBC47e3K6BW78kGLrCkeRX6I9RoK" crossorigin="anonymous"></script>
     <!-- promise -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.4.6/bluebird.min.js"></script>
     <!-- Google sheet -->
@@ -43,41 +95,76 @@
     <!-- Vue.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.26/vue.min.js"></script>
     <script>
-      var vm = new Vue({
-        el:"#main",
-        data:{
-          rows:[],
-          dates:[],
-          query:"",
-          showValid:false,
-        },
-        computed:{
-          validMembers:function(){
-            return this.rows.filter(function(row){
-              return row.isValid;
-            })
-          }
-        },
-        methods:{
-          queried_rows:function(query){
-            var ret = this.rows;
-            if(this.showValid) ret = ret.filter(function(row){
-              return row.isValid || row.attendance.length==0&&row.isValid!=undefined;
-            });
-            return ret.filter(function(row){
-              return row.nickname&&row.nickname.toLowerCase().indexOf(query.toLowerCase())!=-1
-              || row.name&&row.name.toLowerCase().indexOf(query.toLowerCase())!=-1
-              || row.attendance.length==0&&row.isValid!=undefined;
-            });
-          },
-          isValidText:function(isValid){
-            return isValid==undefined?"":isValid?"有效會員":"無效會員";
-          },
-          simpleDate: function(d){
-            return (d.getMonth()+1)+"/"+d.getDate();
-          }
-        },
+var vm = new Vue({
+  el:"#main",
+  data:{
+    rows:[],
+    dates:[],
+    query:"",
+    showValid:false,
+  },
+  computed:{
+    validMembers:function(){
+      return this.rows.filter(function(row){
+        return row.isValid;
+      })
+    }
+  },
+  methods:{
+    queried_rows:function(query){
+      var ret = this.rows;
+      if(this.showValid) ret = ret.filter(function(row){
+        return row.isValid || row.attendance.length==0&&row.isValid!=undefined;
       });
+      return ret.filter(function(row){
+        return row.nickname&&row.nickname.toLowerCase().indexOf(query.toLowerCase())!=-1
+          || row.name&&row.name.toLowerCase().indexOf(query.toLowerCase())!=-1
+          || row.attendance.length==0&&row.isValid!=undefined;
+      });
+    },
+    isValidText:function(isValid){
+      return isValid==undefined?"":isValid?"有效會員":"無效會員";
+    },
+    simpleDate: function(d){
+      var M = d.getMonth()+1;
+      var D = d.getDate();
+      return (M<10?"0"+M:M)+(D<10?"0"+D:D);
+    }
+  },
+});
+
+function addConflictButton(i){
+  $('#member'+(i+1)).html(
+      $('<button>').addClass('btn btn-danger').text('有資料衝突，點選我解決...').click(solveConflict(i))
+      );
+}
+
+var loading = {
+  timer:null,
+  text:"LOADING",
+  num_dots:3,
+  dt:100,
+  run:function(isRun){
+    var tgt = $("#loading");
+    tgt.text(loading.text);
+    if(isRun){
+      tgt.fadeIn('slow');
+      timer = setInterval(function(){
+        if(tgt.text().length<loading.text.length+loading.num_dots){
+          tgt.text(tgt.text()+".")
+        }
+        else{
+          tgt.text(loading.text);
+        }
+      }, loading.dt);
+    }
+    else{
+      tgt.fadeOut();
+      timer = clearInterval(loading.timer);
+    }
+  }
+};
+
     </script>
 
   </body>
