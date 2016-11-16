@@ -8,7 +8,6 @@ var ATTENDANCE = [
   "1Bqam_dHyxn78JhYosgO2VN4x_91EKb01EdbI2A9foUI",
 ];
 
-
 // called on page load
 function checkAuth() {
   gapi.auth.authorize({
@@ -45,6 +44,7 @@ function run(){
   loading.run(true);
   loadSheetsApi()
     .then(listMembers, Promise.reject)
+    .then(computeHasFeePaid, Promise.reject)
     .then(fetchFellowships, Promise.reject)
     .then(fetchAttendance_wraper, Promise.reject)
     .then(cropAttendance, Promise.reject)
@@ -76,15 +76,9 @@ function listMembers() {
     })
     .then(function(response) {
       var range = response.result;
-      if (range.values.length > 0) {
-        for (i = 0; i < range.values.length; i++) {
-          var row = range.values[i];
-          // Print columns A and E, which correspond to indices 0 and 4.
-          vm.rows.push(transformRow(row));
-        }
-      } else {
-        alert('No data found.');
-      }
+      vm.rows = range.values.map(function(row){
+        return transformRow(row);
+      });
       resolve();
     }, function(response) {
       alert('Error: ' + response.result.error.message);
@@ -93,23 +87,42 @@ function listMembers() {
   });
 }
 
+function convertDate(s){
+  if(!s) return null;
+  var matched = s.match(/(\d+)\.(\d+)\.(\d+)/);
+  if(!matched) return null;
+  var y = matched[1];
+  var m = matched[2];
+  var d = matched[3];
+  return genDate(y,m,d);
+}
+
 function transformRow(row){
   return {
-    no:row[0],
-    nickname:row[1],
-    name:row[2],
-    dob:row[3],
-    ident:row[4],
-    tel:row[5],
-    addr:row[6],
-    doj:row[7], // date of join
-    dojf:row[8],
-    dof:row[9], // date of fee
-    dow: row[10], // date of withdrawal
+    no: parseInt(row[0]),
+    nickname: row[1],
+    name: row[2],
+    dob: convertDate(row[3]),
+    ident: row[4],
+    tel: row[5],
+    addr: row[6],
+    doj: convertDate(row[7]), // date of join
+    dojf: row[8],
+    dof: convertDate(row[9]), // date of fee
+    dow: convertDate(row[10]), // date of withdrawal
+    unique: undefined,
     attendance: [],
     attendSum: 0,
-    isValid:undefined,
+    hasFeePaid: undefined,
+    isValid: undefined,
   };
+}
+
+function computeHasFeePaid(){
+  vm.rows.forEach(function(row){
+    var d = row.dof;
+    row.hasFeePaid = d && d.getFullYear()==(new Date()).getFullYear();
+  });
 }
 
 var fellowships = null;
@@ -223,6 +236,7 @@ function solveConflict(i){
       choice = parseInt(prompt(msg));
     }while( !(choice>0 && choice<=choice_fs.length) );
     row.attendance = attend_list[choice-1].attendance;
+    row.unique = true;
   };
 }
 
@@ -235,9 +249,11 @@ function combineListAndAttendance(){
         if(attend_list){
           if(attend_list.length==1){
             row.attendance = attend_list[0].attendance;
+            row.unique = true;
           }
           else{
             addConflictButton(i);
+            row.unique = false;
           }
           row.attendance = row.attendance.map(function(n){
             return (n==""?0:parseInt(n));
