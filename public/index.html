@@ -1,6 +1,6 @@
 <html>
   <head>
-    <meta charset="utf-8">
+    <meta charset="big5">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css" integrity="sha384-AysaV+vQoT3kOAXZkl02PThvDr8HYKPZhNT5h/CXfBThSRXQ6jW5DO2ekP5ViFdi" crossorigin="anonymous">
     <style>
 input[type='checkbox'] {
@@ -48,14 +48,22 @@ td{
     <div id="main" style="display: none">
 
       <div id="search-bar" class="input-group">
-        <input type="text" class="form-control" placeholder="è¼¸å…¥æœå°‹çš„åå­—" v-model="query">
+        <input type="text" class="form-control" placeholder="¿é¤J·j´Mªº¦W¦r" v-model="query">
         <span class="input-group-addon">
-          <input type="checkbox" v-model="showFeePaid">
-          æœ‰ç¹³æœƒè²»
+          <input type="checkbox" v-model="showPaidValid">
+          ¤wÃº¶O¦³®Ä·|­û
         </span>
         <span class="input-group-addon">
-          <input type="checkbox" v-model="showValid">
-          æœ‰æ•ˆæœƒå“¡
+          <input type="checkbox" v-model="showUnpaidValid">
+          ¥¼Ãº¶O¦³®Ä·|­û
+        </span>
+        <span class="input-group-addon">
+          <input type="checkbox" v-model="showPaidInvalid">
+          ¤wÃº¶OµL®Ä·|­û
+        </span>
+        <span class="input-group-addon">
+          <input type="checkbox" v-model="showUnpaidInvalid">
+          ¥¼Ãº¶OµL®Ä·|­û
         </span>
       </div>
 
@@ -66,9 +74,9 @@ td{
           <thead>
             <tr>
               <td>No.</td>
-              <td>å¤–è™Ÿ</td>
-              <td>å§“å</td>
-              <td>æœƒè²»</td>
+              <td>¥~¸¹</td>
+              <td>©m¦W</td>
+              <td>·|¶O</td>
               <td v-for="d in dates"><span class="tag tag-default">{{simpleDate(d)}}</span></td>
               <td>Sum</td>
               <td>isValid</td>
@@ -107,24 +115,38 @@ var vm = new Vue({
     rows:[],
     dates:[],
     query:"",
-    showFeePaid:false,
-    showValid:false,
+    showPaidValid: true,
+    showUnpaidValid: true,
+    showPaidInvalid: true,
+    showUnpaidInvalid: true,
   },
   methods:{
     queried_rows:function(query){
-      var showFeePaid = this.showFeePaid;
-      var showValid = this.showValid;
+      var showPaidValid = this.showPaidValid;
+      var showUnpaidValid = this.showUnpaidValid;
+      var showPaidInvalid = this.showPaidInvalid;
+      var showUnpaidInvalid = this.showUnpaidInvalid;
       return this.rows.filter(function(row){
         var match_nickname = row.nickname&&row.nickname.toLowerCase().indexOf(query.toLowerCase())!=-1;
         var match_name = row.name&&row.name.toLowerCase().indexOf(query.toLowerCase())!=-1;
-        var match_feePaid = !showFeePaid || showFeePaid && row.hasFeePaid!==undefined && row.hasFeePaid==true;
-        var match_valid = !showValid || showValid && row.isValid!==undefined && row.isValid==true;
-        var match_unique = row.unique!==undefined && !row.unique;
-        return (match_nickname||match_name)&&match_feePaid&&match_valid || match_unique;
+        var match_ununique = row.unique===false;
+
+        var match_paid_valid = row.hasFeePaid===true && row.isValid===true;
+        var match_paid_invalid = row.hasFeePaid===true && row.isValid!==true;
+        var match_unpaid_valid = row.hasFeePaid!==true && row.isValid===true;
+        var match_unpaid_invalid = row.hasFeePaid!==true && row.isValid!==true;
+
+        var match = showPaidValid && match_paid_valid ||
+            showPaidInvalid && match_paid_invalid ||
+            showUnpaidValid && match_unpaid_valid ||
+            showUnpaidInvalid && match_unpaid_invalid;
+
+        return match_ununique ||
+            (match_nickname||match_name) && match;
       });
     },
     isValidText:function(isValid){
-      return isValid?"æœ‰æ•ˆæœƒå“¡":"ç„¡æ•ˆæœƒå“¡";
+      return isValid?"¦³®Ä·|­û":"µL®Ä·|­û";
     },
     simpleDate: function(d){
       var M = d.getMonth()+1;
@@ -132,7 +154,7 @@ var vm = new Vue({
       return (M<10?"0"+M:M)+(D<10?"0"+D:D);
     },
     hasFeePaidText: function(b){
-      return b? 'å·²ç¹³': 'æœªç¹³';
+      return b? '¤wÃº': '¥¼Ãº';
     },
     rowColor: function(row){
     if(row.isValid && row.hasFeePaid) return '#8cc8f8';
@@ -145,7 +167,7 @@ var vm = new Vue({
 
 function addConflictButton(i){
   $('#member'+(i+1)).html(
-      $('<button>').addClass('btn btn-danger').text('æœ‰è³‡æ–™è¡çªï¼Œé»é¸æˆ‘è§£æ±º...').click(solveConflict(i))
+      $('<button>').addClass('btn btn-danger').text('¦³¸ê®Æ½Ä¬ğ¡AÂI¿ï§Ú¸Ñ¨M...').click(solveConflict(i))
   );
 }
 
