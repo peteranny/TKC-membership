@@ -48,22 +48,22 @@ td{
     <div id="main" style="display: none">
 
       <div id="search-bar" class="input-group">
-        <input type="text" class="form-control" placeholder="¿é¤J·j´Mªº¦W¦r" v-model="query">
+        <input type="text" class="form-control" placeholder="è¼¸å…¥æœå°‹çš„åå­—" v-model="query">
         <span class="input-group-addon">
           <input type="checkbox" v-model="showPaidValid">
-          ¤wÃº¶O¦³®Ä·|­û
+          æœ‰æ•ˆæœƒå“¡
         </span>
         <span class="input-group-addon">
           <input type="checkbox" v-model="showUnpaidValid">
-          ¥¼Ãº¶O¦³®Ä·|­û
+          æœªç¹³è²»æœ‰æ•ˆæœƒå“¡
         </span>
         <span class="input-group-addon">
           <input type="checkbox" v-model="showPaidInvalid">
-          ¤wÃº¶OµL®Ä·|­û
+          å·²ç¹³è²»ç„¡æ•ˆæœƒå“¡
         </span>
         <span class="input-group-addon">
           <input type="checkbox" v-model="showUnpaidInvalid">
-          ¥¼Ãº¶OµL®Ä·|­û
+          æœªç¹³è²»ç„¡æ•ˆæœƒå“¡
         </span>
       </div>
 
@@ -74,9 +74,9 @@ td{
           <thead>
             <tr>
               <td>No.</td>
-              <td>¥~¸¹</td>
-              <td>©m¦W</td>
-              <td>·|¶O</td>
+              <td>å¤–è™Ÿ</td>
+              <td>å§“å</td>
+              <td>æœƒè²»</td>
               <td v-for="d in dates"><span class="tag tag-default">{{simpleDate(d)}}</span></td>
               <td>Sum</td>
               <td>isValid</td>
@@ -147,7 +147,7 @@ var vm = new Vue({
       });
     },
     isValidText:function(isValid){
-      return isValid?"¦³®Ä·|­û":"µL®Ä·|­û";
+      return isValid?"æœ‰æ•ˆæœƒå“¡":"ç„¡æ•ˆæœƒå“¡";
     },
     simpleDate: function(d){
       var M = d.getMonth()+1;
@@ -155,7 +155,7 @@ var vm = new Vue({
       return (M<10?"0"+M:M)+(D<10?"0"+D:D);
     },
     hasFeePaidText: function(b){
-      return b? '¤wÃº': '¥¼Ãº';
+      return b? 'å·²ç¹³': 'æœªç¹³';
     },
     rowColor: function(row){
     if(row.isValid && row.hasFeePaid) return '#8cc8f8';
@@ -168,7 +168,7 @@ var vm = new Vue({
 
 function addConflictButton(i){
   $('#member'+(i+1)).html(
-      $('<button>').addClass('btn btn-danger').text('¦³¸ê®Æ½Ä¬ğ¡AÂI¿ï§Ú¸Ñ¨M...').click(solveConflict(i))
+      $('<button>').addClass('btn btn-danger').text('æœ‰è³‡æ–™è¡çªï¼Œé»é¸æˆ‘è§£æ±º...').click(solveConflict(i))
   );
 }
 
