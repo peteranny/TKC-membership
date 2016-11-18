@@ -36,6 +36,18 @@ td{
 #content{
   margin-top:2em;
 }
+.paid_valid{
+  background-color:rgb(255,200,200);
+}
+.paid_invalid{
+  background-color:rgb(200,200,200);
+}
+.unpaid_valid{
+  background-color:rgb(150,200,200);
+}
+.unpaid_invalid{
+  background-color:rgb(255,255,255);
+}
     </style>
   </head>
   <body>
@@ -122,32 +134,30 @@ var vm = new Vue({
     showPaidInvalid: true,
     showUnpaidInvalid: true,
   },
+	computed:{
+		queried_rows:function(){
+			query = this.query.trim();
+
+			var showPaidValid = this.showPaidValid;
+			var showUnpaidValid = this.showUnpaidValid;
+			var showPaidInvalid = this.showPaidInvalid;
+			var showUnpaidInvalid = this.showUnpaidInvalid;
+			var memberType = this.memberType;
+			return this.rows.filter(function(row){
+				var match_nickname = row.nickname&&row.nickname.toLowerCase().indexOf(query.toLowerCase())!=-1;
+				var match_name = row.name&&row.name.toLowerCase().indexOf(query.toLowerCase())!=-1;
+				var match_type =
+					showPaidValid && memberType(row)=='paid_valid' ||
+					showPaidInvalid && memberType(row)=='paid_invalid' ||
+					showUnpaidValid && memberType(row)=='unpaid_valid' ||
+					showUnpaidInvalid && memberType(row)=='unpaid_invalid';
+				var hasQuery = query!="";
+				var notUnique = row.unique===false;
+				return notUnique || hasQuery&&(match_nickname||match_name) || !hasQuery&&match_type;
+			});
+		},
+	},
   methods:{
-    queried_rows:function(query){
-      query = query.trim();
-
-      var showPaidValid = this.showPaidValid;
-      var showUnpaidValid = this.showUnpaidValid;
-      var showPaidInvalid = this.showPaidInvalid;
-      var showUnpaidInvalid = this.showUnpaidInvalid;
-      return this.rows.filter(function(row){
-        var match_nickname = row.nickname&&row.nickname.toLowerCase().indexOf(query.toLowerCase())!=-1;
-        var match_name = row.name&&row.name.toLowerCase().indexOf(query.toLowerCase())!=-1;
-
-        var match_paid_valid = row.hasFeePaid===true && row.isValid===true;
-        var match_paid_invalid = row.hasFeePaid===true && row.isValid!==true;
-        var match_unpaid_valid = row.hasFeePaid!==true && row.isValid===true;
-        var match_unpaid_invalid = row.hasFeePaid!==true && row.isValid!==true;
-        var match_type = showPaidValid && match_paid_valid ||
-            showPaidInvalid && match_paid_invalid ||
-            showUnpaidValid && match_unpaid_valid ||
-            showUnpaidInvalid && match_unpaid_invalid;
-
-        var hasQuery = query!="";
-        var notUnique = row.unique===false;
-        return notUnique || hasQuery&&(match_nickname||match_name) || !hasQuery&&match_type;
-      });
-    },
     isValidText:function(isValid){
       return isValid?"有效會員":"無效會員";
     },
@@ -159,11 +169,11 @@ var vm = new Vue({
     hasFeePaidText: function(b){
       return b? '已繳': '未繳';
     },
-    rowColor: function(row){
-    if(row.isValid && row.hasFeePaid) return '#8cc8f8';
-    if(row.isValid && !row.hasFeePaid) return '#8cc8a8';
-    if(!row.isValid && row.hasFeePaid) return '#8cc8c8';
-    if(!row.isValid && !row.hasFeePaid) return '#ffffff';//rgb(255,255,255)';
+    memberType: function(row){
+      if(row.isValid==true && row.hasFeePaid==true) return 'paid_valid';
+      if(row.isValid==true && row.hasFeePaid!=true) return 'unpaid_valid';
+      if(row.isValid!=true && row.hasFeePaid==true) return 'paid_invalid';
+      if(row.isValid!=true && row.hasFeePaid!=true) return 'unpaid_invalid';
     },
   },
 });
