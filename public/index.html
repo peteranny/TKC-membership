@@ -36,6 +36,10 @@ td{
 #content{
   margin-top:2em;
 }
+#clipboard{
+  width:100%;
+  height:20em;
+}
 .paid_valid{
   background-color:rgb(255,200,200);
 }
@@ -63,6 +67,11 @@ td{
 
       <div id="search-bar" class="input-group">
         <input type="text" class="form-control" placeholder="輸入搜尋的名字" v-model="query">
+        <span class="input-group-btn">
+          <button class="btn btn-secondary" @click="copyList()">
+            複製以下名單！
+          </button>
+        </span>
         <span class="input-group-addon">
           <input type="checkbox" v-model="showPaidValid">
           有效會員
@@ -88,18 +97,18 @@ td{
           <thead>
             <tr>
               <td>No.</td>
-              <td>外號</td>
               <td>姓名</td>
+              <td>外號</td>
               <td>會費</td>
               <td v-for="d in dates"><span class="tag tag-default">{{simpleDate(d)}}</span></td>
               <td>Sum</td>
               <td>isValid</td>
             </tr>
           </thead>
-          <tr :bgcolor="rowColor(row)" v-for="row in queried_rows(query)">
+          <tr :class="memberType(row)" v-for="row in queried_rows">
             <td>{{row.no}}</td>
-            <td>{{row.nickname}}</td>
             <td>{{row.name}}</td>
+            <td>{{row.nickname}}</td>
             <td>{{hasFeePaidText(row.hasFeePaid)}}</td>
             <td v-if="row.attendance.length>0" v-for="(i,d) in dates">{{row.attendance[i]}}</td>
             <td id="member{{row.no}}" v-if="dates.length>0&&row.attendance.length==0" :colspan="dates.length"></td>
@@ -110,6 +119,16 @@ td{
       </div>
 
     </div>
+
+		<div class="modal fade">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-body">
+						<textarea id="clipboard"></textarea>
+					</div>
+				</div>
+			</div>
+		</div>
 
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-latest.min.js"></script>
@@ -175,6 +194,12 @@ var vm = new Vue({
       if(row.isValid!=true && row.hasFeePaid==true) return 'paid_invalid';
       if(row.isValid!=true && row.hasFeePaid!=true) return 'unpaid_invalid';
     },
+    copyList: function(){
+      $('#clipboard').text(this.queried_rows.map(function(row){
+        return row.name+"("+row.nickname+")";
+      }).join('\n'));
+      $('.modal').modal('show')
+    }
   },
 });
 
