@@ -29,6 +29,8 @@ td{
   background-color:rgba(0,0,0,0.5);
   color:white;
   font-size:100pt;
+  font-weight:bold;
+  text-align:center;
   overflow:hidden;
 }
 #content{
@@ -175,7 +177,8 @@ function addConflictButton(i){
 var loading = {
   timer:null,
   text:"LOADING",
-  num_dots:3,
+  indicator:"⣾⣽⣻⢿⡿⣟⣯⣷",
+  i:0,
   dt:100,
   run:function(isRun){
     var tgt = $("#loading");
@@ -183,12 +186,9 @@ var loading = {
     if(isRun){
       tgt.fadeIn('slow');
       timer = setInterval(function(){
-        if(tgt.text().length<loading.text.length+loading.num_dots){
-          tgt.text(tgt.text()+".")
-        }
-        else{
-          tgt.text(loading.text);
-        }
+        var indicator = loading.indicator.charAt(loading.i);
+        tgt.text(indicator + loading.text + indicator);
+        loading.i = (loading.i+1)%loading.indicator.length;
       }, loading.dt);
     }
     else{
