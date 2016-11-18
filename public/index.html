@@ -122,6 +122,8 @@ var vm = new Vue({
   },
   methods:{
     queried_rows:function(query){
+      query = query.trim();
+
       var showPaidValid = this.showPaidValid;
       var showUnpaidValid = this.showUnpaidValid;
       var showPaidInvalid = this.showPaidInvalid;
@@ -129,20 +131,19 @@ var vm = new Vue({
       return this.rows.filter(function(row){
         var match_nickname = row.nickname&&row.nickname.toLowerCase().indexOf(query.toLowerCase())!=-1;
         var match_name = row.name&&row.name.toLowerCase().indexOf(query.toLowerCase())!=-1;
-        var match_ununique = row.unique===false;
 
         var match_paid_valid = row.hasFeePaid===true && row.isValid===true;
         var match_paid_invalid = row.hasFeePaid===true && row.isValid!==true;
         var match_unpaid_valid = row.hasFeePaid!==true && row.isValid===true;
         var match_unpaid_invalid = row.hasFeePaid!==true && row.isValid!==true;
-
-        var match = showPaidValid && match_paid_valid ||
+        var match_type = showPaidValid && match_paid_valid ||
             showPaidInvalid && match_paid_invalid ||
             showUnpaidValid && match_unpaid_valid ||
             showUnpaidInvalid && match_unpaid_invalid;
 
-        return match_ununique ||
-            (match_nickname||match_name) && match;
+        var hasQuery = query!="";
+        var notUnique = row.unique===false;
+        return notUnique || hasQuery&&(match_nickname||match_name) || !hasQuery&&match_type;
       });
     },
     isValidText:function(isValid){
