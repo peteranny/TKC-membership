@@ -229,7 +229,7 @@ function solveConflict(no){
   var row = vm.rows[no-1];
   var attend_list = attendance_name_list[row.nickname];
   var choice_fs = attend_list.map(function(v,i){return v.fellowship;});
-  var msg = "請問"+row.name+"("+row.nickname+")是"+choice_fs.map(function(v,i){return "("+(i+1)+")"+v;}).join(",");
+  var msg = "請問"+row.name+"("+row.nickname+")是:\n"+choice_fs.map(function(v,i){return "("+(i+1)+")"+v;}).join("\n");
   var choice = -1;
   do{
     choice = prompt(msg);
