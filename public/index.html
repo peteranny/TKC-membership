@@ -3,10 +3,6 @@
     <meta charset="big5">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css" integrity="sha384-AysaV+vQoT3kOAXZkl02PThvDr8HYKPZhNT5h/CXfBThSRXQ6jW5DO2ekP5ViFdi" crossorigin="anonymous">
     <style>
-input[type='checkbox'] {
-  transform: scale(2);
-  margin-right: 1em;
-}
 thead{
   font-weight:bold;
 }
@@ -72,21 +68,25 @@ td{
             複製以下名單！
           </button>
         </span>
-        <span class="input-group-addon">
-          <input type="checkbox" v-model="showPaidValid">
-          有效會員
+        <span class="input-group-btn">
+          <button :class="['btn', 'btn-secondary', {'active':showPaidValid}]" @click="showPaidValid=!showPaidValid">
+            顯示有效會員
+          </button>
         </span>
-        <span class="input-group-addon">
-          <input type="checkbox" v-model="showUnpaidValid">
-          未繳費有效會員
+        <span class="input-group-btn">
+          <button :class="['btn', 'btn-secondary', {'active':showUnpaidValid}]" @click="showUnpaidValid=!showUnpaidValid">
+            顯示有未繳費有效會員
+          </button>
         </span>
-        <span class="input-group-addon">
-          <input type="checkbox" v-model="showPaidInvalid">
-          已繳費無效會員
+        <span class="input-group-btn">
+          <button :class="['btn', 'btn-secondary', {'active':showPaidInvalid}]" @click="showPaidInvalid=!showPaidInvalid">
+            顯示有已繳費無效會員
+          </button>
         </span>
-        <span class="input-group-addon">
-          <input type="checkbox" v-model="showUnpaidInvalid">
-          未繳費無效會員
+        <span class="input-group-btn">
+          <button :class="['btn', 'btn-secondary', {'active':showUnpaidInvalid}]" @click="showUnpaidInvalid=!showUnpaidInvalid">
+            顯示有未繳費無效會員
+          </button>
         </span>
       </div>
 
@@ -177,16 +177,16 @@ var vm = new Vue({
 		},
 	},
   methods:{
-    isValidText:function(isValid){
-      return isValid?"有效會員":"無效會員";
-    },
     simpleDate: function(d){
       var M = d.getMonth()+1;
       var D = d.getDate();
       return (M<10?"0"+M:M)+(D<10?"0"+D:D);
     },
-    hasFeePaidText: function(b){
-      return b? '已繳': '未繳';
+    isValidText:function(isValid){
+      return isValid==undefined?'':isValid?"有效會員":"無效會員";
+    },
+    hasFeePaidText: function(hasFeePaid){
+      return hasFeePaid==undefined?'':hasFeePaid? '已繳': '未繳';
     },
     memberType: function(row){
       if(row.isValid==true && row.hasFeePaid==true) return 'paid_valid';

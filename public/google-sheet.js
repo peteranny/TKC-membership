@@ -242,19 +242,17 @@ function solveConflict(i){
 
 function combineListAndAttendance(){
   return new Promise(function(resolve, reject){
-    for(var i=0;i<vm.rows.length;i++){
-      var row = vm.rows[i];
+    vm.rows.forEach(function(row, i){
       if(row.nickname){
         var attend_list = attendance_name_list[row.nickname];
         if(attend_list){
-          if(attend_list.length==1){
-            row.attendance = attend_list[0].attendance;
-            row.unique = true;
-          }
-          else{
+          if(attend_list.length>1){
             addConflictButton(i);
             row.unique = false;
+            return;
           }
+          row.attendance = attend_list[0].attendance;
+          row.unique = true;
           row.attendance = row.attendance.map(function(n){
             return (n==""?0:parseInt(n));
           });
@@ -262,7 +260,7 @@ function combineListAndAttendance(){
           row.isValid = computeIsValid(row.attendSum);
         }
       }
-    }
+    });
     resolve();
   });
 }
