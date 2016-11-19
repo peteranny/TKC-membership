@@ -120,15 +120,15 @@ td{
 
     </div>
 
-		<div class="modal fade">
-			<div class="modal-dialog" role="document">
-				<div class="modal-content">
-					<div class="modal-body">
-						<textarea id="clipboard"></textarea>
-					</div>
-				</div>
-			</div>
-		</div>
+    <div class="modal fade">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-body">
+            <textarea id="clipboard"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-latest.min.js"></script>
@@ -153,29 +153,29 @@ var vm = new Vue({
     showPaidInvalid: true,
     showUnpaidInvalid: true,
   },
-	computed:{
-		queried_rows:function(){
-			query = this.query.trim();
+  computed:{
+    queried_rows:function(){
+      query = this.query.trim();
 
-			var showPaidValid = this.showPaidValid;
-			var showUnpaidValid = this.showUnpaidValid;
-			var showPaidInvalid = this.showPaidInvalid;
-			var showUnpaidInvalid = this.showUnpaidInvalid;
-			var memberType = this.memberType;
-			return this.rows.filter(function(row){
-				var match_nickname = row.nickname&&row.nickname.toLowerCase().indexOf(query.toLowerCase())!=-1;
-				var match_name = row.name&&row.name.toLowerCase().indexOf(query.toLowerCase())!=-1;
-				var match_type =
-					showPaidValid && memberType(row)=='paid_valid' ||
-					showPaidInvalid && memberType(row)=='paid_invalid' ||
-					showUnpaidValid && memberType(row)=='unpaid_valid' ||
-					showUnpaidInvalid && memberType(row)=='unpaid_invalid';
-				var hasQuery = query!="";
-				var notUnique = row.unique===false;
-				return notUnique || hasQuery&&(match_nickname||match_name) || !hasQuery&&match_type;
-			});
-		},
-	},
+      var showPaidValid = this.showPaidValid;
+      var showUnpaidValid = this.showUnpaidValid;
+      var showPaidInvalid = this.showPaidInvalid;
+      var showUnpaidInvalid = this.showUnpaidInvalid;
+      var memberType = this.memberType;
+      return this.rows.filter(function(row){
+        var match_nickname = row.nickname&&row.nickname.toLowerCase().indexOf(query.toLowerCase())!=-1;
+        var match_name = row.name&&row.name.toLowerCase().indexOf(query.toLowerCase())!=-1;
+        var match_type =
+          showPaidValid && memberType(row)=='paid_valid' ||
+          showPaidInvalid && memberType(row)=='paid_invalid' ||
+          showUnpaidValid && memberType(row)=='unpaid_valid' ||
+          showUnpaidInvalid && memberType(row)=='unpaid_invalid';
+        var hasQuery = query!="";
+        var notUnique = row.unique===false;
+        return notUnique || hasQuery&&(match_nickname||match_name) || !hasQuery&&match_type;
+      });
+    },
+  },
   methods:{
     simpleDate: function(d){
       var M = d.getMonth()+1;
