@@ -237,6 +237,7 @@ function solveConflict(no){
     choice = parseInt(choice);
   }while( !(choice>0 && choice<=choice_fs.length) );
   procAttendance(row, attend_list[choice-1].attendance);
+  row.unique = true;
 }
 
 function combineListAndAttendance(){
