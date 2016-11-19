@@ -225,21 +225,18 @@ function nameAsKey(){
   });
 }
 
-function solveConflict(i){
-  return function(){
-    var row = vm.rows[i];
-    var attend_list = attendance_name_list[row.nickname];
-    var choice_fs = attend_list.map(function(v,i){return v.fellowship;});
-    var msg = "請問"+row.name+"("+row.nickname+")是"+choice_fs.map(function(v,i){return "("+(i+1)+")"+v;}).join(",");
-    var choice = -1;
-    do{
-      choice = prompt(msg);
-      if(choice==null) return;
-      choice = parseInt(choice);
-    }while( !(choice>0 && choice<=choice_fs.length) );
-    row.attendance = attend_list[choice-1].attendance;
-    row.unique = true;
-  };
+function solveConflict(no){
+  var row = vm.rows[no-1];
+  var attend_list = attendance_name_list[row.nickname];
+  var choice_fs = attend_list.map(function(v,i){return v.fellowship;});
+  var msg = "請問"+row.name+"("+row.nickname+")是"+choice_fs.map(function(v,i){return "("+(i+1)+")"+v;}).join(",");
+  var choice = -1;
+  do{
+    choice = prompt(msg);
+    if(choice==null) return;
+    choice = parseInt(choice);
+  }while( !(choice>0 && choice<=choice_fs.length) );
+  procAttendance(row, attend_list[choice-1].attendance);
 }
 
 function combineListAndAttendance(){
@@ -248,23 +245,22 @@ function combineListAndAttendance(){
       if(row.nickname){
         var attend_list = attendance_name_list[row.nickname];
         if(attend_list){
-          if(attend_list.length>1){
-            addConflictButton(i);
-            row.unique = false;
-            return;
-          }
-          row.attendance = attend_list[0].attendance;
-          row.unique = true;
-          row.attendance = row.attendance.map(function(n){
-            return (n==""?0:parseInt(n));
-          });
-          row.attendSum = computeAttendance(row.attendance);
-          row.isValid = computeIsValid(row.attendSum);
+          row.unique = attend_list.length==1;
+          if(!row.unique) return;
+          procAttendance(row, attend_list[0].attendance);
         }
       }
     });
     resolve();
   });
+}
+
+function procAttendance(row, attendance){
+  row.attendance = attendance.map(function(n){
+    return (n==""?0:parseInt(n));
+  });
+  row.attendSum = computeAttendance(row.attendance);
+  row.isValid = computeIsValid(row.attendSum);
 }
 
 function computeAttendance(attend){

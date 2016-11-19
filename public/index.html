@@ -52,13 +52,13 @@ td{
   height:20em;
 }
 .paid_valid{
-  background-color:rgba(255,200,200,0.5);
+  background-color:rgba(150,200,200,0.5);
 }
 .paid_invalid{
   background-color:rgba(200,200,200,0.5);
 }
 .unpaid_valid{
-  background-color:rgba(150,200,200,0.5);
+  background-color:rgba(255,200,200,0.5);
 }
 .unpaid_invalid{
   background-color:rgba(255,255,255,0.5);
@@ -79,7 +79,7 @@ td{
       <div id="search-bar" class="input-group">
         <input type="text" class="form-control" placeholder="輸入搜尋的名字" v-model="query">
         <span class="input-group-btn">
-          <button class="btn btn-secondary" @click="copyList()">
+          <button class="btn btn-success" @click="copyList()">
             複製以下名單！
           </button>
         </span>
@@ -125,8 +125,14 @@ td{
             <td>{{row.name}}</td>
             <td>{{row.nickname}}</td>
             <td>{{hasFeePaidText(row.hasFeePaid)}}</td>
-            <td v-if="row.attendance.length>0" v-for="(i,d) in dates">{{row.attendance[i]}}</td>
-            <td id="member{{row.no}}" v-if="dates.length>0&&row.attendance.length==0" :colspan="dates.length"></td>
+            <td v-if="row.attendance.length>0" v-for="(i,d) in dates">
+              {{row.attendance[i]}}
+            </td>
+            <td v-if="dates.length>0&&row.attendance.length==0" :colspan="dates.length">
+              <button class="btn btn-danger" v-if="row.unique===false" onclick="solveConflict({{row.no}})">
+                有資料衝突，點選我解決...
+              </button>
+            </td>
             <td>{{row.attendSum}}</td>
             <td>{{isValidText(row.isValid)}}</td>
           </tr>
@@ -164,9 +170,9 @@ var vm = new Vue({
     dates:[],
     query:"",
     showPaidValid: true,
-    showUnpaidValid: true,
-    showPaidInvalid: true,
-    showUnpaidInvalid: true,
+    showUnpaidValid: false,
+    showPaidInvalid: false,
+    showUnpaidInvalid: false,
   },
   computed:{
     queried_rows:function(){
@@ -217,12 +223,6 @@ var vm = new Vue({
     }
   },
 });
-
-function addConflictButton(i){
-  $('#member'+(i+1)).html(
-      $('<button>').addClass('btn btn-danger').text('有資料衝突，點選我解決...').click(solveConflict(i))
-  );
-}
 
 var loading = {
   timer:null,
