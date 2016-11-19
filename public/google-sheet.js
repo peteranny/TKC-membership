@@ -233,7 +233,9 @@ function solveConflict(i){
     var msg = "請問"+row.name+"("+row.nickname+")是"+choice_fs.map(function(v,i){return "("+(i+1)+")"+v;}).join(",");
     var choice = -1;
     do{
-      choice = parseInt(prompt(msg));
+      choice = prompt(msg);
+      if(choice==null) return;
+      choice = parseInt(choice);
     }while( !(choice>0 && choice<=choice_fs.length) );
     row.attendance = attend_list[choice-1].attendance;
     row.unique = true;
