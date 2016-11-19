@@ -1,13 +1,3 @@
-// Your Client ID can be retrieved from your project in the Google
-// Developer Console, https://console.developers.google.com
-var CLIENT_ID = '354856638975-pnjlmu0d866uf774kop1k787vjmkqqri.apps.googleusercontent.com';
-var SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"];
-var LIST = "1TDcdilPsHpnRJ6MjAZO7ifHvbrrW-0UA38UupMlO-zA";
-var ATTENDANCE = [
-  "1X5oma_O_i32wjRiILgVKCbNsf9qnSeu-vc9npZSnbOI",
-  "1Bqam_dHyxn78JhYosgO2VN4x_91EKb01EdbI2A9foUI",
-];
-
 // called on page load
 function checkAuth() {
   gapi.auth.authorize({
@@ -58,9 +48,8 @@ function run(){
 }
 
 function loadSheetsApi() {
-  var discoveryUrl = 'https://sheets.googleapis.com/$discovery/rest?version=v4';
   return new Promise(function(resolve, reject){
-    gapi.client.load(discoveryUrl).then(function(){
+    gapi.client.load(DISCOVERY).then(function(){
       resolve();
     }, function(){
       reject();
@@ -129,7 +118,7 @@ var fellowships = null;
 function fetchFellowships(){
   return new Promise(function(resolve, reject){
     gapi.client.sheets.spreadsheets.get({
-      spreadsheetId: '1X5oma_O_i32wjRiILgVKCbNsf9qnSeu-vc9npZSnbOI'
+      spreadsheetId: ATTENDANCE[0],
     })
     .then(function(response){
       fellowships = response.result.sheets.map(function(sh){
