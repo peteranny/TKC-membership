@@ -72,6 +72,7 @@ var socket = io();
 function info(){
   vm.canTest = false;
   vm.canSave = false;
+  log('');
   socket.emit('info');
 }
 info();
