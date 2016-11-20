@@ -1,4 +1,3 @@
-// called on page load
 function checkAuth() {
   gapi.auth.authorize({
     client_id: CLIENT_ID,
@@ -7,17 +6,14 @@ function checkAuth() {
   }, handleAuthResult);
 }
 
-// called on button clicked
-function handleAuthClick(event) {
+function handleAuthClick(){
   gapi.auth.authorize({
     client_id: CLIENT_ID,
     scope: SCOPES.join(' '),
     immediate: false,
   }, handleAuthResult);
-  return false;
 }
 
-// called with response from google api
 function handleAuthResult(authResult){
   if (authResult && !authResult.error){
     $('#authorize-div').hide();
@@ -31,7 +27,7 @@ function handleAuthResult(authResult){
 }
 
 function run(){
-  loading.run(true);
+  loading.run();
   loadSheetsApi()
     .then(listMembers, Promise.reject)
     .then(computeHasFeePaid, Promise.reject)
@@ -41,9 +37,9 @@ function run(){
     .then(nameAsKey, Promise.reject)
     .then(combineListAndAttendance, Promise.reject)
     .then(function(){
-      loading.run(false);
+      loading.close();
     }, function(err){
-      alert(err);
+      loading.fail(err);
     });
 }
 
@@ -51,8 +47,8 @@ function loadSheetsApi() {
   return new Promise(function(resolve, reject){
     gapi.client.load(DISCOVERY).then(function(){
       resolve();
-    }, function(){
-      reject();
+    }, function(err){
+      reject(err);
     });
   });
 }
@@ -70,8 +66,7 @@ function listMembers() {
       });
       resolve();
     }, function(response) {
-      alert('Error: ' + response.result.error.message);
-      reject();
+      reject(response.result.error.message + ' (' + LIST + ')');
     });
   });
 }
@@ -125,8 +120,8 @@ function fetchFellowships(){
         return sh.properties.title;
       });
       resolve();
-    }, function(err){
-      reject(err);
+    }, function(response){
+      reject(response.result.error.message + ' (' + ATTENDANCE[0] + ')');
     });
   });
 }
@@ -181,8 +176,8 @@ function fetchAttendance(i){
           });
         }
         resolve();
-      }, function(err){
-        reject(err);
+      }, function(response){
+        reject(response.result.error.message + ' (' + ATTENDANCE[i] + ')');
       });
     });
   });
@@ -271,8 +266,7 @@ function cropAttendance(){
     for(i=vm.dates.length-1;i>=0&&base_date<vm.dates[i];i--);
     if(i<0||vm.dates[i].valueOf()!=base_date.valueOf()){
       // date not found
-      alert('oops : dates[i]=' + vm.dates[i] + '\nbase_date=' + base_date);
-      reject();
+      reject('Oops: dates[i]=' + vm.dates[i] + '\nbase_date=' + base_date);
       return;
     }
 
@@ -284,8 +278,8 @@ function cropAttendance(){
         });
       }
       resolve();
-    }, function(){
-      reject();
+    }, function(err){
+      reject(err);
     });
   });
 }

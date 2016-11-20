@@ -1,4 +1,4 @@
-var CLIENT_ID = "354856638975-pnjlmu0d866uf774kop1k787vjmkqqri.apps.googleusercontent.com";
+var CLIENT_ID = '398747948038-b2e8dbdklgvhfcpll5ass57kh3t648fu.apps.googleusercontent.com';
 var SCOPES = [
   "https://www.googleapis.com/auth/spreadsheets.readonly"
 ];
