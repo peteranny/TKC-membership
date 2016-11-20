@@ -23,7 +23,7 @@ var socketIO = require('socket.io');
 var io = socketIO.listen(server);
 var fs = require('fs');
 var Promise = require('bluebird');
-var configPath = "public/config.js";
+var configPath = "public/js/config.js";
 
 io.on('connection', function(socket){
   console.log('Receive connection');
