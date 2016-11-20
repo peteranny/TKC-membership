@@ -80,7 +80,7 @@ td{
       <div id="search-bar" class="input-group">
         <input type="text" class="form-control" style="padding:right:15px;" placeholder="搜尋名字或外號" v-model="query">
         <span class="input-group-btn">
-          <button class="btn btn-secondary" href="#" onclick="vm.query=''">
+          <button class="btn btn-secondary" onclick="vm.query=''">
             <span class="octicon octicon-arrow-left"></span>清除
           </button>
         </span>
@@ -121,16 +121,16 @@ td{
               <td>姓名</td>
               <td>外號</td>
               <td>會費</td>
-              <td v-for="d in dates"><span class="tag tag-default">{{simpleDate(d)}}</span></td>
-              <td>Sum</td>
-              <td>isValid</td>
+              <td v-for="d in dates"><span class="tag tag-default">{{d | simpleDate}}</span></td>
+              <td>次數</td>
+              <td>是否有效</td>
             </tr>
           </thead>
           <tr :class="memberType(row)" v-for="row in queried_rows">
             <td>{{row.no}}</td>
             <td>{{row.name}}</td>
             <td>{{row.nickname}}</td>
-            <td>{{hasFeePaidText(row.hasFeePaid)}}</td>
+            <td>{{row.hasFeePaid | hasFeePaidText}}</td>
             <td v-if="row.attendance.length>0" v-for="(i,d) in dates">
               {{row.attendance[i]}}
             </td>
@@ -140,7 +140,7 @@ td{
               </button>
             </td>
             <td>{{row.attendSum}}</td>
-            <td>{{isValidText(row.isValid)}}</td>
+            <td>{{row.isValid | isValidText}}</td>
           </tr>
           <tr v-if="query!='' && queried_rows.length==0">
             <td :colspan="6 + dates.length"><em>查無名單符合「{{query}}」</em></td>
@@ -167,8 +167,8 @@ td{
     <!-- promise -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.4.6/bluebird.min.js"></script>
     <!-- Google sheet -->
-    <script src="config.js"></script>
-    <script src="google-sheet.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/google-sheet.js"></script>
     <script src="https://apis.google.com/js/client.js?onload=checkAuth"></script>
     <!-- Vue.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.26/vue.min.js"></script>
@@ -186,39 +186,21 @@ var vm = new Vue({
   },
   computed:{
     queried_rows:function(){
-      query = this.query.trim();
-
-      var showPaidValid = this.showPaidValid;
-      var showUnpaidValid = this.showUnpaidValid;
-      var showPaidInvalid = this.showPaidInvalid;
-      var showUnpaidInvalid = this.showUnpaidInvalid;
-      var memberType = this.memberType;
       return this.rows.filter(function(row){
-        var match_nickname = row.nickname&&row.nickname.toLowerCase().indexOf(query.toLowerCase())!=-1;
-        var match_name = row.name&&row.name.toLowerCase().indexOf(query.toLowerCase())!=-1;
+        var match_nickname = row.nickname&&row.nickname.toLowerCase().indexOf(vm.query.toLowerCase())!=-1;
+        var match_name = row.name&&row.name.toLowerCase().indexOf(vm.query.toLowerCase())!=-1;
         var match_type =
-          showPaidValid && memberType(row)=='paid_valid' ||
-          showPaidInvalid && memberType(row)=='paid_invalid' ||
-          showUnpaidValid && memberType(row)=='unpaid_valid' ||
-          showUnpaidInvalid && memberType(row)=='unpaid_invalid';
-        var hasQuery = query!="";
+          vm.showPaidValid && vm.memberType(row)=='paid_valid' ||
+          vm.showPaidInvalid && vm.memberType(row)=='paid_invalid' ||
+          vm.showUnpaidValid && vm.memberType(row)=='unpaid_valid' ||
+          vm.showUnpaidInvalid && vm.memberType(row)=='unpaid_invalid';
+        var hasQuery = vm.query!="";
         var notUnique = row.unique===false;
         return notUnique || hasQuery&&(match_nickname||match_name) || !hasQuery&&match_type;
       });
     },
   },
   methods:{
-    simpleDate: function(d){
-      var M = d.getMonth()+1;
-      var D = d.getDate();
-      return (M<10?"0"+M:M)+(D<10?"0"+D:D);
-    },
-    isValidText:function(isValid){
-      return isValid==undefined?'':isValid?"有效會員":"無效會員";
-    },
-    hasFeePaidText: function(hasFeePaid){
-      return hasFeePaid==undefined?'':hasFeePaid? '已繳': '未繳';
-    },
     memberType: function(row){
       if(row.isValid==true && row.hasFeePaid==true) return 'paid_valid';
       if(row.isValid==true && row.hasFeePaid!=true) return 'unpaid_valid';
@@ -232,6 +214,18 @@ var vm = new Vue({
       $('.modal').modal('show')
     }
   },
+});
+
+Vue.filter('simpleDate', function(d){
+  var M = d.getMonth()+1;
+  var D = d.getDate();
+  return (M<10?"0"+M:M)+(D<10?"0"+D:D);
+});
+Vue.filter('isValidText', function(isValid){
+  return isValid==undefined?'':isValid?"有效會員":"無效會員";
+});
+Vue.filter('hasFeePaidText', function(hasFeePaid){
+  return hasFeePaid==undefined?'':hasFeePaid? '已繳': '未繳';
 });
 
 var configURI = "config.html"
