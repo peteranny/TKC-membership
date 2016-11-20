@@ -113,7 +113,7 @@ var fellowships = null;
 function fetchFellowships(){
   return new Promise(function(resolve, reject){
     gapi.client.sheets.spreadsheets.get({
-      spreadsheetId: ATTENDANCE[0],
+      spreadsheetId: ATTENDANCE_THIS,
     })
     .then(function(response){
       fellowships = response.result.sheets.map(function(sh){
@@ -121,7 +121,7 @@ function fetchFellowships(){
       });
       resolve();
     }, function(response){
-      reject(response.result.error.message + ' (' + ATTENDANCE[0] + ')');
+      reject(response.result.error.message + ' (' + ATTENDANCE_THIS + ')');
     });
   });
 }
@@ -143,14 +143,14 @@ function serial2date(serial) {
 function fetchAttendance_wraper(){
   vm.dates = [];
   attendance_list = {};
-  return fetchAttendance(0);
+  return fetchAttendance(ATTENDANCE_THIS);
 }
 
-function fetchAttendance(i){
+function fetchAttendance(sheetId){
   return Promise.map(fellowships, function(fs, j){
     return new Promise(function(resolve, reject){
       gapi.client.sheets.spreadsheets.values.get({
-        spreadsheetId: ATTENDANCE[i],
+        spreadsheetId: sheetId,
         range: "'"+fs+"'!A1:Y",
         valueRenderOption: "FORMULA",
         dateTimeRenderOption: "FORMATTED_STRING",
@@ -167,7 +167,7 @@ function fetchAttendance(i){
           }
           return row;
         });
-        if(i==0){
+        if(sheetId == ATTENDANCE_THIS){
           attendance_list[fs] = table;
         }
         else{
@@ -177,7 +177,7 @@ function fetchAttendance(i){
         }
         resolve();
       }, function(response){
-        reject(response.result.error.message + ' (' + ATTENDANCE[i] + ')');
+        reject(response.result.error.message + ' (' + sheetId + ')');
       });
     });
   });
@@ -270,7 +270,7 @@ function cropAttendance(){
       return;
     }
 
-    ((i-valid_num_max+1<0)? fetchAttendance(1): Promise.resolve()).then(function(){
+    ((i-valid_num_max+1<0)? fetchAttendance(ATTENDANCE_LAST): Promise.resolve()).then(function(){
       var valid_i_range = [i-valid_num_max+1, i+1];
       for(k in attendance_name_list) if(attendance_name_list.hasOwnProperty(k)){
         attendance_name_list[k].forEach(function(fs_attendance){

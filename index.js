@@ -40,7 +40,8 @@ io.on('connection', function(socket){
       scopes: SCOPES,
       discovery: DISCOVERY,
       list: LIST,
-      attendances: ATTENDANCE,
+      attendance_this: ATTENDANCE_THIS,
+      attendance_last: ATTENDANCE_LAST,
     });
   });
   socket.on('save', function(info){
@@ -50,7 +51,8 @@ io.on('connection', function(socket){
       "var SCOPES = " + JSON.stringify(info.scopes, null, 2) + ";\n"+
       "var DISCOVERY = " + JSON.stringify(info.discovery, null, 2) + ";\n"+
       "var LIST = " + JSON.stringify(info.list, null, 2) + ";\n"+
-      "var ATTENDANCE = " + JSON.stringify(info.attendances, null, 2) + ";\n";
+      "var ATTENDANCE_THIS = " + JSON.stringify(info.attendance_this, null, 2) + ";\n" +
+      "var ATTENDANCE_LAST = " + JSON.stringify(info.attendance_last, null, 2) + ";\n";
     console.log(code);
     fs.writeFile(configPath, code, function(err){
       if(err) console.log(err);
