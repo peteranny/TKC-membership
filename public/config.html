@@ -72,7 +72,6 @@ var socket = io();
 function info(){
   vm.canTest = false;
   vm.canSave = false;
-  log('');
   socket.emit('info');
 }
 info();
@@ -81,6 +80,7 @@ socket.on('info', function(data){
     vm[k] = data[k];
   });
   vm.canTest = true;
+  log('');
 });
 function test(){
   log('測試中，請稍候');
