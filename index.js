@@ -43,54 +43,6 @@ io.on('connection', function(socket){
       attendances: ATTENDANCE,
     });
   });
-  socket.on('test', function(info){
-    console.log('Receive test');
-    /*
-    checkAuth()
-    
-    .then(loadSheetsApi, Promise.reject)
-    
-    .then(function(){
-      var sheets = [{
-        description: "會員資料表",
-        sheetId: LIST,
-      }, {
-        description: "最近的主日出席表",
-        sheetId: ATTENDANCE[0],
-      }, {
-        description: "上一個主日出席表",
-        sheetId: ATTENDANCE[1],
-      }];
-      return Promise.map(sheets, function(sheet){
-
-        return fetchTitle(sheet.sheetId).then(function(title){
-          return Promise.resolve({
-            description:sheet.description,
-            title:title
-          });
-        });
-      });
-    }, Promise.reject)
-    
-    .then(function(sheets){
-    */
-      console.log('Send logs');
-      /*
-      var logs = sheets.map(function(sheet){
-        return sheet.description+"："+sheet.title;
-      }).join('\n');
-      */
-      var logs = "Hello World";
-      socket.emit('logs', logs);
-      console.log('Send save');
-      socket.emit('save');
-      /*
-    },function(err){
-      console.log(err);
-      socket.emit('logs', err);
-    });
-    */
-  });
   socket.on('save', function(info){
     console.log('Receive save');
     var code =
@@ -107,47 +59,3 @@ io.on('connection', function(socket){
   });
 });
 
-// google api
-function checkAuth() {
-  return new Promise(function(resolve, reject){
-    gapi.auth.authorize({
-      client_id: CLIENT_ID,
-      scope: SCOPES.join(' '),
-      immediate: true,
-    }, function(authResult){
-      if (authResult && !authResult.error){
-        console.log('Auth done');
-        resolve();
-      }
-      else{
-        console.log('Auth failed');
-        reject(authResult.error);
-      }
-    });
-  });
-}
-function loadSheetsApi() {
-  return new Promise(function(resolve, reject){
-    gapi.client.load(DISCOVERY).then(function(){
-      console.log('Load API done');
-      resolve();
-    }, function(err){
-      console.log('Load API failed');
-      reject(err);
-    });
-  });
-}
-function fetchTitle(sheetId){
-  return new Promise(function(resolve, reject){
-    gapi.client.sheets.spreadsheets.get({
-      spreadsheetId: sheetId,
-    }).then(function(response){
-      var title = response.result.properties.title;
-      console.log('Fetch title: '+title);
-      resolve(title);
-    }, function(err){
-      console.log('Fetch title failed');
-      reject(err);
-    });
-  });
-}

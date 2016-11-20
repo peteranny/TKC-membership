@@ -25,25 +25,33 @@
       <div class="form-group">
         <div class="input-group">
           <span class="input-group-addon">會員資料</span>
-          <input class="form-control" v-model="list">
+          <input class="form-control" v-model="list" :disabled="!canTest">
         </div>
       </div>
       <div class="form-group">
         <div class="input-group">
           <span class="input-group-addon">主日出席</span>
-          <input class="form-control" v-for="attendance in attendances" v-model="attendance">
+          <input class="form-control" v-for="attendance in attendances" v-model="attendance" :disabled="!canTest">
         </div>
       </div>
-      <input class="btn btn-secondary" type="button" value="測試" onclick="test()">
-      <input class="btn btn-success" type="submit" value="提交" disabled>
+      <input class="btn btn-secondary" type="button" value="測試" :disabled="!canTest" onclick="test()">
+      <input class="btn btn-secondary" type="button" value="重設" onclick="info()">
+      <input class="btn btn-success" type="submit" value="提交" :disabled="!canSave">
+      <a href="index.html">回到查詢網頁</a>
     </form>
-    <pre id="logs"></pre>
+    <blockquote class="blockquote">
+      <pre id="logs"></pre>
+    </blockquote>
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-latest.min.js"></script>
     <!-- Bootstrap -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/js/bootstrap.min.js" integrity="sha384-BLiI7JTZm+JWlgKa0M0kGRpJbF2J8q+qreVrKBC47e3K6BW78kGLrCkeRX6I9RoK" crossorigin="anonymous"></script>
     <!-- Vue.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.26/vue.min.js"></script>
+    <!-- Promise -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.4.6/bluebird.min.js"></script>
+    <!-- Google sheet -->
+    <script src="https://apis.google.com/js/client.js?onload=checkAuth"></script>
     <script>
 var vm = new Vue({
   el:"#main",
@@ -53,30 +61,123 @@ var vm = new Vue({
     discovery: '',
     list: '',
     attendances: [],
+    canTest: false,
+    canSave: false,
   },
 });
     </script>
     <script src="/socket.io/socket.io.js"></script>
     <script>
 var socket = io();
-socket.emit('info');
+function info(){
+  vm.canTest = false;
+  vm.canSave = false;
+  socket.emit('info');
+}
+info();
 socket.on('info', function(data){
   Object.keys(data).forEach(function(k){
     vm[k] = data[k];
   });
+  vm.canTest = true;
 });
 function test(){
-  socket.emit('test', vm.$data);
+  log('測試中，請稍候');
+  checkAuth()
+    .then(function(){
+      vm.canTest = false;
+      return loadSheetsApi();
+    }, Promise.reject)
+    
+    .then(function(){
+      var sheets = [{
+        description: "會員資料表",
+        sheetId: vm.list,
+      }, {
+        description: "最近的主日出席表",
+        sheetId: vm.attendances[0],
+      }, {
+        description: "上一個主日出席表",
+        sheetId: vm.attendances[1],
+      }];
+      return Promise.map(sheets, function(sheet){
+        if(sheet.sheetId!=''){
+          return fetchTitle(sheet.sheetId).then(function(title){
+            sheet.title = title;
+            return Promise.resolve(sheet);
+          }, Promise.reject);
+        }
+        else{
+          return Promise.resolve(sheet);
+        }
+      });
+    }, Promise.reject)
+    
+    .then(function(sheets){
+      var logs = sheets.map(function(sheet){
+        return sheet.description + "： " +
+        (sheet.sheetId==null? sheet.title+" ("+sheet.sheetId+")": '無');
+      }).join('\n');
+      log(logs + '\n確定嗎？');
+      vm.canSave = true;
+    }, function(err){
+      log(err);
+      vm.canTest = true;
+    });
 }
-socket.on('logs', function(logs){
+function log(logs){
   $('#logs').text(logs);
-});
+};
 socket.on('save', function(){
-  $('#main input[type="submit"]').prop('disabled', false);
 });
 $('#main').on('submit', function(){
   socket.emit('save', vm.$data);
 });
+
+// google api
+var login = false;
+function checkAuth() {
+  return new Promise(function(resolve, reject){
+    gapi.auth.authorize({
+      client_id: vm.client_id,
+      scope: vm.scopes.join(' '),
+      immediate: login,
+    }, function(authResult){
+      if (authResult && !authResult.error){
+        login = true;
+        resolve();
+      }
+      else{
+        login = false;
+        reject(authResult.error);
+      }
+    });
+  });
+}
+function loadSheetsApi() {
+  return new Promise(function(resolve, reject){
+    gapi.client.load(vm.discovery).then(function(){
+      console.log('Load API done');
+      resolve();
+    }, function(err){
+      console.log('Load API failed');
+      reject(err);
+    });
+  });
+}
+function fetchTitle(sheetId){
+  return new Promise(function(resolve, reject){
+    gapi.client.sheets.spreadsheets.get({
+      spreadsheetId: sheetId,
+    }).then(function(response){
+      var title = response.result.properties.title;
+      resolve(title);
+    }, function(response){
+      var err = response.result.error.message;
+      reject('資料抓取失敗：' + err + ' (' + sheetId + ')');
+    });
+  });
+}
     </script>
   </body>
 </html>
