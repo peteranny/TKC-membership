@@ -7,19 +7,19 @@
       <div class="form-group">
         <div class="input-group">
           <span class="input-group-addon">ClientID</span>
-          <input class="form-control" v-model="client_id" disabled>
+          <input class="form-control" v-model="client_id" :disabled="!canTest">
         </div>
       </div>
       <div class="form-group">
         <div class="input-group">
           <span class="input-group-addon">Scope</span>
-          <input class="form-control" v-for="scope in scopes" v-model="scope" disabled>
+          <input class="form-control" v-for="scope in scopes" v-model="scope" :disabled="!canTest">
         </div>
       </div>
       <div class="form-group">
         <div class="input-group">
           <span class="input-group-addon">Discovery</span>
-          <input class="form-control" v-model="discovery" disabled>
+          <input class="form-control" v-model="discovery" :disabled="!canTest">
         </div>
       </div>
       <div class="form-group">
@@ -117,7 +117,7 @@ function test(){
     .then(function(sheets){
       var logs = sheets.map(function(sheet){
         return sheet.description + "： " +
-        (sheet.sheetId==null? sheet.title+" ("+sheet.sheetId+")": '無');
+        (sheet.sheetId!=""? sheet.title+" ("+sheet.sheetId+")": '無');
       }).join('\n');
       log(logs + '\n確定嗎？');
       vm.canSave = true;
