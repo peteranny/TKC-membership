@@ -35,7 +35,7 @@
         </div>
       </div>
       <input class="btn btn-secondary" type="button" value="測試" :disabled="!canTest" onclick="test()">
-      <input class="btn btn-secondary" type="button" value="重設" onclick="info()">
+      <input class="btn btn-secondary" type="button" value="重設" :disabled="!canTest&&!canSave" onclick="info()">
       <input class="btn btn-success" type="submit" value="提交" :disabled="!canSave">
       <a href="index.html">回到查詢網頁</a>
     </form>
