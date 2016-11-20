@@ -7,36 +7,36 @@
       <div class="form-group">
         <div class="input-group">
           <span class="input-group-addon">ClientID</span>
-          <input class="form-control" v-model="client_id" :disabled="!canTest">
+          <input class="form-control" v-model="config.client_id" disabled>
         </div>
       </div>
       <div class="form-group">
         <div class="input-group">
           <span class="input-group-addon">Scope</span>
-          <input class="form-control" v-for="scope in scopes" v-model="scope" :disabled="!canTest">
+          <input class="form-control" v-for="scope in config.scopes" v-model="scope" disabled>
         </div>
       </div>
       <div class="form-group">
         <div class="input-group">
           <span class="input-group-addon">Discovery</span>
-          <input class="form-control" v-model="discovery" :disabled="!canTest">
+          <input class="form-control" v-model="config.discovery" disabled>
         </div>
       </div>
       <div class="form-group">
         <div class="input-group">
           <span class="input-group-addon">會員資料</span>
-          <input class="form-control" v-model="list" :disabled="!canTest">
+          <input class="form-control" v-model="config.list" :disabled="isLoading">
         </div>
       </div>
       <div class="form-group">
         <div class="input-group">
           <span class="input-group-addon">主日出席</span>
-          <input class="form-control" v-for="attendance in attendances" v-model="attendance" :disabled="!canTest">
+          <input class="form-control" v-for="attendance in config.attendances" v-model="attendance" :disabled="isLoading">
         </div>
       </div>
-      <input class="btn btn-secondary" type="button" value="測試" :disabled="!canTest" onclick="test()">
-      <input class="btn btn-secondary" type="button" value="重設" :disabled="!canTest&&!canSave" onclick="info()">
-      <input class="btn btn-success" type="submit" value="提交" :disabled="!canSave">
+      <input class="btn btn-secondary" type="button" value="測試" :disabled="canSave||isLoading" onclick="test()">
+      <input class="btn btn-secondary" type="button" value="重設" :disabled="isLoading" onclick="info()">
+      <input class="btn btn-success" type="submit" value="提交" :disabled="!canSave||isLoading">
       <a href="index.html">回到查詢網頁</a>
     </form>
     <blockquote class="blockquote">
@@ -56,50 +56,72 @@
 var vm = new Vue({
   el:"#main",
   data:{
-    client_id: '',
-    scopes: [],
-    discovery: '',
-    list: '',
-    attendances: [],
-    canTest: false,
-    canSave: false,
+    config:{
+      client_id: '',
+      scopes: [],
+      discovery: '',
+      list: '',
+      attendances: [],
+    },
+    tested_config:{},
+    isLoading:false,
+  },
+  computed:{
+    canSave: function(){
+      // can save only if the data is tested
+      if(this.config.client_id!=this.tested_config.client_id) return false;
+      if(this.config.discovery!=this.tested_config.discovery) return false;
+      if(this.config.list!=this.tested_config.list) return false;
+      var passed = true;
+      for(var i=0;i<this.config.scopes.length;i++) if(this.config.scopes[i]!=this.tested_config.scopes[i]) passed = false;
+      for(var i=0;i<this.config.attendances.length;i++) if(this.config.attendances[i]!=this.tested_config.attendances[i]) passed = false;
+      return passed;
+    },
   },
 });
     </script>
     <script src="/socket.io/socket.io.js"></script>
     <script>
 var socket = io();
+
 function info(){
-  vm.canTest = false;
-  vm.canSave = false;
+  load();
   socket.emit('info');
 }
 info();
-socket.on('info', function(data){
-  Object.keys(data).forEach(function(k){
-    vm[k] = data[k];
-  });
-  vm.canTest = true;
-  log('');
+socket.on('info', function(config){
+  loadDone();
+  vm.config = config;
+  vm.tested_config = {};
 });
+
+function load(){
+  vm.isLoading = true;
+  log('載入中...');
+}
+function loadDone(){
+  vm.isLoading = false;
+  log('');
+}
+
 function test(){
-  log('測試中，請稍候');
   checkAuth()
+
     .then(function(){
-      vm.canTest = false;
+      load();
       return loadSheetsApi();
     }, Promise.reject)
     
     .then(function(){
       var sheets = [{
         description: "會員資料表",
-        sheetId: vm.list,
+        sheetId: vm.config.list,
       }, {
         description: "最近的主日出席表",
-        sheetId: vm.attendances[0],
+        sheetId: vm.config.attendances[0],
       }, {
         description: "上一個主日出席表",
-        sheetId: vm.attendances[1],
+        sheetId: vm.config.attendances[1],
       }];
       return Promise.map(sheets, function(sheet){
         if(sheet.sheetId!=''){
@@ -115,24 +137,26 @@ function test(){
     }, Promise.reject)
     
     .then(function(sheets){
+      loadDone();
+      vm.tested_config = deepcopy(vm.config);
       var logs = sheets.map(function(sheet){
         return sheet.description + "： " +
         (sheet.sheetId!=""? sheet.title+" ("+sheet.sheetId+")": '無');
       }).join('\n');
-      log(logs + '\n確定嗎？');
-      vm.canSave = true;
+      log(logs + '\n\n確認完畢請按提交！');
     }, function(err){
+      loadDone();
       log(err);
-      vm.canTest = true;
     });
+}
+function deepcopy(obj){
+  return JSON.parse(JSON.stringify(obj));
 }
 function log(logs){
   $('#logs').text(logs);
 };
-socket.on('save', function(){
-});
 $('#main').on('submit', function(){
-  socket.emit('save', vm.$data);
+  socket.emit('save', vm.config);
 });
 
 // google api
@@ -140,8 +164,8 @@ var login = false;
 function checkAuth() {
   return new Promise(function(resolve, reject){
     gapi.auth.authorize({
-      client_id: vm.client_id,
-      scope: vm.scopes.join(' '),
+      client_id: vm.config.client_id,
+      scope: vm.config.scopes.join(' '),
       immediate: login,
     }, function(authResult){
       if (authResult && !authResult.error){
@@ -157,11 +181,9 @@ function checkAuth() {
 }
 function loadSheetsApi() {
   return new Promise(function(resolve, reject){
-    gapi.client.load(vm.discovery).then(function(){
-      console.log('Load API done');
+    gapi.client.load(vm.config.discovery).then(function(){
       resolve();
     }, function(err){
-      console.log('Load API failed');
       reject(err);
     });
   });
