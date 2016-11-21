@@ -221,7 +221,14 @@ function solveConflict(no){
     choice = parseInt(choice);
   }while( !(choice>0 && choice<=choice_fs.length) );
   procAttendance(row, attend_list[choice-1].attendance);
-  row.isValid = computeIsValid(row.attendSum);
+  row.unique = true;
+}
+
+function confirmAbsence(no){
+  var row = vm.rows[no-1];
+  var zero_attend = [];
+  for(var i=0;i<vm.dates.length;i++) zero_attend.push(0);
+  procAttendance(row, zero_attend);
   row.unique = true;
 }
 
@@ -235,12 +242,6 @@ function combineListAndAttendance(){
           if(!row.unique) return;
           procAttendance(row, attend_list[0].attendance);
         }
-        else{
-          var zero_attend = [];
-          for(var i=0;i<vm.dates.length;i++) zero_attend.push(0);
-          procAttendance(row, zero_attend);
-        }
-        row.isValid = computeIsValid(row.attendSum);
       }
     });
     resolve();
@@ -252,6 +253,7 @@ function procAttendance(row, attendance){
     return (n==""?0:parseInt(n));
   });
   row.attendSum = computeAttendance(row.attendance);
+  row.isValid = computeIsValid(row.attendSum);
 }
 
 function computeAttendance(attend){

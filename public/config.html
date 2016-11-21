@@ -1,6 +1,7 @@
 <html>
   <head>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css" integrity="sha384-AysaV+vQoT3kOAXZkl02PThvDr8HYKPZhNT5h/CXfBThSRXQ6jW5DO2ekP5ViFdi" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/octicons/4.4.0/font/octicons.min.css" />
   </head>
   <body>
     <form id="main">
@@ -26,18 +27,33 @@
         <div class="input-group">
           <span class="input-group-addon">會員資料</span>
           <input class="form-control" v-model="config.list" :disabled="isLoading">
+          <span class="input-group-btn">
+            <button class="btn btn-secondary" @click="openWindow(config.list)">
+              <span class="octicon octicon-eye"></span> 查看
+            </button>
+          </span>
         </div>
       </div>
       <div class="form-group">
         <div class="input-group">
           <span class="input-group-addon">近期主日出席</span>
           <input class="form-control" v-model="config.attendance_this" :disabled="isLoading">
+          <span class="input-group-btn">
+            <button class="btn btn-secondary" @click="openWindow(config.attendance_this)">
+              <span class="octicon octicon-eye"></span> 查看
+            </button>
+          </span>
         </div>
       </div>
       <div class="form-group">
         <div class="input-group">
           <span class="input-group-addon">上期主日出席</span>
           <input class="form-control" v-model="config.attendance_last" :disabled="isLoading">
+          <span class="input-group-btn">
+            <button class="btn btn-secondary" @click="openWindow(config.attendance_last)">
+              <span class="octicon octicon-eye"></span> 查看
+            </button>
+          </span>
         </div>
       </div>
       <input class="btn btn-secondary" type="button" value="測試" :disabled="canSave||isLoading" onclick="test()">
@@ -84,6 +100,12 @@ var vm = new Vue({
       var passed = true;
       for(var i=0;i<this.config.scopes.length;i++) if(this.config.scopes[i]!=this.tested_config.scopes[i]) passed = false;
       return passed;
+    },
+  },
+  methods:{
+    openWindow: function(sheetId){
+      var url = 'https://docs.google.com/spreadsheets/d/' + sheetId;
+      window.open(url, '', '');
     },
   },
 });

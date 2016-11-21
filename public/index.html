@@ -78,35 +78,35 @@ td{
     <div id="main" style="display: none">
 
       <div id="search-bar" class="input-group">
-        <input type="text" class="form-control" style="padding:right:15px;" placeholder="搜尋名字或外號" v-model="query">
+        <input type="text" class="form-control" style="padding:right:15px;" placeholder="搜尋名字或外號" v-model="query" :disabled="unsolved_rows.length>0">
         <span class="input-group-btn">
-          <button class="btn btn-secondary" onclick="vm.query=''">
-            <span class="octicon octicon-arrow-left"></span>清除
+          <button class="btn btn-success" @click="copyList()" :disabled="unsolved_rows.length>0">
+            <span class="octicon octicon-file"></span> 複製以下名單！
           </button>
         </span>
         <span class="input-group-btn">
-          <button class="btn btn-success" @click="copyList()">
-            複製以下名單！
+          <button :class="['btn', 'btn-secondary', {'active':showPaidValid}]" @click="showPaidValid=!showPaidValid" :disabled="unsolved_rows.length>0">
+            <span :class="['octicon', showPaidValid?'octicon-check':'octicon-x']"></span> 繳費有效會員
           </button>
         </span>
         <span class="input-group-btn">
-          <button :class="['btn', 'btn-secondary', {'active':showPaidValid}]" @click="showPaidValid=!showPaidValid">
-            <span :class="['octicon', showPaidValid?'octicon-check':'octicon-x']"></span>繳費有效會員
+          <button :class="['btn', 'btn-secondary', {'active':showUnpaidValid}]" @click="showUnpaidValid=!showUnpaidValid" :disabled="unsolved_rows.length>0">
+            <span :class="['octicon', showUnpaidValid?'octicon-check':'octicon-x']"></span> 未繳費有效會員
           </button>
         </span>
         <span class="input-group-btn">
-          <button :class="['btn', 'btn-secondary', {'active':showUnpaidValid}]" @click="showUnpaidValid=!showUnpaidValid">
-            <span :class="['octicon', showUnpaidValid?'octicon-check':'octicon-x']"></span>未繳費有效會員
+          <button :class="['btn', 'btn-secondary', {'active':showPaidInvalid}]" @click="showPaidInvalid=!showPaidInvalid" :disabled="unsolved_rows.length>0">
+            <span :class="['octicon', showPaidInvalid?'octicon-check':'octicon-x']"></span> 已繳費無效會員
           </button>
         </span>
         <span class="input-group-btn">
-          <button :class="['btn', 'btn-secondary', {'active':showPaidInvalid}]" @click="showPaidInvalid=!showPaidInvalid">
-            <span :class="['octicon', showPaidInvalid?'octicon-check':'octicon-x']"></span>已繳費無效會員
+          <button :class="['btn', 'btn-secondary', {'active':showUnpaidInvalid}]" @click="showUnpaidInvalid=!showUnpaidInvalid" :disabled="unsolved_rows.length>0">
+            <span :class="['octicon', showUnpaidInvalid?'octicon-check':'octicon-x']"></span> 未繳費無效會員
           </button>
         </span>
         <span class="input-group-btn">
-          <button :class="['btn', 'btn-secondary', {'active':showUnpaidInvalid}]" @click="showUnpaidInvalid=!showUnpaidInvalid">
-            <span :class="['octicon', showUnpaidInvalid?'octicon-check':'octicon-x']"></span>未繳費無效會員
+          <button class="btn btn-info" onclick="location.href='config.html'">
+            <span class="octicon octicon-gear"></span> 設定
           </button>
         </span>
       </div>
@@ -114,7 +114,26 @@ td{
       <div id="loading" style="display: none"></div>
 
       <div id="content" class="table-responsive">
-        <table class="table">
+        <table class="table" v-if="unsolved_rows.length>0">
+          <thead>
+            <tr>
+              <td>
+              請先完成以下的處理，才能完整顯示會員名單。<br>
+              若處理以下名單時發覺有問題，請先至Google sheet查看並調整，再回到此頁面重新刷新。</td>
+            </tr>
+          </thead>
+          <tr v-for="row in unsolved_rows">
+            <td>
+              <button class="btn btn-danger" v-if="row.unique===false" onclick="solveConflict({{row.no}})">
+                有多個 {{row.no}}. {{row.name}}({{row.nickname}}) 的主日出席記錄，點選我以解決
+              </button>
+              <button class="btn btn-warning" v-if="row.unique===undefined" onclick="confirmAbsence({{row.no}})">
+                查無 {{row.no}}. {{row.name}}({{row.nickname}}) 主日出席記錄，點選我以確認
+              </button>
+            </td>
+          </tr>
+        </table>
+        <table class="table" v-if="unsolved_rows.length==0">
           <thead>
             <tr>
               <td>No.</td>
@@ -131,18 +150,11 @@ td{
             <td>{{row.name}}</td>
             <td>{{row.nickname}}</td>
             <td>{{row.hasFeePaid | hasFeePaidText}}</td>
-            <td v-if="row.attendance.length>0" v-for="(i,d) in dates">
-              {{row.attendance[i]}}
-            </td>
-            <td v-if="dates.length>0&&row.attendance.length==0" :colspan="dates.length">
-              <button class="btn btn-danger" v-if="row.unique===false" onclick="solveConflict({{row.no}})">
-                有資料衝突，點選我解決...
-              </button>
-            </td>
+            <td v-for="(i,d) in dates">{{row.attendance[i]}}</td>
             <td>{{row.attendSum}}</td>
             <td>{{row.isValid | isValidText}}</td>
           </tr>
-          <tr v-if="query!='' && queried_rows.length==0">
+          <tr v-if="query!=''">
             <td :colspan="6 + dates.length"><em>查無名單符合「{{query}}」</em></td>
           </tr>
         </table>
@@ -185,6 +197,11 @@ var vm = new Vue({
     showUnpaidInvalid: false,
   },
   computed:{
+    unsolved_rows: function(){
+      return this.rows.filter(function(row){
+        return row.unique!==true;
+      });
+    },
     queried_rows:function(){
       return this.rows.filter(function(row){
         var match_nickname = row.nickname&&row.nickname.toLowerCase().indexOf(vm.query.toLowerCase())!=-1;
@@ -195,20 +212,22 @@ var vm = new Vue({
           vm.showUnpaidValid && vm.memberType(row)=='unpaid_valid' ||
           vm.showUnpaidInvalid && vm.memberType(row)=='unpaid_invalid';
         var hasQuery = vm.query!="";
-        var notUnique = row.unique===false;
+        var notUnique = row.unique!==true;
         return notUnique || hasQuery&&(match_nickname||match_name) || !hasQuery&&match_type;
       });
     },
   },
   methods:{
     memberType: function(row){
-      if(row.isValid==true && row.hasFeePaid==true) return 'paid_valid';
-      if(row.isValid==true && row.hasFeePaid!=true) return 'unpaid_valid';
-      if(row.isValid!=true && row.hasFeePaid==true) return 'paid_invalid';
-      if(row.isValid!=true && row.hasFeePaid!=true) return 'unpaid_invalid';
+      if(row.isValid===true && row.hasFeePaid===true) return 'paid_valid';
+      if(row.isValid===true && row.hasFeePaid!==true) return 'unpaid_valid';
+      if(row.isValid!==true && row.hasFeePaid===true) return 'paid_invalid';
+      if(row.isValid!==true && row.hasFeePaid!==true) return 'unpaid_invalid';
     },
     copyList: function(){
-      $('#clipboard').text(this.queried_rows.map(function(row){
+      $('#clipboard').text(this.queried_rows.filter(function(row){
+        return row.unique===true;
+      }).map(function(row){
         return row.name+"("+row.nickname+")";
       }).join('\n'));
       $('.modal').modal('show')
