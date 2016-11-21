@@ -80,11 +80,6 @@ td{
       <div id="search-bar" class="input-group">
         <input type="text" class="form-control" style="padding:right:15px;" placeholder="搜尋名字或外號" v-model="query" :disabled="unsolved_rows.length>0">
         <span class="input-group-btn">
-          <button class="btn btn-success" @click="copyList()" :disabled="unsolved_rows.length>0">
-            <span class="octicon octicon-file"></span> 複製以下名單！
-          </button>
-        </span>
-        <span class="input-group-btn">
           <button :class="['btn', 'btn-secondary', {'active':showPaidValid}]" @click="showPaidValid=!showPaidValid" :disabled="unsolved_rows.length>0">
             <span :class="['octicon', showPaidValid?'octicon-check':'octicon-x']"></span> 繳費有效會員
           </button>
@@ -102,6 +97,11 @@ td{
         <span class="input-group-btn">
           <button :class="['btn', 'btn-secondary', {'active':showUnpaidInvalid}]" @click="showUnpaidInvalid=!showUnpaidInvalid" :disabled="unsolved_rows.length>0">
             <span :class="['octicon', showUnpaidInvalid?'octicon-check':'octicon-x']"></span> 未繳費無效會員
+          </button>
+        </span>
+        <span class="input-group-btn">
+          <button class="btn btn-success" @click="copyList()" :disabled="unsolved_rows.length>0">
+            <span class="octicon octicon-file"></span> 複製以下名單！
           </button>
         </span>
         <span class="input-group-btn">
