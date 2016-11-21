@@ -96,7 +96,7 @@ function transformRow(row){
     dow: convertDate(row[10]), // date of withdrawal
     unique: undefined,
     attendance: [],
-    attendSum: 0,
+    attendSum: undefined,
     hasFeePaid: undefined,
     isValid: undefined,
   };
@@ -105,7 +105,7 @@ function transformRow(row){
 function computeHasFeePaid(){
   vm.rows.forEach(function(row){
     var d = row.dof;
-    row.hasFeePaid = d && d.getFullYear()==(new Date()).getFullYear();
+    row.hasFeePaid = d!=null && d.getFullYear()==(new Date()).getFullYear();
   });
 }
 
@@ -221,6 +221,7 @@ function solveConflict(no){
     choice = parseInt(choice);
   }while( !(choice>0 && choice<=choice_fs.length) );
   procAttendance(row, attend_list[choice-1].attendance);
+  row.isValid = computeIsValid(row.attendSum);
   row.unique = true;
 }
 
@@ -234,6 +235,12 @@ function combineListAndAttendance(){
           if(!row.unique) return;
           procAttendance(row, attend_list[0].attendance);
         }
+        else{
+          var zero_attend = [];
+          for(var i=0;i<vm.dates.length;i++) zero_attend.push(0);
+          procAttendance(row, zero_attend);
+        }
+        row.isValid = computeIsValid(row.attendSum);
       }
     });
     resolve();
@@ -245,13 +252,10 @@ function procAttendance(row, attendance){
     return (n==""?0:parseInt(n));
   });
   row.attendSum = computeAttendance(row.attendance);
-  row.isValid = computeIsValid(row.attendSum);
 }
 
 function computeAttendance(attend){
-  return attend.reduce(function(prevValue, value, index){
-    return prevValue + value;
-  }, 0);
+  return attend.reduce(function(a,b){return a+b;}, 0);
 }
 
 function computeIsValid(n){
