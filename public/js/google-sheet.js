@@ -241,8 +241,13 @@ function combineListAndAttendance(){
           row.unique = attend_list.length==1;
           if(!row.unique) return;
           procAttendance(row, attend_list[0].attendance);
+          return;
         }
       }
+      var zero_attend = [];
+      for(var i=0;i<vm.dates.length;i++) zero_attend.push(0);
+      procAttendance(row, zero_attend);
+      row.unique = true;
     });
     resolve();
   });
