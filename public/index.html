@@ -79,24 +79,9 @@ td{
 
       <div id="search-bar" class="input-group">
         <input type="text" class="form-control" style="padding:right:15px;" placeholder="搜尋名字或外號" v-model="query" :disabled="unsolved_rows.length>0">
-        <span class="input-group-btn">
-          <button :class="['btn', 'btn-secondary', {'active':showPaidValid}]" @click="showPaidValid=!showPaidValid" :disabled="unsolved_rows.length>0">
-            <span :class="['octicon', showPaidValid?'octicon-check':'octicon-x']"></span> 繳費有效會員
-          </button>
-        </span>
-        <span class="input-group-btn">
-          <button :class="['btn', 'btn-secondary', {'active':showUnpaidValid}]" @click="showUnpaidValid=!showUnpaidValid" :disabled="unsolved_rows.length>0">
-            <span :class="['octicon', showUnpaidValid?'octicon-check':'octicon-x']"></span> 未繳費有效會員
-          </button>
-        </span>
-        <span class="input-group-btn">
-          <button :class="['btn', 'btn-secondary', {'active':showPaidInvalid}]" @click="showPaidInvalid=!showPaidInvalid" :disabled="unsolved_rows.length>0">
-            <span :class="['octicon', showPaidInvalid?'octicon-check':'octicon-x']"></span> 已繳費無效會員
-          </button>
-        </span>
-        <span class="input-group-btn">
-          <button :class="['btn', 'btn-secondary', {'active':showUnpaidInvalid}]" @click="showUnpaidInvalid=!showUnpaidInvalid" :disabled="unsolved_rows.length>0">
-            <span :class="['octicon', showUnpaidInvalid?'octicon-check':'octicon-x']"></span> 未繳費無效會員
+        <span class="input-group-btn" v-for="filter in filters">
+          <button :class="['btn', 'btn-secondary', {'active':filter.value}]" @click="filter.value=!filter.value" :disabled="unsolved_rows.length>0">
+            <span :class="['octicon', filter.value?'octicon-check':'octicon-x']"></span> {{filter.text}}
           </button>
         </span>
         <span class="input-group-btn">
@@ -154,8 +139,8 @@ td{
             <td>{{row.attendSum}}</td>
             <td>{{row.isValid | isValidText}}</td>
           </tr>
-          <tr v-if="query!=''">
-            <td :colspan="6 + dates.length"><em>查無名單符合「{{query}}」</em></td>
+          <tr v-if="query!=''&&queried_rows.length==0">
+            <td :colspan="6 + dates.length"><em>{{activeFilterText}}查無名單符合「{{query}}」</em></td>
           </tr>
         </table>
       </div>
@@ -191,10 +176,24 @@ var vm = new Vue({
     rows:[],
     dates:[],
     query:"",
-    showPaidValid: true,
-    showUnpaidValid: false,
-    showPaidInvalid: false,
-    showUnpaidInvalid: false,
+    filters:{
+      showPaidValid:{
+        text:"已繳費有效會員",
+        value: true,
+      },
+      showUnpaidValid: {
+        text:"未繳費有效會員",
+        value: false,
+      },
+      showPaidInvalid: {
+        text:"已繳費無效會員",
+        value: false,
+      },
+      showUnpaidInvalid:{
+        text:"未繳費無效會員",
+        value: false,
+      },
+    },
   },
   computed:{
     unsolved_rows: function(){
@@ -207,14 +206,21 @@ var vm = new Vue({
         var match_nickname = row.nickname&&row.nickname.toLowerCase().indexOf(vm.query.toLowerCase())!=-1;
         var match_name = row.name&&row.name.toLowerCase().indexOf(vm.query.toLowerCase())!=-1;
         var match_type =
-          vm.showPaidValid && vm.memberType(row)=='paid_valid' ||
-          vm.showPaidInvalid && vm.memberType(row)=='paid_invalid' ||
-          vm.showUnpaidValid && vm.memberType(row)=='unpaid_valid' ||
-          vm.showUnpaidInvalid && vm.memberType(row)=='unpaid_invalid';
+          vm.filters.showPaidValid.value && vm.memberType(row)=='paid_valid' ||
+          vm.filters.showPaidInvalid.value && vm.memberType(row)=='paid_invalid' ||
+          vm.filters.showUnpaidValid.value && vm.memberType(row)=='unpaid_valid' ||
+          vm.filters.showUnpaidInvalid.value && vm.memberType(row)=='unpaid_invalid';
         var hasQuery = vm.query!="";
         var notUnique = row.unique!==true;
         return notUnique || hasQuery&&(match_nickname||match_name) || !hasQuery&&match_type;
       });
+    },
+    activeFilterText:function(){
+      return Object.values(this.filters).filter(function(filter){
+        return filter.value;
+      }).map(function(filter){
+        return filter.text;
+      }).join(', ') + " 中";
     },
   },
   methods:{
@@ -231,7 +237,7 @@ var vm = new Vue({
         return row.name+"("+row.nickname+")";
       }).join('\n'));
       $('.modal').modal('show')
-    }
+    },
   },
 });
 
