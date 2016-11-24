@@ -139,6 +139,9 @@ td{
             <td>{{row.attendSum}}</td>
             <td>{{row.isValid | isValidText}}</td>
           </tr>
+          <tr v-if="query==''&&queried_rows.length==0">
+            <td :colspan="6 + dates.length"><em>請點選上方按鈕（可複選）顯示需要的名單<br>或是在文字框內輸入想搜尋的會員</em></td>
+          </tr>
           <tr v-if="query!=''&&queried_rows.length==0">
             <td :colspan="6 + dates.length"><em>查無名單符合「{{query}}」</em></td>
           </tr>
