@@ -140,7 +140,7 @@ td{
             <td>{{row.isValid | isValidText}}</td>
           </tr>
           <tr v-if="query!=''&&queried_rows.length==0">
-            <td :colspan="6 + dates.length"><em>{{activeFilterText}}查無名單符合「{{query}}」</em></td>
+            <td :colspan="6 + dates.length"><em>查無名單符合「{{query}}」</em></td>
           </tr>
         </table>
       </div>
@@ -211,16 +211,8 @@ var vm = new Vue({
           vm.filters.showUnpaidValid.value && vm.memberType(row)=='unpaid_valid' ||
           vm.filters.showUnpaidInvalid.value && vm.memberType(row)=='unpaid_invalid';
         var hasQuery = vm.query!="";
-        var notUnique = row.unique!==true;
-        return notUnique || hasQuery&&(match_nickname||match_name) || !hasQuery&&match_type;
+        return hasQuery&&(match_nickname||match_name) || !hasQuery&&match_type;
       });
-    },
-    activeFilterText:function(){
-      return Object.values(this.filters).filter(function(filter){
-        return filter.value;
-      }).map(function(filter){
-        return filter.text;
-      }).join(', ') + " 中";
     },
   },
   methods:{
