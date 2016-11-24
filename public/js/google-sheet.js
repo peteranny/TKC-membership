@@ -57,7 +57,7 @@ function listMembers() {
   return new Promise(function(resolve, reject){
     gapi.client.sheets.spreadsheets.values.get({
       spreadsheetId: LIST,
-      range: "Registered!A2:Z",
+      range: "A2:Z",
     })
     .then(function(response) {
       var range = response.result;
