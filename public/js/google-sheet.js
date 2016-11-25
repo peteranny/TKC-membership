@@ -109,17 +109,16 @@ function computeHasFeePaid(){
   });
 }
 
-var fellowships = null;
 function fetchFellowships(){
   return new Promise(function(resolve, reject){
     gapi.client.sheets.spreadsheets.get({
       spreadsheetId: config.attendance_this,
     })
     .then(function(response){
-      fellowships = response.result.sheets.map(function(sh){
+      var fellowships = response.result.sheets.map(function(sh){
         return sh.properties.title;
       });
-      resolve();
+      resolve(fellowships);
     }, function(response){
       reject(response.result.error.message + ' (' + config.attendance_this + ')');
     });
@@ -140,13 +139,13 @@ function serial2date(serial) {
   return new Date(date_info.getFullYear(), date_info.getMonth(), date_info.getDate(), hours, minutes, seconds);
 }
 
-function fetchAttendance_wraper(){
+function fetchAttendance_wraper(fellowships){
   vm.dates = [];
   attendance_list = {};
-  return fetchAttendance(config.attendance_this);
+  return fetchAttendance(config.attendance_this, fellowships);
 }
 
-function fetchAttendance(sheetId){
+function fetchAttendance(sheetId, fellowships){
   return Promise.map(fellowships, function(fs, j){
     return new Promise(function(resolve, reject){
       gapi.client.sheets.spreadsheets.values.get({
@@ -175,7 +174,7 @@ function fetchAttendance(sheetId){
             return table[i].concat(row.slice(1));
           });
         }
-        resolve();
+        resolve(fs);
       }, function(response){
         reject(response.result.error.message + ' (' + sheetId + ')');
       });
@@ -269,7 +268,7 @@ function computeIsValid(n){
   return n>=6;
 }
 
-function cropAttendance(){
+function cropAttendance(fellowships){
   var base_date = genDate(config.year, config.month, config.day); // the last valid date!
   var valid_num_max = config.latest - config.earliest + 1; // [-7, -30]
   return new Promise(function(resolve, reject){
@@ -280,7 +279,7 @@ function cropAttendance(){
       return reject('Oops: dates[i]=' + vm.dates[i] + '\nbase_date=' + base_date);
     }
 
-    ((i-valid_num_max+1<0)? fetchAttendance(config.attendance_last): Promise.resolve()).then(function(){
+    ((i-valid_num_max+1<0)? fetchAttendance(config.attendance_last, fellowships): Promise.resolve()).then(function(){
       var valid_i_range = [i-valid_num_max+1, i+1];
       for(k in attendance_name_list) if(attendance_name_list.hasOwnProperty(k)){
         attendance_name_list[k].forEach(function(fs_attendance){
