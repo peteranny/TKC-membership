@@ -284,7 +284,7 @@ function computeIsValid(n){
 }
 
 var base_date = genDate(YEAR, MONTH, DAY); // the last valid date!
-var valid_num_max = EARLIEST - LATEST + 1; // [-7, -30]
+var valid_num_max = LATEST - EARLIEST + 1; // [-7, -30]
 function cropAttendance(){
   return new Promise(function(resolve, reject){
     var i;
