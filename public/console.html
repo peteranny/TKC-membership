@@ -77,7 +77,7 @@
         </div>
       </div>
       <input class="btn btn-secondary" type="button" value="測試" :disabled="canSave||isLoading" onclick="test()">
-      <input class="btn btn-secondary" type="button" value="重設" :disabled="isLoading" onclick="info()">
+      <input class="btn btn-secondary" type="button" value="重設" :disabled="isLoading" onclick="config()">
       <input class="btn btn-success" type="submit" value="提交" :disabled="!canSave||isLoading">
       <a href="index.html">回到查詢網頁</a>
     </form>
@@ -98,31 +98,30 @@
 var vm = new Vue({
   el:"#main",
   data:{
-    config:{
-      client_id: '',
-      scopes: [''],
-      discovery: '',
-      list: '',
-      attendance_this: '',
-      attendance_last: '',
-      year: new Date().getFullYear(),
-      month: new Date().getMonth()+1,
-      day: new Date().getDate()+1,
-    },
+    config:{},
     tested_config:{},
     isLoading:false,
   },
   computed:{
     canSave: function(){
       // can save only if the data is tested
-      if(this.config.client_id!=this.tested_config.client_id) return false;
-      if(this.config.discovery!=this.tested_config.discovery) return false;
-      if(this.config.list!=this.tested_config.list) return false;
-      if(this.config.attendance_this!=this.tested_config.attendance_this) return false;
-      if(this.config.attendance_last!=this.tested_config.attendance_last) return false;
-      var passed = true;
-      for(var i=0;i<this.config.scopes.length;i++) if(this.config.scopes[i]!=this.tested_config.scopes[i]) passed = false;
-      return passed;
+      var config = this.config;
+      var tested_config = this.tested_config;
+      try{
+        Object.keys(config).forEach(function(k){
+          if(typeof config[k]=='string'){
+            if(config[k]!=tested_config[k]) throw "Not passed";
+          }
+          if(Array.isArray(config[k])){
+            config[k].forEach(function(v, i){
+              if(config[k][i]!=tested_config[k][i]) throw "Not passed";
+            });
+          }
+        });
+      }catch(err){
+        return false;
+      }
+      return true;
     },
   },
   methods:{
@@ -137,12 +136,12 @@ var vm = new Vue({
     <script>
 var socket = io();
 
-function info(){
+function config(){
   load();
-  socket.emit('info');
+  socket.emit('config');
 }
-info();
-socket.on('info', function(config){
+config();
+socket.on('config', function(config){
   loadDone();
   vm.config = config;
   vm.tested_config = {};

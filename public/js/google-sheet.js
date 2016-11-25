@@ -1,15 +1,15 @@
 function checkAuth() {
   gapi.auth.authorize({
-    client_id: CLIENT_ID,
-    scope: SCOPES.join(' '),
+    client_id: config.client_id,
+    scope: config.scopes.join(' '),
     immediate: true,
   }, handleAuthResult);
 }
 
 function handleAuthClick(){
   gapi.auth.authorize({
-    client_id: CLIENT_ID,
-    scope: SCOPES.join(' '),
+    client_id: config.client_id,
+    scope: config.scopes.join(' '),
     immediate: false,
   }, handleAuthResult);
 }
@@ -42,7 +42,7 @@ function rejectStack(errLevel){
 
 function loadSheetsApi() {
   return new Promise(function(resolve, reject){
-    gapi.client.load(DISCOVERY).then(function(){
+    gapi.client.load(config.discovery).then(function(){
       resolve();
     }, function(err){
       reject(err);
@@ -53,7 +53,7 @@ function loadSheetsApi() {
 function listMembers() {
   return new Promise(function(resolve, reject){
     gapi.client.sheets.spreadsheets.values.get({
-      spreadsheetId: LIST,
+      spreadsheetId: config.list,
       range: "A2:Z",
     })
     .then(function(response) {
@@ -63,7 +63,7 @@ function listMembers() {
       });
       resolve();
     }, function(response) {
-      reject(response.result.error.message + ' (' + LIST + ')');
+      reject(response.result.error.message + ' (' + config.list + ')');
     });
   });
 }
@@ -110,7 +110,7 @@ var fellowships = null;
 function fetchFellowships(){
   return new Promise(function(resolve, reject){
     gapi.client.sheets.spreadsheets.get({
-      spreadsheetId: ATTENDANCE_THIS,
+      spreadsheetId: config.attendance_this,
     })
     .then(function(response){
       fellowships = response.result.sheets.map(function(sh){
@@ -118,7 +118,7 @@ function fetchFellowships(){
       });
       resolve();
     }, function(response){
-      reject(response.result.error.message + ' (' + ATTENDANCE_THIS + ')');
+      reject(response.result.error.message + ' (' + config.attendance_this + ')');
     });
   });
 }
@@ -140,7 +140,7 @@ function serial2date(serial) {
 function fetchAttendance_wraper(){
   vm.dates = [];
   attendance_list = {};
-  return fetchAttendance(ATTENDANCE_THIS);
+  return fetchAttendance(config.attendance_this);
 }
 
 function fetchAttendance(sheetId){
@@ -164,7 +164,7 @@ function fetchAttendance(sheetId){
           }
           return row;
         });
-        if(sheetId == ATTENDANCE_THIS){
+        if(sheetId == config.attendance_this){
           attendance_list[fs] = table;
         }
         else{
@@ -266,8 +266,8 @@ function computeIsValid(n){
   return n>=6;
 }
 
-var base_date = genDate(YEAR, MONTH, DAY); // the last valid date!
-var valid_num_max = LATEST - EARLIEST + 1; // [-7, -30]
+var base_date = genDate(config.year, config.month, config.day); // the last valid date!
+var valid_num_max = config.latest - config.earliest + 1; // [-7, -30]
 function cropAttendance(){
   return new Promise(function(resolve, reject){
     var i;
@@ -277,7 +277,7 @@ function cropAttendance(){
       return reject('Oops: dates[i]=' + vm.dates[i] + '\nbase_date=' + base_date);
     }
 
-    ((i-valid_num_max+1<0)? fetchAttendance(ATTENDANCE_LAST): Promise.resolve()).then(function(){
+    ((i-valid_num_max+1<0)? fetchAttendance(config.attendance_last): Promise.resolve()).then(function(){
       var valid_i_range = [i-valid_num_max+1, i+1];
       for(k in attendance_name_list) if(attendance_name_list.hasOwnProperty(k)){
         attendance_name_list[k].forEach(function(fs_attendance){

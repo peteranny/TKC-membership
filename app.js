@@ -30,41 +30,16 @@ io.on('connection', function(socket){
   socket.on('disconnection', function(){
     console.log('Receive disconnection');
   });
-  socket.on('info', function(){
-    console.log('Receive info');
+  socket.on('config', function(){
+    console.log('Receive config');
 
     eval(fs.readFileSync(configPath).toString());
-    console.log('Send info');
-    socket.emit('info', {
-      client_id: CLIENT_ID,
-      scopes: SCOPES,
-      discovery: DISCOVERY,
-      list: LIST,
-      attendance_this: ATTENDANCE_THIS,
-      attendance_last: ATTENDANCE_LAST,
-      year: YEAR,
-      month: MONTH,
-      day: DAY,
-      latest: LATEST,
-      earliest: EARLIEST,
-    });
+    console.log('Send config');
+    socket.emit('config', config);
   });
-  socket.on('save', function(info){
+  socket.on('save', function(config){
     console.log('Receive save');
-    var code =
-      "var CLIENT_ID = " + JSON.stringify(info.client_id, null, 2) + ";\n"+
-      "var SCOPES = " + JSON.stringify(info.scopes, null, 2) + ";\n"+
-      "var DISCOVERY = " + JSON.stringify(info.discovery, null, 2) + ";\n"+
-      "var LIST = " + JSON.stringify(info.list, null, 2) + ";\n"+
-      "var ATTENDANCE_THIS = " + JSON.stringify(info.attendance_this, null, 2) + ";\n" +
-      "var ATTENDANCE_LAST = " + JSON.stringify(info.attendance_last, null, 2) + ";\n" + 
-      "\n" + 
-      "var YEAR = " + JSON.stringify(info.year) + "\n" + 
-      "var MONTH = " + JSON.stringify(info.month) + "\n" + 
-      "var DAY = " + JSON.stringify(info.day) + "\n" + 
-      "\n" + 
-      "var LATEST = " + JSON.stringify(info.latest) + "\n" + 
-      "var EARLIEST = " + JSON.stringify(info.earliest) + "\n"; 
+    var code = "var config = " + JSON.stringify(config, null, 2) + ";";
     fs.writeFile(configPath, code, function(err){
       if(err) console.log(err);
       console.log('Write done');
