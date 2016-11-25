@@ -31,23 +31,7 @@ function run(){
     
     .then(function(sheets){
       loadDone();
-
-      var logs = sheets.map(function(sheet){
-        var titleText;
-        if(sheet.sheetId==="") titleText = '無';
-        else if(sheet.title!==undefined) titleText = sheet.title;
-        else if(sheet.err) titleText = '資料抓取失敗：' + sheet.err + ' (' + sheet.sheetId + ')';
-        else throw "Unexpected titleText";
-        return sheet.description + "： " + titleText;
-      }).join('\n');
-
-      if(sheets.filter(function(sheet){
-        return sheet.title===undefined;
-      }).length==0){
-        vm.tested_config = deepcopy(vm.config);
-        logs += '\n\n確認完畢請按提交！';
-      }
-      log(logs);
+      logTitles(sheets);
     }, function(err){
       loadDone();
       log(err);
