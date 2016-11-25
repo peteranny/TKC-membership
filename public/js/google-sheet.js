@@ -26,20 +26,34 @@ function handleAuthResult(authResult){
   }
 }
 
+function rejectStack(errLevel){
+  return function(errStack){
+    if(typeof errStack=='string'){
+      var err = errStack;
+      errStack = {
+        err: err,
+        stack: [],
+      };
+    }
+    errStack.stack.push(errLevel);
+    return Promise.reject(errStack);
+  }
+}
+
 function run(){
   loading.run();
   loadSheetsApi()
-    .then(listMembers, Promise.reject)
-    .then(computeHasFeePaid, Promise.reject)
-    .then(fetchFellowships, Promise.reject)
-    .then(fetchAttendance_wraper, Promise.reject)
-    .then(cropAttendance, Promise.reject)
-    .then(nameAsKey, Promise.reject)
-    .then(combineListAndAttendance, Promise.reject)
+    .then(listMembers, rejectStack('listMembers'))
+    .then(computeHasFeePaid, rejectStack('computeHasFeedPaid'))
+    .then(fetchFellowships, rejectStack('fetchFellowships'))
+    .then(fetchAttendance_wraper, rejectStack('fetchAttendance_wraper'))
+    .then(cropAttendance, rejectStack('cropAttendance'))
+    .then(nameAsKey, rejectStack('nameAsKey'))
+    .then(combineListAndAttendance, rejectStack('combineListAndAttendance'))
     .then(function(){
       loading.close();
-    }, function(err){
-      loading.fail(err);
+    }, function(errStack){
+      loading.fail(errStack);
     });
 }
 
