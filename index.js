@@ -42,6 +42,11 @@ io.on('connection', function(socket){
       list: LIST,
       attendance_this: ATTENDANCE_THIS,
       attendance_last: ATTENDANCE_LAST,
+      year: YEAR,
+      month: MONTH,
+      day: DAY,
+      latest: LATEST,
+      earliest: EARLIEST,
     });
   });
   socket.on('save', function(info){
@@ -52,8 +57,14 @@ io.on('connection', function(socket){
       "var DISCOVERY = " + JSON.stringify(info.discovery, null, 2) + ";\n"+
       "var LIST = " + JSON.stringify(info.list, null, 2) + ";\n"+
       "var ATTENDANCE_THIS = " + JSON.stringify(info.attendance_this, null, 2) + ";\n" +
-      "var ATTENDANCE_LAST = " + JSON.stringify(info.attendance_last, null, 2) + ";\n";
-    console.log(code);
+      "var ATTENDANCE_LAST = " + JSON.stringify(info.attendance_last, null, 2) + ";\n" + 
+      "\n" + 
+      "var YEAR = " + JSON.stringify(info.year) + "\n" + 
+      "var MONTH = " + JSON.stringify(info.month) + "\n" + 
+      "var DAY = " + JSON.stringify(info.day) + "\n" + 
+      "\n" + 
+      "var LATEST = " + JSON.stringify(info.latest) + "\n" + 
+      "var EARLIEST = " + JSON.stringify(info.earliest) + "\n"; 
     fs.writeFile(configPath, code, function(err){
       if(err) console.log(err);
       console.log('Write done');

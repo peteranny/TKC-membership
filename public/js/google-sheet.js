@@ -283,16 +283,15 @@ function computeIsValid(n){
   return n>=6;
 }
 
-var base_date = genDate(2016, 8, 28); // the last valid date!
-var valid_num_max = 30-7+1; // [-7, -30]
+var base_date = genDate(YEAR, MONTH, DAY); // the last valid date!
+var valid_num_max = EARLIEST - LATEST + 1; // [-7, -30]
 function cropAttendance(){
   return new Promise(function(resolve, reject){
     var i;
     for(i=vm.dates.length-1;i>=0&&base_date<vm.dates[i];i--);
     if(i<0||vm.dates[i].valueOf()!=base_date.valueOf()){
       // date not found
-      reject('Oops: dates[i]=' + vm.dates[i] + '\nbase_date=' + base_date);
-      return;
+      return reject('Oops: dates[i]=' + vm.dates[i] + '\nbase_date=' + base_date);
     }
 
     ((i-valid_num_max+1<0)? fetchAttendance(ATTENDANCE_LAST): Promise.resolve()).then(function(){
