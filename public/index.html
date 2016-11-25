@@ -271,13 +271,10 @@ var loading = {
     $('#loading').fadeOut();
     clearInterval(loading.timer);
   },
-  fail:function(errStack){
-    var err = errStack.err;
-    var stack = errStack.stack;
-    var errStackHtml = err+'<br><br>Undone: '+stack.join(', ');
+  fail:function(err){
     clearInterval(loading.timer);
     $('#loading').text(loading.failText).append(
-      $('<h6>').append($('<blockquote>').html(errStackHtml))
+      $('<h6>').append($('<blockquote>').text(err))
     ).append(
       $('<a>').addClass('btn btn-danger btn-lg').text('進入管理介面').attr('href',configURI)
     );

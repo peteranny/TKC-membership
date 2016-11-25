@@ -30,20 +30,6 @@ function handleAuthResult(authResult){
   }
 }
 
-function rejectStack(errLevel){
-  return function(errStack){
-    if(typeof errStack=='string'){
-      var err = errStack;
-      errStack = {
-        err: err,
-        stack: [],
-      };
-    }
-    errStack.stack.push(errLevel);
-    return Promise.reject(errStack);
-  }
-}
-
 function loadSheetsApi() {
   return new Promise(function(resolve, reject){
     gapi.client.load(config.discovery).then(function(){
