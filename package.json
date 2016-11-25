@@ -1,13 +1,13 @@
 {
-  "name": "node-js-getting-started",
-  "version": "0.2.5",
+  "name": "tkc-member",
+  "version": "1.0.0",
   "description": "A sample Node.js app using Express 4",
   "engines": {
     "node": "5.9.1"
   },
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node app"
   },
   "dependencies": {
     "ejs": "2.4.1",
@@ -15,14 +15,5 @@
     "socket.io": "^1.5.1",
     "bluebird": "^3.4.6"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/heroku/node-js-getting-started"
-  },
-  "keywords": [
-    "node",
-    "heroku",
-    "express"
-  ],
   "license": "MIT"
 }
