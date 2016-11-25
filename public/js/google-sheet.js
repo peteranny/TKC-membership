@@ -6,12 +6,16 @@ function checkAuth() {
   }, handleAuthResult);
 }
 
+var login = false;
 function handleAuthClick(){
   gapi.auth.authorize({
     client_id: config.client_id,
     scope: config.scopes.join(' '),
-    immediate: false,
-  }, handleAuthResult);
+    immediate: login,
+  }, function(authResult){
+    login = true;
+    handleAuthResult(authResult);
+  });
 }
 
 function handleAuthResult(authResult){
@@ -46,6 +50,19 @@ function loadSheetsApi() {
       resolve();
     }, function(err){
       reject(err);
+    });
+  });
+}
+
+function fetchTitle(sheetId){
+  return new Promise(function(resolve, reject){
+    gapi.client.sheets.spreadsheets.get({
+      spreadsheetId: sheetId,
+    }).then(function(response){
+      var title = response.result.properties.title;
+      resolve(title);
+    }, function(response){
+      reject(response.result.error.message);
     });
   });
 }
@@ -266,9 +283,9 @@ function computeIsValid(n){
   return n>=6;
 }
 
-var base_date = genDate(config.year, config.month, config.day); // the last valid date!
-var valid_num_max = config.latest - config.earliest + 1; // [-7, -30]
 function cropAttendance(){
+  var base_date = genDate(config.year, config.month, config.day); // the last valid date!
+  var valid_num_max = config.latest - config.earliest + 1; // [-7, -30]
   return new Promise(function(resolve, reject){
     var i;
     for(i=vm.dates.length-1;i>=0&&base_date<vm.dates[i];i--);

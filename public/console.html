@@ -76,8 +76,8 @@
           <span class="input-group-addon">次主日</span>
         </div>
       </div>
-      <input class="btn btn-secondary" type="button" value="測試" :disabled="canSave||isLoading" onclick="test()">
-      <input class="btn btn-secondary" type="button" value="重設" :disabled="isLoading" onclick="config()">
+      <input class="btn btn-secondary" type="button" value="測試" :disabled="canSave||isLoading" onclick="sendTest()">
+      <input class="btn btn-secondary" type="button" value="重設" :disabled="isLoading" onclick="sendConfig()">
       <input class="btn btn-success" type="submit" value="提交" :disabled="!canSave||isLoading">
       <a href="index.html">回到查詢網頁</a>
     </form>
@@ -93,7 +93,8 @@
     <!-- Promise -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.4.6/bluebird.min.js"></script>
     <!-- Google sheet -->
-    <script src="https://apis.google.com/js/client.js?onload=checkAuth"></script>
+    <script src="js/google-sheet.js"></script>
+    <script src="https://apis.google.com/js/client.js"></script>
     <script>
 var vm = new Vue({
   el:"#main",
@@ -136,11 +137,11 @@ var vm = new Vue({
     <script>
 var socket = io();
 
-function config(){
+function sendConfig(){
   load();
   socket.emit('config');
 }
-config();
+sendConfig();
 socket.on('config', function(config){
   loadDone();
   vm.config = config;
@@ -155,32 +156,45 @@ function loadDone(){
   vm.isLoading = false;
   log('');
 }
+function deepcopy(obj){
+  return JSON.parse(JSON.stringify(obj));
+}
+function log(logs){
+  $('#logs').text(logs);
+};
+$('#main').on('submit', function(){
+  socket.emit('save', config);
+});
 
-function test(){
-  checkAuth()
+var config = {};
+function sendTest(){
+  config = vm.config;
+  handleAuthClick()
+}
 
-    .then(function(){
-      load();
-      return loadSheetsApi();
-    }, Promise.reject)
-    
+function run(){
+  load();
+  loadSheetsApi()
+
     .then(function(){
       var sheets = [{
         description: "會員資料表",
-        sheetId: vm.config.list,
+        sheetId: config.list,
       }, {
         description: "最近的主日出席表",
-        sheetId: vm.config.attendance_this,
+        sheetId: config.attendance_this,
       }, {
         description: "上一個主日出席表",
-        sheetId: vm.config.attendance_last,
+        sheetId: config.attendance_last,
       }];
       return Promise.map(sheets, function(sheet){
         if(sheet.sheetId!=''){
           return fetchTitle(sheet.sheetId).then(function(title){
             sheet.title = title;
             return Promise.resolve(sheet);
-          }, Promise.reject);
+          }, function(err){
+            return Promise.reject('資料抓取失敗：' + err + ' (' + sheet.sheetId + ')');
+          });
         }
         else{
           return Promise.resolve(sheet);
@@ -200,58 +214,6 @@ function test(){
       loadDone();
       log(err);
     });
-}
-function deepcopy(obj){
-  return JSON.parse(JSON.stringify(obj));
-}
-function log(logs){
-  $('#logs').text(logs);
-};
-$('#main').on('submit', function(){
-  socket.emit('save', vm.config);
-});
-
-// google api
-var login = false;
-function checkAuth() {
-  return new Promise(function(resolve, reject){
-    gapi.auth.authorize({
-      client_id: vm.config.client_id,
-      scope: vm.config.scopes.join(' '),
-      immediate: login,
-    }, function(authResult){
-      if (authResult && !authResult.error){
-        login = true;
-        resolve();
-      }
-      else{
-        login = false;
-        reject(authResult.error);
-      }
-    });
-  });
-}
-function loadSheetsApi() {
-  return new Promise(function(resolve, reject){
-    gapi.client.load(vm.config.discovery).then(function(){
-      resolve();
-    }, function(err){
-      reject(err);
-    });
-  });
-}
-function fetchTitle(sheetId){
-  return new Promise(function(resolve, reject){
-    gapi.client.sheets.spreadsheets.get({
-      spreadsheetId: sheetId,
-    }).then(function(response){
-      var title = response.result.properties.title;
-      resolve(title);
-    }, function(response){
-      var err = response.result.error.message;
-      reject('資料抓取失敗：' + err + ' (' + sheetId + ')');
-    });
-  });
 }
     </script>
   </body>
