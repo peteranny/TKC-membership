@@ -90,7 +90,7 @@ td{
           </button>
         </span>
         <span class="input-group-btn">
-          <button class="btn btn-info" onclick="location.href='config.html'">
+          <button class="btn btn-info" onclick="location.href=configURI;">
             <span class="octicon octicon-gear"></span> 設定
           </button>
         </span>
@@ -248,7 +248,7 @@ Vue.filter('hasFeePaidText', function(hasFeePaid){
   return hasFeePaid==undefined?'':hasFeePaid? '已繳': '未繳';
 });
 
-var configURI = "config.html"
+var configURI = "console.html"
 var loading = {
   timer:null,
   loadingText:"載入中",

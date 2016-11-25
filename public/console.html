@@ -56,6 +56,26 @@
           </span>
         </div>
       </div>
+      <div class="form-group">
+        <div class="input-group">
+          <span class="input-group-addon">最後一次有效主日</span>
+          <input class="form-control" type="number" v-model="config.year" :disabled="isLoading">
+          <span class="input-group-addon">年</span>
+          <input class="form-control" type="number" v-model="config.month" :disabled="isLoading">
+          <span class="input-group-addon">月</span>
+          <input class="form-control" type="number" v-model="config.day" :disabled="isLoading">
+          <span class="input-group-addon">日</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="input-group">
+          <span class="input-group-addon">會員大會倒數第</span>
+          <input class="form-control" type="number" v-model="config.latest" :disabled="isLoading">
+          <span class="input-group-addon">次主日至倒數第</span>
+          <input class="form-control" type="number" v-model="config.earliest" :disabled="isLoading">
+          <span class="input-group-addon">次主日</span>
+        </div>
+      </div>
       <input class="btn btn-secondary" type="button" value="測試" :disabled="canSave||isLoading" onclick="test()">
       <input class="btn btn-secondary" type="button" value="重設" :disabled="isLoading" onclick="info()">
       <input class="btn btn-success" type="submit" value="提交" :disabled="!canSave||isLoading">
@@ -85,6 +105,9 @@ var vm = new Vue({
       list: '',
       attendance_this: '',
       attendance_last: '',
+      year: new Date().getFullYear(),
+      month: new Date().getMonth()+1,
+      day: new Date().getDate()+1,
     },
     tested_config:{},
     isLoading:false,
