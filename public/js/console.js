@@ -1,20 +1,27 @@
-var login = false;
 function init(){
+  sendConfig();
+}
+
+var login = false;
+function initRun(){
+  load('Check auth');
   checkAuth(config.client_id, config.scopes, login)
     .then(function(){
       login = true;
       log('');
       run();
-    }, log);
+    }, function(err){
+      log(err);
+    });
 }
 
 function run(){
-  load();
-
   // Promise chain
+  load('Load Sheet API');
   loadSheetsApi(vm.config.discovery)
 
     .then(function(){
+      load('Fetch title');
       return fetchTitle(vm.config.list);
     }, Promise.reject)
 
@@ -60,8 +67,9 @@ var vm = new Vue({
   el:"#main",
   data:{
     config:{},
-    tested_config:{},
-    isLoading:false,
+    stage: 'display',
+    tested_config:{}, //TODO
+    isLoading:true,
   },
   computed:{
     canSave: function(){

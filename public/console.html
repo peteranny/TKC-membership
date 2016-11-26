@@ -4,7 +4,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/octicons/4.4.0/font/octicons.min.css" />
   </head>
   <body>
-    <form id="main">
+    <div id="main">
+      <form v-if="status='display'">
+        <button class="btn btn-secondary" type="button" :disabled="canSave||isLoading" onclick="modify()">
+          修改資料
+        </button>
+      </form>
+      <form v-if="status='modify-list'">
+      </form>
+    <!--
       <div class="form-group">
         <div class="input-group">
           <span class="input-group-addon">ClientID</span>
@@ -80,7 +88,8 @@
       <input class="btn btn-secondary" type="button" value="重設" :disabled="isLoading" onclick="sendConfig()">
       <input class="btn btn-success" type="submit" value="提交" :disabled="!canSave||isLoading">
       <a href="index.html">回到查詢網頁</a>
-    </form>
+      -->
+    </div>
     <blockquote class="blockquote">
       <pre id="logs"></pre>
     </blockquote>
@@ -95,65 +104,76 @@
     <!-- Google sheet -->
     <script src="js/console.js"></script>
     <script src="js/google-sheet.js"></script>
-    <script src="https://apis.google.com/js/client.js"></script>
+    <script src="https://apis.google.com/js/client.js?onload=init"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script>
-var socket = io();
+      var socket = io();
 
-function sendConfig(){
-  load();
-  socket.emit('config');
-}
-sendConfig();
-socket.on('config', function(config){
-  loadDone();
-  vm.config = config;
-  vm.tested_config = {};
-});
+      // CONFIG
+      function sendConfig(){
+        load('Send config');
+        socket.emit('config');
+      }
+      socket.on('config', function(config){
+        loadDone();
+        vm.config = config;
+        vm.tested_config = {};
+      });
 
-function load(){
-  vm.isLoading = true;
-  log('載入中...');
-}
-function loadDone(){
-  vm.isLoading = false;
-  log('');
-}
-function logTitles(sheets){
-  var logs = sheets.map(function(sheet){
-    var titleText;
-    if(sheet.sheetId==="") titleText = '無';
-    else if(sheet.title!==undefined) titleText = sheet.title;
-    else if(sheet.err) titleText = '資料抓取失敗：' + sheet.err + ' (' + sheet.sheetId + ')';
-    else throw "Unexpected titleText";
-    return sheet.description + "： " + titleText;
-  }).join('\n');
+      // LOAD
+      function load(msg){
+        vm.isLoading = true;
+        log('載入中... ' + msg);
+      }
+      function loadDone(){
+        vm.isLoading = false;
+        log('');
+      }
 
-  if(sheets.filter(function(sheet){
-    return sheet.title===undefined;
-  }).length==0){
-    vm.tested_config = deepcopy(vm.config);
-    logs += '\n\n確認完畢請按提交！';
-  }
-  log(logs);
-}
-function deepcopy(obj){
-  return JSON.parse(JSON.stringify(obj));
-}
-function log(logs){
-  $('#logs').text(logs);
-};
-$('#main').on('submit', function(){
-  if(vm.isLoading || !vm.canSave) return false;
-  socket.emit('save', config);
-  return true;
-});
+      // LOG
+      function logTitles(sheets){
+        var logs = sheets.map(function(sheet){
+          var titleText;
+          if(sheet.sheetId==="") titleText = '無';
+          else if(sheet.title!==undefined) titleText = sheet.title;
+          else if(sheet.err) titleText = '資料抓取失敗：' + sheet.err + ' (' + sheet.sheetId + ')';
+          else throw "Unexpected titleText";
+          return sheet.description + "： " + titleText;
+        }).join('\n');
 
-var config = {};
-function sendTest(){
-  config = vm.config;
-  init();
-}
+        if(sheets.filter(function(sheet){
+          return sheet.title===undefined;
+        }).length==0){
+          vm.tested_config = deepcopy(vm.config);
+          logs += '\n\n確認完畢請按提交！';
+        }
+        log(logs);
+      }
+      function log(logs){
+        $('#logs').text(logs);
+      };
+
+      // DEEPCOPY
+      function deepcopy(obj){
+        return JSON.parse(JSON.stringify(obj));
+      }
+
+      // SAVE
+      $('#main').on('submit', function(){
+        if(vm.isLoading || !vm.canSave) return false;
+        socket.emit('save', config);
+        return true;
+      });
+
+      // MODIFY
+      var config = {};
+      function modify(){
+        config = vm.config;
+        initRun();
+      }
+
+      // INIT
+      load('Initialization');
     </script>
   </body>
 </html>
