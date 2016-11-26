@@ -53,10 +53,10 @@ function fetchTitle(sheetId){
   });
 }
 
-function listMembers() {
+function listMembers(sheetId) {
   return new Promise(function(resolve, reject){
     gapi.client.sheets.spreadsheets.values.get({
-      spreadsheetId: config.list,
+      spreadsheetId: sheetId,
       range: "A2:Z",
     })
     .then(function(response) {
@@ -66,7 +66,7 @@ function listMembers() {
       });
       resolve();
     }, function(response) {
-      reject(response.result.error.message + ' (' + config.list + ')');
+      reject(response.result.error.message);
     });
   });
 }
@@ -109,10 +109,10 @@ function computeHasFeePaid(){
   });
 }
 
-function fetchFellowships(){
+function fetchFellowships(sheetId){
   return new Promise(function(resolve, reject){
     gapi.client.sheets.spreadsheets.get({
-      spreadsheetId: config.attendance_this,
+      spreadsheetId: sheetId,
     })
     .then(function(response){
       var fellowships = response.result.sheets.map(function(sh){
@@ -120,7 +120,7 @@ function fetchFellowships(){
       });
       resolve(fellowships);
     }, function(response){
-      reject(response.result.error.message + ' (' + config.attendance_this + ')');
+      reject(response.result.error.message);
     });
   });
 }
@@ -139,10 +139,10 @@ function serial2date(serial) {
   return new Date(date_info.getFullYear(), date_info.getMonth(), date_info.getDate(), hours, minutes, seconds);
 }
 
-function fetchAttendance_wraper(fellowships){
+function fetchAttendance_wraper(sheetId, fellowships){
   vm.dates = [];
   attendance_list = {};
-  return fetchAttendance(config.attendance_this, fellowships);
+  return fetchAttendance(sheetId, fellowships);
 }
 
 function fetchAttendance(sheetId, fellowships){
@@ -268,9 +268,9 @@ function computeIsValid(n){
   return n>=6;
 }
 
-function cropAttendance(fellowships){
-  var base_date = genDate(config.year, config.month, config.day); // the last valid date!
-  var valid_num_max = config.latest - config.earliest + 1; // [-7, -30]
+function cropAttendance(year, month, day, latest, earliest, fellowships, sheetId){
+  var base_date = genDate(year, month, day); // the last valid date!
+  var valid_num_max = latest - earliest + 1; // [-7, -30]
   return new Promise(function(resolve, reject){
     var i;
     for(i=vm.dates.length-1;i>=0&&base_date<vm.dates[i];i--);
@@ -279,7 +279,7 @@ function cropAttendance(fellowships){
       return reject('Oops: dates[i]=' + vm.dates[i] + '\nbase_date=' + base_date);
     }
 
-    ((i-valid_num_max+1<0)? fetchAttendance(config.attendance_last, fellowships): Promise.resolve()).then(function(){
+    ((i-valid_num_max+1<0)? fetchAttendance(attendance_last, fellowships): Promise.resolve()).then(function(){
       var valid_i_range = [i-valid_num_max+1, i+1];
       for(k in attendance_name_list) if(attendance_name_list.hasOwnProperty(k)){
         attendance_name_list[k].forEach(function(fs_attendance){
