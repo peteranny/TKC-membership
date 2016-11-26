@@ -3,13 +3,9 @@ function init(){
     .then(showMain, hideMain);
 }
 
-var login = false;
 function initClick(){
-  checkAuth(config.client_id, config.scopes, login)
-    .then(showMain, function(err){
-      login = true;
-      hideMain();
-    });
+  checkAuth(config.client_id, config.scopes, false)
+    .then(showMain, hideMain);
 }
 
 function hideMain(){

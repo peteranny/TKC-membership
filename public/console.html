@@ -96,44 +96,6 @@
     <script src="js/console.js"></script>
     <script src="js/google-sheet.js"></script>
     <script src="https://apis.google.com/js/client.js"></script>
-    <script>
-var vm = new Vue({
-  el:"#main",
-  data:{
-    config:{},
-    tested_config:{},
-    isLoading:false,
-  },
-  computed:{
-    canSave: function(){
-      // can save only if the data is tested
-      var config = this.config;
-      var tested_config = this.tested_config;
-      try{
-        Object.keys(config).forEach(function(k){
-          if(typeof config[k]=='string'){
-            if(config[k]!=tested_config[k]) throw "Not passed";
-          }
-          if(Array.isArray(config[k])){
-            config[k].forEach(function(v, i){
-              if(config[k][i]!=tested_config[k][i]) throw "Not passed";
-            });
-          }
-        });
-      }catch(err){
-        return false;
-      }
-      return true;
-    },
-  },
-  methods:{
-    openWindow: function(sheetId){
-      var url = 'https://docs.google.com/spreadsheets/d/' + sheetId;
-      window.open(url, '', '');
-    },
-  },
-});
-    </script>
     <script src="/socket.io/socket.io.js"></script>
     <script>
 var socket = io();
@@ -190,7 +152,7 @@ $('#main').on('submit', function(){
 var config = {};
 function sendTest(){
   config = vm.config;
-  handleAuthClick()
+  init();
 }
     </script>
   </body>

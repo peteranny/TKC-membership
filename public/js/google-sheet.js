@@ -1,4 +1,3 @@
-/*
 function checkAuth(client_id, scopes, immediate) {
   return new Promise(function(resolve, reject){
     gapi.auth.authorize({
@@ -15,7 +14,6 @@ function checkAuth(client_id, scopes, immediate) {
     });
   });
 }
-*/
 
 /*
 function loadSheetsApi(discovery) {
