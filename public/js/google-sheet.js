@@ -15,7 +15,6 @@ function checkAuth(client_id, scopes, immediate) {
   });
 }
 
-/*
 function loadSheetsApi(discovery) {
   return new Promise(function(resolve, reject){
     gapi.client.load(discovery).then(function(){
@@ -25,7 +24,6 @@ function loadSheetsApi(discovery) {
     });
   });
 }
-*/
 
 /*
 function fetchTitle(sheetId){

@@ -9,11 +9,10 @@ function init(){
 }
 
 function run(){
-alert('');
-/*
   load();
-  loadSheetsApi()
+  loadSheetsApi(config.discovery)
 
+/*
     .then(function(){
       var sheets = [{
         description: "會員資料表",
@@ -40,7 +39,8 @@ alert('');
         }
       });
     }, Promise.reject)
-    
+*/
+
     .then(function(sheets){
       loadDone();
       logTitles(sheets);
@@ -48,7 +48,6 @@ alert('');
       loadDone();
       log(err);
     });
-*/
 }
 
 var vm = new Vue({
