@@ -15,7 +15,7 @@ function checkAuth(client_id, scopes, immediate) {
   });
 }
 
-function loadSheetsApi(discovery) {
+function loadSheetsApi(discovery){
   return new Promise(function(resolve, reject){
     gapi.client.load(discovery).then(function(){
       resolve();
@@ -25,7 +25,6 @@ function loadSheetsApi(discovery) {
   });
 }
 
-/*
 function fetchTitle(sheetId){
   return new Promise(function(resolve, reject){
     gapi.client.sheets.spreadsheets.get({
@@ -38,7 +37,6 @@ function fetchTitle(sheetId){
     });
   });
 }
-*/
 
 /*
 function listMembers(sheetId) {

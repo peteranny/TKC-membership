@@ -10,7 +10,13 @@ function init(){
 
 function run(){
   load();
-  loadSheetsApi(config.discovery)
+
+  // Promise chain
+  loadSheetsApi(vm.config.discovery)
+
+    .then(function(){
+      return fetchTitle(vm.config.list);
+    }, Promise.reject)
 
 /*
     .then(function(){
@@ -41,9 +47,9 @@ function run(){
     }, Promise.reject)
 */
 
-    .then(function(sheets){
+    .then(function(msg){
       loadDone();
-      logTitles(sheets);
+      log(msg);
     }, function(err){
       loadDone();
       log(err);
