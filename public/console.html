@@ -7,7 +7,6 @@
     <div id="main">
       Stage: {{stage}}
       <form v-if="stage=='display-config'">
-        {{config | stringify}}
         <button class="btn btn-secondary" type="button" :disabled="isLoading" onclick="nextStep()">
           修改資料
         </button>
@@ -128,12 +127,6 @@
 
     <script>
     // stage machine
-    load('Initialization');
-    function init(){
-      nextStep();
-    }
-    init();
-
     function transferStage(stage){
       vm.stage = stage;
     }
@@ -145,10 +138,9 @@
           load('Config');
           sendConfig();
           break;
-          /*
         case 'load-config':
           transferStage('display-config');
-          loadDone('Done');
+          loadDone(JSON.stringify(vm.config,null,2));
           vm.canSave=false;
           break;
         case 'display-config':
@@ -258,7 +250,6 @@
           else{
             transferStage('read-num-dates');
           }
-          */
         default:
           alert('Unknown stage');
           throw 'Unknown stage';
@@ -270,7 +261,6 @@
 
     // CONFIG
     function sendConfig(){
-    alert('');
       socket.emit('config');
     }
     socket.on('config', function(config){
@@ -312,6 +302,13 @@
       });
 
 */
+    </script>
+    <script>
+    load('Initialization');
+    function init(){
+      nextStep();
+    }
+    init();
     </script>
   </body>
 </html>
