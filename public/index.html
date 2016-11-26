@@ -72,7 +72,7 @@ td{
       <div class="alert alert-success" role="alert">
         <strong>Authorize access to Google Sheets API</strong>
       </div>
-      <button id="authorize-button" class="btn btn-success" onclick="handleAuthClick(event)">Authorize</button>
+      <button id="authorize-button" class="btn btn-success" onclick="initClick(event)">Authorize</button>
     </div>
 
     <div id="main" style="display: none">
@@ -170,7 +170,7 @@ td{
     <script src="js/config.js"></script>
     <script src="js/index.js"></script>
     <script src="js/google-sheet.js"></script>
-    <script src="https://apis.google.com/js/client.js?onload=checkAuth"></script>
+    <script src="https://apis.google.com/js/client.js?onload=init"></script>
     <!-- Vue.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.26/vue.min.js"></script>
     <script>

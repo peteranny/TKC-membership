@@ -1,32 +1,17 @@
-function checkAuth() {
-  gapi.auth.authorize({
-    client_id: config.client_id,
-    scope: config.scopes.join(' '),
-    immediate: true,
-  }, handleAuthResult);
-}
-
-var login = false;
-function handleAuthClick(){
-  gapi.auth.authorize({
-    client_id: config.client_id,
-    scope: config.scopes.join(' '),
-    immediate: login,
-  }, function(authResult){
-    login = true;
-    handleAuthResult(authResult);
-  });
-}
-
-function handleAuthResult(authResult){
-  if (authResult && !authResult.error){
-    $('#authorize-div').hide();
-    $('#main').show();
-    run();
-  }
-  else{
-    $('#authorize-div').show();
-    $('#main').hide();
+function checkAuth(client_d, scopes, immediate) {
+  return new Promise(function(resolve, reject){
+    gapi.auth.authorize({
+      client_id: config.client_id,
+      scope: scopes.join(' '),
+      immediate: immediate,
+    }, function(authResult){
+      if(authResult && !authResult.error){
+        reject();
+      }
+      else{
+        resolve(authResult.error);
+      }
+    });
   }
 }
 
