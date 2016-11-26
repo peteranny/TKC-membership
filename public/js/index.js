@@ -22,7 +22,7 @@ function showMain(){
   $('#main').show();
 
   loading.run();
-  loadSheetsApi()
+  loadSheetsApi(config.discovery)
 
     .then(function(){
       return listMembers(config.list);
@@ -39,10 +39,12 @@ function showMain(){
     }, Promise.reject)
 
     .then(function(fellowships){
-      return cropAttendance(config.year, config.month, config.day, config.latest, config.earliest, fellowship, config.attendance_last);
+      return cropAttendance(config.year, config.month, config.day, config.latest, config.earliest, fellowships, config.attendance_last);
     }, Promise.reject)
 
-    .then(nameAsKey, Promise.reject)
+    .then(function(){
+      return nameAsKey();
+    }, Promise.reject)
 
     .then(combineListAndAttendance, Promise.reject)
 

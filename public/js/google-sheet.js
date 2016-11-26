@@ -1,30 +1,35 @@
-function checkAuth(client_d, scopes, immediate) {
+/*
+function checkAuth(client_id, scopes, immediate) {
   return new Promise(function(resolve, reject){
     gapi.auth.authorize({
-      client_id: config.client_id,
+      client_id: client_id,
       scope: scopes.join(' '),
       immediate: immediate,
     }, function(authResult){
       if(authResult && !authResult.error){
-        reject();
+        resolve();
       }
       else{
-        resolve(authResult.error);
+        reject(authResult.error);
       }
     });
-  }
+  });
 }
+*/
 
-function loadSheetsApi() {
+/*
+function loadSheetsApi(discovery) {
   return new Promise(function(resolve, reject){
-    gapi.client.load(config.discovery).then(function(){
+    gapi.client.load(discovery).then(function(){
       resolve();
     }, function(err){
       reject(err);
     });
   });
 }
+*/
 
+/*
 function fetchTitle(sheetId){
   return new Promise(function(resolve, reject){
     gapi.client.sheets.spreadsheets.get({
@@ -37,7 +42,9 @@ function fetchTitle(sheetId){
     });
   });
 }
+*/
 
+/*
 function listMembers(sheetId) {
   return new Promise(function(resolve, reject){
     gapi.client.sheets.spreadsheets.values.get({
@@ -55,7 +62,9 @@ function listMembers(sheetId) {
     });
   });
 }
+*/
 
+/*
 function convertDate(s){
   if(!s) return null;
   var matched = s.match(/(\d+)\.(\d+)\.(\d+)/);
@@ -65,7 +74,9 @@ function convertDate(s){
   var d = matched[3];
   return genDate(y,m,d);
 }
+*/
 
+/*
 function transformRow(row){
   return {
     no: parseInt(row[0]),
@@ -86,14 +97,18 @@ function transformRow(row){
     isValid: undefined,
   };
 }
+*/
 
+/*
 function computeHasFeePaid(){
   vm.rows.forEach(function(row){
     var d = row.dof;
     row.hasFeePaid = d!=null && d.getFullYear()==(new Date()).getFullYear();
   });
 }
+*/
 
+/*
 function fetchFellowships(sheetId){
   return new Promise(function(resolve, reject){
     gapi.client.sheets.spreadsheets.get({
@@ -109,7 +124,9 @@ function fetchFellowships(sheetId){
     });
   });
 }
+*/
 
+/*
 var attendance_list = null;
 function serial2date(serial) {
   var utc_days  = Math.floor(serial - 25569);
@@ -123,22 +140,31 @@ function serial2date(serial) {
   var minutes = Math.floor(total_seconds / 60) % 60;
   return new Date(date_info.getFullYear(), date_info.getMonth(), date_info.getDate(), hours, minutes, seconds);
 }
+*/
 
+/*
 function fetchAttendance_wraper(sheetId, fellowships){
   vm.dates = [];
   attendance_list = {};
-  return fetchAttendance(sheetId, fellowships);
+  return fetchAttendance(sheetId, fellowships)
+    .then(function(tables){
+      fellowships.forEach(function(fs, j){
+        var table = tables[j];
+        attendance_list[fs] = table;
+      });
+    });
 }
+*/
 
+/*
 function fetchAttendance(sheetId, fellowships){
   return Promise.map(fellowships, function(fs, j){
-    return new Promise(function(resolve, reject){
-      gapi.client.sheets.spreadsheets.values.get({
-        spreadsheetId: sheetId,
-        range: "'"+fs+"'!A1:Y",
-        valueRenderOption: "FORMULA",
-        dateTimeRenderOption: "FORMATTED_STRING",
-      })
+    gapi.client.sheets.spreadsheets.values.get({
+      spreadsheetId: sheetId,
+      range: "'"+fs+"'!A1:Y",
+      valueRenderOption: "FORMULA",
+      dateTimeRenderOption: "FORMATTED_STRING",
+    })
       
       .then(function(response){
         var dates = response.result.values[0].slice(1).map(serial2date);
@@ -151,26 +177,21 @@ function fetchAttendance(sheetId, fellowships){
           }
           return row;
         });
-        if(sheetId == config.attendance_this){
-          attendance_list[fs] = table;
-        }
-        else{
-          attendance_list[fs] = attendance_list[fs].map(function(row, i){
-            return table[i].concat(row.slice(1));
-          });
-        }
-        resolve(fs);
+        return Promise.resolve(table);
       }, function(response){
-        reject(response.result.error.message + ' (' + sheetId + ')');
+        return Promise.reject(response.result.error.message);
       });
-    });
   });
 }
+*/
 
+/*
 function genDate(y,m,d){
   return new Date(y,m-1,d);
 }
- 
+*/
+
+/*
 var attendance_name_list = null;
 function nameAsKey(){
   return new Promise(function(resolve, reject){
@@ -192,7 +213,9 @@ function nameAsKey(){
     resolve();
   });
 }
+*/
 
+/*
 function solveConflict(no){
   var row = vm.rows[no-1];
   var attend_list = attendance_name_list[row.nickname];
@@ -207,7 +230,9 @@ function solveConflict(no){
   procAttendance(row, attend_list[choice-1].attendance);
   row.unique = true;
 }
+*/
 
+/*
 function confirmAbsence(no){
   var row = vm.rows[no-1];
   var zero_attend = [];
@@ -215,7 +240,9 @@ function confirmAbsence(no){
   procAttendance(row, zero_attend);
   row.unique = true;
 }
+*/
 
+/*
 function combineListAndAttendance(){
   return new Promise(function(resolve, reject){
     vm.rows.forEach(function(row, i){
@@ -236,7 +263,9 @@ function combineListAndAttendance(){
     resolve();
   });
 }
+*/
 
+/*
 function procAttendance(row, attendance){
   row.attendance = attendance.map(function(n){
     return (n==""?0:parseInt(n));
@@ -244,37 +273,57 @@ function procAttendance(row, attendance){
   row.attendSum = computeAttendance(row.attendance);
   row.isValid = computeIsValid(row.attendSum);
 }
+*/
 
+/*
 function computeAttendance(attend){
   return attend.reduce(function(a,b){return a+b;}, 0);
 }
+*/
 
+/*
 function computeIsValid(n){
   return n>=6;
 }
+*/
 
+/*
 function cropAttendance(year, month, day, latest, earliest, fellowships, sheetId){
   var base_date = genDate(year, month, day); // the last valid date!
   var valid_num_max = latest - earliest + 1; // [-7, -30]
   return new Promise(function(resolve, reject){
-    var i;
+alert(1);
+var i;
     for(i=vm.dates.length-1;i>=0&&base_date<vm.dates[i];i--);
     if(i<0||vm.dates[i].valueOf()!=base_date.valueOf()){
       // date not found
       return reject('Oops: dates[i]=' + vm.dates[i] + '\nbase_date=' + base_date);
     }
 
-    ((i-valid_num_max+1<0)? fetchAttendance(attendance_last, fellowships): Promise.resolve()).then(function(){
-      var valid_i_range = [i-valid_num_max+1, i+1];
-      for(k in attendance_name_list) if(attendance_name_list.hasOwnProperty(k)){
-        attendance_name_list[k].forEach(function(fs_attendance){
-          fs_attendance.attendance = fs_attendance.attendance.slice(valid_i_range[0], valid_i_range[1]);
+alert(2);
+    ((i-valid_num_max+1<0)? fetchAttendance(sheetId, fellowships): Promise.resolve())
+    
+      .then(function(tables){
+  alert(3);
+        fellowships.forEach(function(fs, j){
+          var table = tables[j];
+          attendance_list[fs] = attendance_list[fs].map(function(row, i){
+            return table[i].concat(row.slice(1));
+          });
         });
-      }
-      resolve();
-    }, function(err){
-      reject(err);
+
+  alert(4);
+        var valid_i_range = [i-valid_num_max+1, i+1];
+        for(k in attendance_name_list) if(attendance_name_list.hasOwnProperty(k)){
+          attendance_name_list[k].forEach(function(fs_attendance){
+            fs_attendance.attendance = fs_attendance.attendance.slice(valid_i_range[0], valid_i_range[1]);
+          });
+        }
+        resolve();
+      }, function(err){
+        reject(err);
+      });
     });
-  });
 }
+*/
 
