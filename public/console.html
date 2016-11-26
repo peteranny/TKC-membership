@@ -5,13 +5,30 @@
   </head>
   <body>
     <div id="main">
+      <pre>
       Stage: {{stage}}
+      {{stage | stageText}}
+      </pre>
       <form v-if="stage=='display-config'">
         <button class="btn btn-secondary" type="button" :disabled="isLoading" onclick="nextStep()">
           修改資料
         </button>
       </form>
-      <form v-if="status=='modify-list'">
+      <form v-if="stage=='modify-list'||stage=='load-list'">
+        <div class="input-group">
+          <span class="input-group-addon">
+            {{whichSheetId | whichSheetIdText}}
+          </span>
+          <input class="form-control" v-model="sheetId" :disabled="isLoading">
+          <span class="input-group-btn">
+            <button class="btn btn-secondary" type="button" :disabled="isLoading" onclick="nextStep(false)">
+              測試
+            </button>
+            <button class="btn btn-secondary" type="button" :disabled="isLoading||!canCommitSheetId" onclick="nextStep(true)">
+              提交
+            </button>
+          </span>
+        </div>
       </form>
     <!--
       <div class="form-group">
@@ -127,8 +144,27 @@
 
     <script>
     // stage machine
-    function transferStage(stage){
+    function transferStage(stage, logs){
       vm.stage = stage;
+      if(logs) log(logs);
+    }
+
+    function commitSheetId(){
+      if(Array.isArray(vm.tested_config[vm.whichSheetId])){
+        vm.tested_config[vm.whichSheetId].push(vm.sheetId);
+      }
+      else{
+        Vue.set(vm.tested_config, vm.whichSheetId, vm.sheetId);
+      }
+    }
+
+    function resetSheetId(which){
+      vm.whichSheetId = which;
+      vm.sheetId = '';
+    }
+
+    function resetConfig(){
+      vm.tested_config = {};
     }
 
     function nextStep(is_okay, logs){
@@ -139,35 +175,46 @@
           sendConfig();
           break;
         case 'load-config':
-          transferStage('display-config');
           loadDone(JSON.stringify(vm.config,null,2));
-          vm.canSave=false;
+          transferStage('display-config');
+          resetConfig();
           break;
         case 'display-config':
           transferStage('modify-list');
-          vm.canSave=false;
+          resetSheetId('list');
           break;
         case 'modify-list':
           if(is_okay){
+            // Commit
+            commitSheetId();
             transferStage('modify-attendance');
-            vm.canSave=false;
+            resetSheetId('attendances');
           }
           else{
+            // Test
             transferStage('load-list');
             load('Load list');
-            runTestList(
-              vm.config.client_id,
-              vm.config.scopes,
-              vm.config.discover,
-              vm.config.list
-            );
+            runAuthCheck(vm.config.api)
+
+              .then(function(){
+                return fetchTitle(vm.sheetId);
+              }, Promise.reject)
+
+              .then(function(title){
+                nextStep(true, title);
+              }, function(err){
+                nextStep(false, err);
+              })
           }
           break;
         case 'load-list':
-          transferStage('modify-list');
           loadDone(logs);
-          vm.canSave=is_okay;
+          if(is_okay){
+            commitSheetId();
+          }
+          transferStage('modify-list');
           break;
+          /*
         case 'modify-attendance':
           if(is_okay){
             transferStage('load-dates');
@@ -250,6 +297,7 @@
           else{
             transferStage('read-num-dates');
           }
+          */
         default:
           alert('Unknown stage');
           throw 'Unknown stage';
@@ -264,7 +312,24 @@
       socket.emit('config');
     }
     socket.on('config', function(config){
-      vm.config = config;
+      //TODO
+      vm.config.api = {
+        client_id: config.client_id,
+        scopes: config.scopes,
+        discovery: config.discovery,
+      };
+      vm.config.list = config.list;
+      vm.config.attendances = [
+        config.attendance_this,
+        config.attendance_last,
+      ];
+      vm.tested_config = {
+        api:{},
+        list:'',
+        attendances:[],
+      };
+      ///////
+
       nextStep();
     });
 

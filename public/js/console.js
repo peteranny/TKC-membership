@@ -1,23 +1,21 @@
-/*
-var login = false;
-function runAuthCheck(){
-  load('Check auth');
-  checkAuth(config.client_id, config.scopes, login)
+var hasLogin = false;
+function runAuthCheck(api){
+  return new Promise(function(resolve, reject){
+    checkAuth(api.client_id, api.scopes, hasLogin)
 
-    .then(function(){
-      load('Load Sheet API');
-      return loadSheetsApi(vm.config.discovery);
-    })
+      .then(function(){
+        return loadSheetsApi(api.discovery);
+      }, Promise.reject)
 
-    .then(function(){
-      loadDone();
-      login = true;
-    }, function(err){
-      log(err);
-    })
-    
+      .then(function(){
+        hasLogin = true;
+        resolve();
+      }, function(err){
+        reject(err);
+      });
+  });
 }
-
+/*
 function run(){
   // Promise chain
 /*
@@ -67,9 +65,28 @@ function run(){
 var vm = new Vue({
   el:"#main",
   data:{
-    config:{'a':1},
-    stage: 'init',
     isLoading:true,
+    stage: 'init',
+
+    config:{},
+    tested_config:{},
+
+    sheetId:'',
+    whichSheetId:'',
+  },
+  computed:{
+    canSave:function(){
+      return JSON.stringify(this.config)===JSON.stringify(this.tested_config);
+    },
+    canCommitSheetId:function(){
+      if(Array.isArray(this.tested_config[this.whichSheetId])){
+        var n = this.tested_config.length;
+        return this.sheetId==this.tested_config[this.whichSheetId][n-1];
+      }
+      else{
+        return this.sheetId==this.tested_config[this.whichSheetId];
+      }
+    },
   },
   /*
   computed:{
@@ -103,4 +120,10 @@ var vm = new Vue({
   */
 });
 
-Vue.filter('stringify', JSON.stringify);
+Vue.filter('whichSheetIdText', function(whichSheetId){
+  switch(whichSheetId){
+    case 'list': return '會員資料表';
+    case 'attendances': return '主日出席表';
+    default: return '';
+  }
+});

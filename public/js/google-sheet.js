@@ -33,7 +33,12 @@ function fetchTitle(sheetId){
       var title = response.result.properties.title;
       resolve(title);
     }, function(response){
-      reject(response.result.error.message);
+      if(!response.result){
+        return reject(response.statusText);
+      }
+      else{
+        return reject(response.result.error.message);
+      }
     });
   });
 }
