@@ -5,12 +5,14 @@
   </head>
   <body>
     <div id="main">
-      <form v-if="status='display'">
-        <button class="btn btn-secondary" type="button" :disabled="canSave||isLoading" onclick="modify()">
+      Stage: {{stage}}
+      <form v-if="stage=='display-config'">
+        {{config | stringify}}
+        <button class="btn btn-secondary" type="button" :disabled="isLoading" onclick="nextStep()">
           修改資料
         </button>
       </form>
-      <form v-if="status='modify-list'">
+      <form v-if="status=='modify-list'">
       </form>
     <!--
       <div class="form-group">
@@ -104,33 +106,180 @@
     <!-- Google sheet -->
     <script src="js/console.js"></script>
     <script src="js/google-sheet.js"></script>
-    <script src="https://apis.google.com/js/client.js?onload=init"></script>
+    <script src="https://apis.google.com/js/client.js"></script>
+    <!-- Socket.io -->
     <script src="/socket.io/socket.io.js"></script>
     <script>
-      var socket = io();
+    // LOAD
+    function load(msg){
+      vm.isLoading = true;
+      log('載入中... ' + msg);
+    }
+    function loadDone(msg){
+      vm.isLoading = false;
+      log(msg);
+    }
 
-      // CONFIG
-      function sendConfig(){
-        load('Send config');
-        socket.emit('config');
-      }
-      socket.on('config', function(config){
-        loadDone();
-        vm.config = config;
-        vm.tested_config = {};
-      });
+    // LOG
+    function log(logs){
+      $('#logs').text(logs);
+    };
+    </script>
 
-      // LOAD
-      function load(msg){
-        vm.isLoading = true;
-        log('載入中... ' + msg);
-      }
-      function loadDone(){
-        vm.isLoading = false;
-        log('');
-      }
+    <script>
+    // stage machine
+    load('Initialization');
+    function init(){
+      nextStep();
+    }
+    init();
 
-      // LOG
+    function transferStage(stage){
+      vm.stage = stage;
+    }
+
+    function nextStep(is_okay, logs){
+      switch(vm.stage){
+        case 'init':
+          transferStage('load-config');
+          load('Config');
+          sendConfig();
+          break;
+          /*
+        case 'load-config':
+          transferStage('display-config');
+          loadDone('Done');
+          vm.canSave=false;
+          break;
+        case 'display-config':
+          transferStage('modify-list');
+          vm.canSave=false;
+          break;
+        case 'modify-list':
+          if(is_okay){
+            transferStage('modify-attendance');
+            vm.canSave=false;
+          }
+          else{
+            transferStage('load-list');
+            load('Load list');
+            runTestList(
+              vm.config.client_id,
+              vm.config.scopes,
+              vm.config.discover,
+              vm.config.list
+            );
+          }
+          break;
+        case 'load-list':
+          transferStage('modify-list');
+          loadDone(logs);
+          vm.canSave=is_okay;
+          break;
+        case 'modify-attendance':
+          if(is_okay){
+            transferStage('load-dates');
+            load('Load dates');
+            loadDates(vm.config.attendances[0]);
+          }
+          else{
+            transferStage('load-attendance');
+            load('Load attendance');
+            loadAttendance(vm.config.attendances[0]);
+          }
+          break;
+        case 'load-attendance':
+          transferStage('modify-attendance');
+          loadDone(logs);
+          vm.canSave=is_okay;
+        case 'load-dates':
+          if(is_okay){
+            transferStage('read-base-date');
+            loadDone('Read base date');
+          }
+          else{
+            transferStage('modify-attendance');
+            vm.canSave=false;
+          }
+          break;
+        case 'read-base-date':
+          transferStage('read-num-dates');
+          break;
+        case 'read-num-dates':
+          transferStage('select-dates');
+          load('Select dates');
+          selectedDates();
+          break;
+        case 'select-dates':
+          if(is_okay){
+            transferStage('display-dates');
+            loadDone('Display dates');
+          }
+          else{
+            transferStage('modify-more-attendances');
+          }
+          break;
+        case 'modify-more-attendance':
+          if(is_okay){
+            transferStage('load-more-dates');
+            load('Load more dates');
+            loadDates(vm.config.attendances[vm.config.attendances.length-1]);
+          }
+          else{
+            transferStage('load-more-attendances');
+            load('Load more attendnaces');
+            vm.canSave=false;
+          }
+          break;
+        case 'load-more-attendances':
+          transferStage('modify-more-attendances');
+          loadDone(logs);
+          vm.canSave=is_okay;
+          break;
+        case 'load-more-dates':
+          if(is_okay){
+            transferStage('concat-dates');
+            loadDone('Concatenate dates');
+          }
+          else{
+            transferStage('modify-more-attendances');
+            loadDone('Modify more attendances');
+            vm.canSave=false;
+          }
+          break;
+        case 'concat-dates':
+          transferStage('select-dates');
+          break;
+        case 'display-dates':
+          if(is_okay){
+            transferStage('display-config');
+            vm.canSave=true;
+          }
+          else{
+            transferStage('read-num-dates');
+          }
+          */
+        default:
+          alert('Unknown stage');
+          throw 'Unknown stage';
+      }
+    }
+    </script>
+    <script>
+    var socket = io();
+
+    // CONFIG
+    function sendConfig(){
+    alert('');
+      socket.emit('config');
+    }
+    socket.on('config', function(config){
+      vm.config = config;
+      nextStep();
+    });
+
+/*
+
       function logTitles(sheets){
         var logs = sheets.map(function(sheet){
           var titleText;
@@ -149,9 +298,6 @@
         }
         log(logs);
       }
-      function log(logs){
-        $('#logs').text(logs);
-      };
 
       // DEEPCOPY
       function deepcopy(obj){
@@ -165,15 +311,7 @@
         return true;
       });
 
-      // MODIFY
-      var config = {};
-      function modify(){
-        config = vm.config;
-        initRun();
-      }
-
-      // INIT
-      load('Initialization');
+*/
     </script>
   </body>
 </html>

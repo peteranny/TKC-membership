@@ -1,25 +1,26 @@
-function init(){
-  sendConfig();
-}
-
+/*
 var login = false;
-function initRun(){
+function runAuthCheck(){
   load('Check auth');
   checkAuth(config.client_id, config.scopes, login)
+
     .then(function(){
+      load('Load Sheet API');
+      return loadSheetsApi(vm.config.discovery);
+    })
+
+    .then(function(){
+      loadDone();
       login = true;
-      log('');
-      run();
     }, function(err){
       log(err);
-    });
+    })
+    
 }
 
 function run(){
   // Promise chain
-  load('Load Sheet API');
-  loadSheetsApi(vm.config.discovery)
-
+/*
     .then(function(){
       load('Fetch title');
       return fetchTitle(vm.config.list);
@@ -52,7 +53,6 @@ function run(){
         }
       });
     }, Promise.reject)
-*/
 
     .then(function(msg){
       loadDone();
@@ -61,16 +61,17 @@ function run(){
       loadDone();
       log(err);
     });
-}
+*/
+//}
 
 var vm = new Vue({
   el:"#main",
   data:{
-    config:{},
-    stage: 'display',
-    tested_config:{}, //TODO
+    config:{'a':1},
+    stage: 'init',
     isLoading:true,
   },
+  /*
   computed:{
     canSave: function(){
       // can save only if the data is tested
@@ -99,4 +100,7 @@ var vm = new Vue({
       window.open(url, '', '');
     },
   },
+  */
 });
+
+Vue.filter('stringify', JSON.stringify);
