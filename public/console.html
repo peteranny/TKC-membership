@@ -11,7 +11,7 @@
           修改資料
         </button>
       </form>
-      <form v-if="stage_label=='modify-list'||stage_label=='load-list'">
+      <form v-if="stage_label=='modify-list'||stage_label=='modify-attendance'">
         <div class="input-group">
           <span class="input-group-addon">
             {{whichSheetId | whichSheetIdText}}
@@ -21,7 +21,7 @@
             <button class="btn btn-secondary" type="button" :disabled="isLoading" onclick="nextStage(false)">
               測試
             </button>
-            <button class="btn btn-secondary" type="button" :disabled="isLoading||!canCommitSheetId" onclick="nextStep(true)">
+            <button class="btn btn-secondary" type="button" :disabled="isLoading||!canCommitSheetId" onclick="nextStage(true)">
               提交
             </button>
           </span>
@@ -119,10 +119,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.26/vue.min.js"></script>
     <!-- Promise -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.4.6/bluebird.min.js"></script>
-    <!-- Google sheet -->
-    <script src="js/console.js"></script>
-    <script src="js/google-sheet.js"></script>
-    <script src="https://apis.google.com/js/client.js"></script>
     <!-- Stages -->
     <script src="js/stages.js"></script>
     <script>
@@ -148,7 +144,7 @@
     var vm = new Vue({
       el:"#main",
       data:{
-        stage_label: '',
+        stage_label: 'init',
         isLoading:true,
         logs: '',
 
@@ -157,6 +153,8 @@
 
         sheetId:'',
         whichSheetId:'',
+        nSheets:0,
+        dates:[],
       },
       computed:{
         canSave:function(){
@@ -164,8 +162,7 @@
         },
         canCommitSheetId:function(){
           if(Array.isArray(this.tested_config[this.whichSheetId])){
-            var n = this.tested_config.length;
-            return this.sheetId==this.tested_config[this.whichSheetId][n-1];
+            return this.sheetId==this.tested_config[this.whichSheetId][vm.nSheets-1];
           }
           else{
             return this.sheetId==this.tested_config[this.whichSheetId];
@@ -216,6 +213,7 @@
       switch(stage_label){
         case 'display-config': return 'Display config';
         case 'modify-list': return 'Please modify list';
+        case 'modify-attendance': return 'Please modify attendance';
         default: return '';
       }
     });
@@ -251,25 +249,44 @@
       vm.config.list = config.list;
       vm.config.attendances = [
         config.attendance_this,
-        config.attendance_last,
       ];
-      vm.tested_config = {
-        api:{},
-        list:'',
-        attendances:[],
-      };
       ///////
-
+      vm.tested_config = {};
       nextStage();
     });
     
     function resetConfig(){
-      vm.tested_config = {};
+      vm.tested_config = deepcopy(vm.config);
+      vm.nSheets = vm.tested_config.attendances.length;
+    }
+
+    function deepcopy(obj){
+      return JSON.parse(JSON.stringify(obj));
     }
 
     function resetSheetId(which){
       vm.whichSheetId = which;
-      vm.sheetId = '';
+      if(Array.isArray(vm.tested_config[vm.whichSheetId])){
+        var n = vm.tested_config[vm.whichSheetId].length;
+        vm.sheetId = vm.tested_config[vm.whichSheetId][n-1];
+      }
+      else{
+        vm.sheetId = vm.tested_config[vm.whichSheetId];
+      }
+    }
+
+    function loadSheetId(next){
+      runAuthCheck(vm.config.api)
+        .then(function(){
+          return fetchTitle(vm.sheetId);
+        }, Promise.reject)
+
+        .then(function(title){
+          commitSheetId();
+          next(title);
+        }, function(err){
+          next(err);
+        });
     }
 
     function commitSheetId(){
@@ -279,6 +296,21 @@
       else{
         Vue.set(vm.tested_config, vm.whichSheetId, vm.sheetId);
       }
+      vm.n++;
+    }
+
+    function loadDates(next){
+      runAuthCheck(vm.config.api)
+        .then(function(){
+          return fetchDates(vm.sheetId);
+        }, Promise.reject)
+
+        .then(function(dates){
+          vm.dates = dates;
+          next('');
+        }, function(err){
+          next(err);
+        });
     }
 
 /*
@@ -302,11 +334,6 @@
         log(logs);
       }
 
-      // DEEPCOPY
-      function deepcopy(obj){
-        return JSON.parse(JSON.stringify(obj));
-      }
-
       // SAVE
       $('#main').on('submit', function(){
         if(vm.isLoading || !vm.canSave) return false;
@@ -319,10 +346,13 @@
     <script>
     load('Initialization');
     function init(){
-      vm.stage_label = 'init';
+      loadDone('Done');
       nextStage();
     }
-    init();
     </script>
+    <!-- Google sheet -->
+    <script src="js/console.js"></script>
+    <script src="js/google-sheet.js"></script>
+    <script src="https://apis.google.com/js/client.js?onload=init"></script>
   </body>
 </html>

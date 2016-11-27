@@ -42,40 +42,46 @@ var stages = {
       label:'modify-list',
       beforeNext:function(next){
         load('Load list');
-        runAuthCheck(vm.config.api)
-
-          .then(function(){
-            return fetchTitle(vm.sheetId);
-          }, Promise.reject)
-
-          .then(function(title){
-            loadDone(title);
-            commitSheetId();
-            next();
-          }, function(err){
-            loadDone(err);
-            next();
-          });
+        loadSheetId(function(logs){
+          loadDone(logs);
+          next();
+        });
       },
     },{
       label:'modify-attendance',
       beforeNext:function(next){
+        log('');
+        resetSheetId('attendances');
+        next();
       },
     }],
   },
   'modify-attendance':{
     action:function(){
-      resetSheetId('attendances');
     },
     to:[{
-      label:'',
+      label:'modify-attendance',
       beforeNext:function(next){
+        load('Load attendance');
+        loadSheetId(function(logs){
+          loadDone(logs);
+          next();
+        });
+      },
+    },{
+      label:'modify-dates',
+      beforeNext:function(next){
+        next();
       },
     }],
   },
-  /*
-  '':{
+  'modify-dates':{
     action:function(){
+      load('Load dates');
+      resetSheetId('attendances');
+      loadDates(function(){
+        loadDone(JSON.stringify(vm.dates));
+      });
     },
     to:[{
       label:'',
@@ -83,6 +89,7 @@ var stages = {
       },
     }],
   },
+  /*
   '':{
     action:function(){
     },
