@@ -48,7 +48,7 @@ function fetchDates(sheetId){
       dateTimeRenderOption: "FORMATTED_STRING",
     }).then(function(response){
       if(!response.result) return reject(response.statusText);
-      var dates = response.result.values[0].slice(1).map(serial2date);
+      var dates = response.result.values[0].map(serial2date);
       resolve(dates);
     }, function(response){
       if(!response.result) reject(response.statusText);

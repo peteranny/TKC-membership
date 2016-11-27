@@ -80,7 +80,7 @@ var stages = {
       load('Load dates');
       resetSheetId('attendances');
       loadDates(function(){
-        loadDone(JSON.stringify(vm.dates));
+        loadDone(JSON.stringify(vm.dates,null,2));
       });
     },
     to:[{
