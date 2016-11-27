@@ -75,20 +75,8 @@ function run(){
     }
 */
 /*
-    function commitSheetId(){
-      if(Array.isArray(vm.tested_config[vm.whichSheetId])){
-        vm.tested_config[vm.whichSheetId].push(vm.sheetId);
-      }
-      else{
-        Vue.set(vm.tested_config, vm.whichSheetId, vm.sheetId);
-      }
-    }
 */
 /*
-    function resetSheetId(which){
-      vm.whichSheetId = which;
-      vm.sheetId = '';
-    }
 */
 /*
     function nextStep(is_okay, logs){
@@ -134,6 +122,7 @@ function run(){
               })
           }
           break;
+          ///
         case 'load-list':
           loadDone(logs);
           if(is_okay){
@@ -141,6 +130,7 @@ function run(){
           }
           transferStage('modify-list');
           break;
+          ///
           /*
         case 'modify-attendance':
           if(is_okay){

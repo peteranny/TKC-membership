@@ -4,7 +4,8 @@ var stages = {
     },
     to:[{
       label:'load-config',
-      beforeNext:function(){
+      beforeNext:function(next){
+        next();
       },
     }],
   },
@@ -15,8 +16,9 @@ var stages = {
     },
     to:[{
       label:'display-config',
-      beforeNext:function(){
+      beforeNext:function(next){
         loadDone(JSON.stringify(vm.config,null,2));
+        next();
       },
     }],
   },
@@ -26,30 +28,52 @@ var stages = {
     },
     to:[{
       label:'modify-list',
-      beforeNext:function(){
+      beforeNext:function(next){
+        log('');
+        resetSheetId('list');
+        next();
       },
     }],
   },
   'modify-list':{
     action:function(){
-      resetSheetId('list');
+    },
+    to:[{
+      label:'modify-list',
+      beforeNext:function(next){
+        load('Load list');
+        runAuthCheck(vm.config.api)
+
+          .then(function(){
+            return fetchTitle(vm.sheetId);
+          }, Promise.reject)
+
+          .then(function(title){
+            loadDone(title);
+            commitSheetId();
+            next();
+          }, function(err){
+            loadDone(err);
+            next();
+          });
+      },
+    },{
+      label:'modify-attendance',
+      beforeNext:function(next){
+      },
+    }],
+  },
+  'modify-attendance':{
+    action:function(){
+      resetSheetId('attendances');
     },
     to:[{
       label:'',
-      beforeNext:function(){
+      beforeNext:function(next){
       },
     }],
   },
   /*
-  '':{
-    action:function(){
-    },
-    to:[{
-      label:'',
-      beforeNext:function(){
-      },
-    }],
-  },
   '':{
     action:function(){
     },

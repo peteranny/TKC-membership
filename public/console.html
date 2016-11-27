@@ -6,19 +6,19 @@
   <body>
     <div id="main">
       <pre>Stage: {{stage_label}}</pre>
-      <form v-if="stage=='display-config'">
-        <button class="btn btn-secondary" type="button" :disabled="isLoading" onclick="nextStep()">
+      <form v-if="stage_label=='display-config'">
+        <button class="btn btn-secondary" type="button" :disabled="isLoading" onclick="nextStage()">
           修改資料
         </button>
       </form>
-      <form v-if="stage=='modify-list'||stage=='load-list'">
+      <form v-if="stage_label=='modify-list'||stage_label=='load-list'">
         <div class="input-group">
           <span class="input-group-addon">
             {{whichSheetId | whichSheetIdText}}
           </span>
           <input class="form-control" v-model="sheetId" :disabled="isLoading">
           <span class="input-group-btn">
-            <button class="btn btn-secondary" type="button" :disabled="isLoading" onclick="nextStep(false)">
+            <button class="btn btn-secondary" type="button" :disabled="isLoading" onclick="nextStage(false)">
               測試
             </button>
             <button class="btn btn-secondary" type="button" :disabled="isLoading||!canCommitSheetId" onclick="nextStep(true)">
@@ -129,16 +129,17 @@
     function nextStage(is_okay, logs){
       var stage = stages[vm.stage_label];
       var i = is_okay?1:0;
-      stage.to[i].beforeNext(logs);
-      var next_label = stage.to[i].label;
-      var next_stage = stages[next_label];
-      if(next_stage){
-        vm.stage_label = next_label;
-        next_stage.action();
-      }
-      else{
-        throw 'Stage "'+next_label+'" not found';
-      }
+      stage.to[i].beforeNext(function(){
+        var next_label = stage.to[i].label;
+        var next_stage = stages[next_label];
+        if(next_stage){
+          vm.stage_label = next_label;
+          next_stage.action();
+        }
+        else{
+          throw 'Failed to transfer stage "'+next_label+'"';
+        }
+      });
     }
     </script>
     <!-- Socket.io -->
@@ -213,14 +214,15 @@
 
     Vue.filter('staticLogs', function(stage_label){
       switch(stage_label){
-        case 'display-config': return 'Displaying config';
+        case 'display-config': return 'Display config';
+        case 'modify-list': return 'Please modify list';
         default: return '';
       }
     });
     </script>
     <script>
     function log(logs){
-      $('#logs').text(logs);
+      vm.logs = logs;
     };
     function load(msg){
       vm.isLoading = true;
@@ -264,6 +266,21 @@
     function resetConfig(){
       vm.tested_config = {};
     }
+
+    function resetSheetId(which){
+      vm.whichSheetId = which;
+      vm.sheetId = '';
+    }
+
+    function commitSheetId(){
+      if(Array.isArray(vm.tested_config[vm.whichSheetId])){
+        vm.tested_config[vm.whichSheetId].push(vm.sheetId);
+      }
+      else{
+        Vue.set(vm.tested_config, vm.whichSheetId, vm.sheetId);
+      }
+    }
+
 /*
 
       function logTitles(sheets){
