@@ -62,68 +62,171 @@ function run(){
 */
 //}
 
-var vm = new Vue({
-  el:"#main",
-  data:{
-    isLoading:true,
-    stage: 'init',
 
-    config:{},
-    tested_config:{},
 
-    sheetId:'',
-    whichSheetId:'',
-  },
-  computed:{
-    canSave:function(){
-      return JSON.stringify(this.config)===JSON.stringify(this.tested_config);
-    },
-    canCommitSheetId:function(){
-      if(Array.isArray(this.tested_config[this.whichSheetId])){
-        var n = this.tested_config.length;
-        return this.sheetId==this.tested_config[this.whichSheetId][n-1];
+
+
+
+/*
+    // stage machine
+    function transferStage(stage, logs){
+      vm.stage = stage;
+      if(logs) log(logs);
+    }
+*/
+/*
+    function commitSheetId(){
+      if(Array.isArray(vm.tested_config[vm.whichSheetId])){
+        vm.tested_config[vm.whichSheetId].push(vm.sheetId);
       }
       else{
-        return this.sheetId==this.tested_config[this.whichSheetId];
+        Vue.set(vm.tested_config, vm.whichSheetId, vm.sheetId);
       }
-    },
-  },
-  /*
-  computed:{
-    canSave: function(){
-      // can save only if the data is tested
-      var config = this.config;
-      var tested_config = this.tested_config;
-      try{
-        Object.keys(config).forEach(function(k){
-          if(typeof config[k]=='string'){
-            if(config[k]!=tested_config[k]) throw "Not passed";
+    }
+*/
+/*
+    function resetSheetId(which){
+      vm.whichSheetId = which;
+      vm.sheetId = '';
+    }
+*/
+/*
+    function nextStep(is_okay, logs){
+      switch(vm.stage){
+        case 'init':
+          transferStage('load-config');
+          load('Config');
+          sendConfig();
+          break;
+          ///
+        case 'load-config':
+          loadDone(JSON.stringify(vm.config,null,2));
+          transferStage('display-config');
+          resetConfig();
+          break;
+          ///
+        case 'display-config':
+          transferStage('modify-list');
+          resetSheetId('list');
+          break;
+          ///
+        case 'modify-list':
+          if(is_okay){
+            // Commit
+            commitSheetId();
+            transferStage('modify-attendance');
+            resetSheetId('attendances');
           }
-          if(Array.isArray(config[k])){
-            config[k].forEach(function(v, i){
-              if(config[k][i]!=tested_config[k][i]) throw "Not passed";
-            });
-          }
-        });
-      }catch(err){
-        return false;
-      }
-      return true;
-    },
-  },
-  methods:{
-    openWindow: function(sheetId){
-      var url = 'https://docs.google.com/spreadsheets/d/' + sheetId;
-      window.open(url, '', '');
-    },
-  },
-  */
-});
+          else{
+            // Test
+            transferStage('load-list');
+            load('Load list');
+            runAuthCheck(vm.config.api)
 
-Vue.filter('whichSheetIdText', function(whichSheetId){
-  switch(whichSheetId){
-    case 'list': return '會員資料表';
-    case 'attendances': return '主日出席表';
-    default: return '';
-  }
-});
+              .then(function(){
+                return fetchTitle(vm.sheetId);
+              }, Promise.reject)
+
+              .then(function(title){
+                nextStep(true, title);
+              }, function(err){
+                nextStep(false, err);
+              })
+          }
+          break;
+        case 'load-list':
+          loadDone(logs);
+          if(is_okay){
+            commitSheetId();
+          }
+          transferStage('modify-list');
+          break;
+          /*
+        case 'modify-attendance':
+          if(is_okay){
+            transferStage('load-dates');
+            load('Load dates');
+            loadDates(vm.config.attendances[0]);
+          }
+          else{
+            transferStage('load-attendance');
+            load('Load attendance');
+            loadAttendance(vm.config.attendances[0]);
+          }
+          break;
+        case 'load-attendance':
+          transferStage('modify-attendance');
+          loadDone(logs);
+          vm.canSave=is_okay;
+        case 'load-dates':
+          if(is_okay){
+            transferStage('read-base-date');
+            loadDone('Read base date');
+          }
+          else{
+            transferStage('modify-attendance');
+            vm.canSave=false;
+          }
+          break;
+        case 'read-base-date':
+          transferStage('read-num-dates');
+          break;
+        case 'read-num-dates':
+          transferStage('select-dates');
+          load('Select dates');
+          selectedDates();
+          break;
+        case 'select-dates':
+          if(is_okay){
+            transferStage('display-dates');
+            loadDone('Display dates');
+          }
+          else{
+            transferStage('modify-more-attendances');
+          }
+          break;
+        case 'modify-more-attendance':
+          if(is_okay){
+            transferStage('load-more-dates');
+            load('Load more dates');
+            loadDates(vm.config.attendances[vm.config.attendances.length-1]);
+          }
+          else{
+            transferStage('load-more-attendances');
+            load('Load more attendnaces');
+            vm.canSave=false;
+          }
+          break;
+        case 'load-more-attendances':
+          transferStage('modify-more-attendances');
+          loadDone(logs);
+          vm.canSave=is_okay;
+          break;
+        case 'load-more-dates':
+          if(is_okay){
+            transferStage('concat-dates');
+            loadDone('Concatenate dates');
+          }
+          else{
+            transferStage('modify-more-attendances');
+            loadDone('Modify more attendances');
+            vm.canSave=false;
+          }
+          break;
+        case 'concat-dates':
+          transferStage('select-dates');
+          break;
+        case 'display-dates':
+          if(is_okay){
+            transferStage('display-config');
+            vm.canSave=true;
+          }
+          else{
+            transferStage('read-num-dates');
+          }
+        default:
+          alert('Unknown stage');
+          throw 'Unknown stage';
+      }
+    }
+    */
