@@ -27,6 +27,13 @@
           </span>
         </div>
       </form>
+      <form v-if="stage_label=='modify-dates'">
+        <div class="button-group">
+          <button :class="['btn', 'btn-secondary', {'active':sel_date.sel}]" type="button" v-for="(i,sel_date) in sel_dates" :disabled="isLoading" @click="sel_dates[i].sel=!sel_dates[i].sel">
+            {{sel_date.date | simpleDate}}
+          </button>
+        </div>
+      </form>
     <!--
       <div class="form-group">
         <div class="input-group">
@@ -153,8 +160,8 @@
 
         sheetId:'',
         whichSheetId:'',
-        nSheets:0,
-        dates:[],
+        i:0,
+        sel_dates:[],
       },
       computed:{
         canSave:function(){
@@ -162,7 +169,7 @@
         },
         canCommitSheetId:function(){
           if(Array.isArray(this.tested_config[this.whichSheetId])){
-            return this.sheetId==this.tested_config[this.whichSheetId][vm.nSheets-1];
+            return this.sheetId==this.tested_config[this.whichSheetId][this.i];
           }
           else{
             return this.sheetId==this.tested_config[this.whichSheetId];
@@ -217,6 +224,12 @@
         default: return '';
       }
     });
+
+    Vue.filter('simpleDate', function(d){
+      var M = d.getMonth()+1;
+      var D = d.getDate();
+      return (M<10?"0"+M:M)+(D<10?"0"+D:D);
+    });
     </script>
     <script>
     function log(logs){
@@ -249,7 +262,8 @@
       vm.config.list = config.list;
       vm.config.attendances = [
         config.attendance_this,
-      ];
+        config.attendance_last,
+      ].slice(0,1);
       ///////
       vm.tested_config = {};
       nextStage();
@@ -257,7 +271,7 @@
     
     function resetConfig(){
       vm.tested_config = deepcopy(vm.config);
-      vm.nSheets = vm.tested_config.attendances.length;
+      vm.i = 0;
     }
 
     function deepcopy(obj){
@@ -267,8 +281,7 @@
     function resetSheetId(which){
       vm.whichSheetId = which;
       if(Array.isArray(vm.tested_config[vm.whichSheetId])){
-        var n = vm.tested_config[vm.whichSheetId].length;
-        vm.sheetId = vm.tested_config[vm.whichSheetId][n-1];
+        vm.sheetId = vm.tested_config[vm.whichSheetId][vm.i];
       }
       else{
         vm.sheetId = vm.tested_config[vm.whichSheetId];
@@ -282,21 +295,23 @@
         }, Promise.reject)
 
         .then(function(title){
-          commitSheetId();
-          next(title);
+          next(true, title);
         }, function(err){
-          next(err);
+          next(false, err);
         });
     }
 
     function commitSheetId(){
       if(Array.isArray(vm.tested_config[vm.whichSheetId])){
-        vm.tested_config[vm.whichSheetId].push(vm.sheetId);
+        Vue.set(vm.tested_config[vm.whichSheetId], vm.i, vm.sheetId);
       }
       else{
         Vue.set(vm.tested_config, vm.whichSheetId, vm.sheetId);
       }
-      vm.n++;
+    }
+
+    function advanceNumSheet(){
+      vm.i++;
     }
 
     function loadDates(next){
@@ -306,10 +321,15 @@
         }, Promise.reject)
 
         .then(function(dates){
-          vm.dates = dates;
-          next('');
+          dates.forEach(function(date){
+            vm.sel_dates.push({
+              date:date,
+              sel:false,
+            });
+          });
+          next(true);
         }, function(err){
-          next(err);
+          next(false, err);
         });
     }
 

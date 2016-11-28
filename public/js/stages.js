@@ -42,8 +42,9 @@ var stages = {
       label:'modify-list',
       beforeNext:function(next){
         load('Load list');
-        loadSheetId(function(logs){
+        loadSheetId(function(is_okay, logs){
           loadDone(logs);
+          if(is_okay) commitSheetId();
           next();
         });
       },
@@ -63,8 +64,11 @@ var stages = {
       label:'modify-attendance',
       beforeNext:function(next){
         load('Load attendance');
-        loadSheetId(function(logs){
+        loadSheetId(function(is_okay, logs){
           loadDone(logs);
+          if(is_okay){
+            commitSheetId();
+          }
           next();
         });
       },
@@ -79,8 +83,9 @@ var stages = {
     action:function(){
       load('Load dates');
       resetSheetId('attendances');
-      loadDates(function(){
-        loadDone(JSON.stringify(vm.dates,null,2));
+      loadDates(function(is_okay, logs){
+        if(is_okay) loadDone('Pick target dates');
+        else loadDone(logs);
       });
     },
     to:[{
