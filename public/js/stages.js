@@ -30,13 +30,14 @@ var stages = {
       label:'modify-list',
       beforeNext:function(next){
         log('');
-        resetSheetId('list');
+        setCanCommitSheetId(false);
         next();
       },
     }],
   },
   'modify-list':{
     action:function(){
+      resetSheetId('list');
     },
     to:[{
       label:'modify-list',
@@ -44,37 +45,18 @@ var stages = {
         load('Load list');
         loadSheetId(function(is_okay, logs){
           loadDone(logs);
-          if(is_okay) commitSheetId();
-          next();
-        });
-      },
-    },{
-      label:'modify-attendance',
-      beforeNext:function(next){
-        log('');
-        resetSheetId('attendances');
-        next();
-      },
-    }],
-  },
-  'modify-attendance':{
-    action:function(){
-    },
-    to:[{
-      label:'modify-attendance',
-      beforeNext:function(next){
-        load('Load attendance');
-        loadSheetId(function(is_okay, logs){
-          loadDone(logs);
-          if(is_okay){
-            commitSheetId();
-          }
+          setCanCommitSheetId(is_okay);
           next();
         });
       },
     },{
       label:'modify-dates',
       beforeNext:function(next){
+        log('');
+        commitListSheetId();
+        resetSheetId();
+        setCanCommitSheetId(false);
+        resetSheetDates();
         next();
       },
     }],
@@ -82,10 +64,8 @@ var stages = {
   'modify-dates':{
     action:function(){
       load('Load dates');
-      resetSheetId('attendances');
-      loadDates(function(is_okay, logs){
-        if(is_okay) loadDone('Pick target dates');
-        else loadDone(logs);
+      loadAllSheetDates(function(is_okay, logs){
+        loadDone(is_okay? 'Pick target dates': logs);
       });
     },
     to:[{

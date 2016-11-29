@@ -11,27 +11,43 @@
           修改資料
         </button>
       </form>
-      <form v-if="stage_label=='modify-list'||stage_label=='modify-attendance'">
+      <form v-if="stage_label=='modify-dates'">
+        <div v-for="(i,sheet_date) in sheet_dates">
+          <div class="input-group">
+            <span class="input-group-addon">
+              {{stage_label | sheetIdText}}
+            </span>
+            <input class="form-control" v-model="sheet_date.sheetId" disabled>
+            <span class="input-group-btn">
+              <button type="button" class="btn btn-danger" :disabled="isLoading" @click="deleteSheetDates(i)">
+                刪除這個表
+              </button>
+            </span>
+          </div>
+          <div>
+            {{sheet_date.title}}
+          </div>
+          <div class="button-group">
+            <button v-for="sel_date in sheet_date.sel_dates" type="button" :class="['btn', 'btn-secondary', {'active':sel_date.sel}]" :disabled="isLoading" @click="sel_date.sel=!sel_date.sel">
+              {{sel_date.date | simpleDate}}
+            </button>
+          </div>
+        </div>
+      </form>
+      <form v-if="stage_label=='modify-list'||stage_label=='modify-dates'">
         <div class="input-group">
           <span class="input-group-addon">
-            {{whichSheetId | whichSheetIdText}}
+            {{stage_label | sheetIdText}}
           </span>
           <input class="form-control" v-model="sheetId" :disabled="isLoading">
           <span class="input-group-btn">
             <button class="btn btn-secondary" type="button" :disabled="isLoading" onclick="nextStage(false)">
               測試
             </button>
-            <button class="btn btn-secondary" type="button" :disabled="isLoading||!canCommitSheetId" onclick="nextStage(true)">
-              提交
+            <button class="btn btn-success" type="button" :disabled="isLoading||!canCommitSheetId" onclick="nextStage(true)">
+              下一步
             </button>
           </span>
-        </div>
-      </form>
-      <form v-if="stage_label=='modify-dates'">
-        <div class="button-group">
-          <button :class="['btn', 'btn-secondary', {'active':sel_date.sel}]" type="button" v-for="(i,sel_date) in sel_dates" :disabled="isLoading" @click="sel_dates[i].sel=!sel_dates[i].sel">
-            {{sel_date.date | simpleDate}}
-          </button>
         </div>
       </form>
     <!--
@@ -159,21 +175,12 @@
         tested_config:{},
 
         sheetId:'',
-        whichSheetId:'',
-        i:0,
-        sel_dates:[],
+        canCommitSheetId:false,
+        sheet_dates:[],
       },
       computed:{
         canSave:function(){
           return JSON.stringify(this.config)===JSON.stringify(this.tested_config);
-        },
-        canCommitSheetId:function(){
-          if(Array.isArray(this.tested_config[this.whichSheetId])){
-            return this.sheetId==this.tested_config[this.whichSheetId][this.i];
-          }
-          else{
-            return this.sheetId==this.tested_config[this.whichSheetId];
-          }
         },
       },
       /*
@@ -199,19 +206,24 @@
           return true;
         },
       },
+      */
       methods:{
+        deleteSheetDates(i){
+          this.tested_config['sheet_dates'].splice(i,1);
+        },
+/*
         openWindow: function(sheetId){
           var url = 'https://docs.google.com/spreadsheets/d/' + sheetId;
           window.open(url, '', '');
         },
-      },
       */
+      },
     });
 
-    Vue.filter('whichSheetIdText', function(whichSheetId){
-      switch(whichSheetId){
-        case 'list': return '會員資料表';
-        case 'attendances': return '主日出席表';
+    Vue.filter('sheetIdText', function(stage_label){
+      switch(stage_label){
+        case 'modify-list': return '會員資料表';
+        case 'modify-dates': return '主日出席表';
         default: return '';
       }
     });
@@ -260,18 +272,20 @@
         discovery: config.discovery,
       };
       vm.config.list = config.list;
-      vm.config.attendances = [
-        config.attendance_this,
-        config.attendance_last,
-      ].slice(0,1);
+      vm.config.sheet_dates = [{
+        sheetId: config.attendance_this,
+        sel_dates: [],
+      }, {
+        sheetId: config.attendance_last,
+        sel_dates: [],
+      }];
       ///////
       vm.tested_config = {};
       nextStage();
     });
-    
+
     function resetConfig(){
       vm.tested_config = deepcopy(vm.config);
-      vm.i = 0;
     }
 
     function deepcopy(obj){
@@ -279,60 +293,85 @@
     }
 
     function resetSheetId(which){
-      vm.whichSheetId = which;
-      if(Array.isArray(vm.tested_config[vm.whichSheetId])){
-        vm.sheetId = vm.tested_config[vm.whichSheetId][vm.i];
-      }
-      else{
-        vm.sheetId = vm.tested_config[vm.whichSheetId];
-      }
+      vm.sheetId = which? vm.tested_config[which]: '';
     }
 
     function loadSheetId(next){
       runAuthCheck(vm.config.api)
-        .then(function(){
-          return fetchTitle(vm.sheetId);
-        }, Promise.reject)
+      .then(function(){
+        return fetchTitle(vm.sheetId);
+      }, Promise.reject)
+      .then(function(title){
+        next(true, title);
+      }, function(err){
+        next(false, err);
+      });
+    }
 
-        .then(function(title){
-          next(true, title);
-        }, function(err){
-          next(false, err);
+    function setCanCommitSheetId(is_okay){
+      vm.canCommitSheetId = is_okay;
+    }
+
+    function commitListSheetId(){
+      Vue.set(vm.tested_config, 'list', vm.sheetId);
+    }
+
+    function resetSheetDates(){
+      vm.sheet_dates = deepcopy(vm.tested_config.sheet_dates);
+    }
+
+    function commitSheetDates(){
+      vm.tested_config.sheet_dates =
+        deepcopy(vm.sheet_dates).map(function(sheet_date){
+          delete sheet_date.title;
+          return sheet_date;
         });
     }
 
-    function commitSheetId(){
-      if(Array.isArray(vm.tested_config[vm.whichSheetId])){
-        Vue.set(vm.tested_config[vm.whichSheetId], vm.i, vm.sheetId);
-      }
-      else{
-        Vue.set(vm.tested_config, vm.whichSheetId, vm.sheetId);
-      }
+    function commitAttendanceSheetId(){
+      vm.sheet_dates.push({
+        sheetId:vm.sheetId,
+        title:'',
+        sel_dates:[],
+      });
     }
 
-    function advanceNumSheet(){
-      vm.i++;
-    }
-
-    function loadDates(next){
+    function loadAllSheetDates(next){
       runAuthCheck(vm.config.api)
-        .then(function(){
-          return fetchDates(vm.sheetId);
-        }, Promise.reject)
-
-        .then(function(dates){
-          dates.forEach(function(date){
-            vm.sel_dates.push({
-              date:date,
-              sel:false,
-            });
-          });
-          next(true);
-        }, function(err){
-          next(false, err);
-        });
+      .then(function(){
+        return Promise.map(vm.sheet_dates, function(sheet_date,i){
+          return fetchTitle(sheet_date.sheetId)
+          .then(function(title){
+            Vue.set(vm.sheet_dates[i], "title", title);
+            return Promise.resolve();
+          }, Promise.reject)
+          .then(function(){
+            return loadSheetDates(sheet_date);
+          }, Promise.reject);
+        })
+      })
+      .then(function(){
+        next(true);
+      }, function(err){
+        next(false, err);
+      });
     }
 
+    function loadSheetDates(sheet_date){
+      return runAuthCheck(vm.config.api)
+      .then(function(){
+        return fetchDates(sheet_date.sheetId);
+      }, Promise.reject)
+      .then(function(dates){
+        dates.forEach(function(date){
+          sheet_date.sel_dates.push({
+            date:date,
+            sel:false,
+          });
+        });
+        return Promise.resolve();
+      }, Promise.reject);
+    }
 /*
 
       function logTitles(sheets){
