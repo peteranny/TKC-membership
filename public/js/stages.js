@@ -56,34 +56,58 @@ var stages = {
         commitListSheetId();
         resetSheetId();
         setCanCommitSheetId(false);
-        resetSheetDates();
-        next();
+        next(true);
       },
     }],
   },
   'modify-dates':{
+    action:function(reload){
+      if(reload){
+        load('Load dates');
+        loadAllSheetDates(function(is_okay, logs){
+          loadDone(is_okay? 'Pick target dates': logs);
+        });
+      }
+    },
+    to:[{
+      label:'modify-dates',
+      beforeNext:function(next){
+        load('Load attendance');
+        loadSheetId(function(is_okay, logs){
+          loadDone(logs);
+          setCanCommitSheetId(is_okay);
+          next(false);
+        });
+      },
+    },{
+      label:'preview-config',
+      beforeNext:function(next){
+        log('');
+        next();
+      },
+    },{
+      label:'modify-dates',
+      beforeNext:function(next){
+        log('');
+        commitAttendanceSheetId();
+        resetSheetId();
+        setCanCommitSheetId(false);
+        next(true);
+      },
+    }],
+  },
+  'preview-config':{
     action:function(){
-      load('Load dates');
-      loadAllSheetDates(function(is_okay, logs){
-        loadDone(is_okay? 'Pick target dates': logs);
-      });
+      log(JSON.stringify(vm.tested_config, null, 2));
     },
     to:[{
       label:'',
       beforeNext:function(){
+        commitSheetDates();
       },
     }],
   },
   /*
-  '':{
-    action:function(){
-    },
-    to:[{
-      label:'',
-      beforeNext:function(){
-      },
-    }],
-  },
   '':{
     action:function(){
     },
