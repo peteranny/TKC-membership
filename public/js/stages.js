@@ -3,34 +3,20 @@ var stages = {
     action:function(){
     },
     to:[{
-      label:'load-config',
-      beforeNext:function(next){
-        next();
-      },
-    }],
-  },
-  'load-config':{
-    action:function(){
-      load('Config');
-      sendConfig();
-    },
-    to:[{
       label:'display-config',
       beforeNext:function(next){
-        loadDone(JSON.stringify(vm.config,null,2));
         next();
       },
     }],
   },
   'display-config':{
     action:function(){
-      resetConfig();
+      sendConfig();
     },
     to:[{
       label:'modify-list',
       beforeNext:function(next){
         log('');
-        setCanCommitSheetId(false);
         next();
       },
     }],
@@ -45,7 +31,6 @@ var stages = {
         load('Load list');
         loadSheetId(function(is_okay, logs){
           loadDone(logs);
-          setCanCommitSheetId(is_okay);
           next();
         });
       },
@@ -55,7 +40,6 @@ var stages = {
         log('');
         commitListSheetId();
         resetSheetId();
-        setCanCommitSheetId(false);
         next(true);
       },
     }],
@@ -74,9 +58,18 @@ var stages = {
       beforeNext:function(next){
         load('Load attendance');
         loadSheetId(function(is_okay, logs){
-          loadDone(logs);
-          setCanCommitSheetId(is_okay);
-          next(false);
+          var reload;
+          if(is_okay){
+            loadDone('');
+            commitAttendanceSheetId();
+            resetSheetId();
+            reload = true;
+          }
+          else{
+            loadDone(logs);
+            reload = false;
+          }
+          next(reload);
         });
       },
     },{
@@ -88,11 +81,6 @@ var stages = {
     },{
       label:'modify-dates',
       beforeNext:function(next){
-        log('');
-        commitAttendanceSheetId();
-        resetSheetId();
-        setCanCommitSheetId(false);
-        next(true);
       },
     }],
   },
@@ -101,9 +89,10 @@ var stages = {
       log(JSON.stringify(vm.tested_config, null, 2));
     },
     to:[{
-      label:'',
-      beforeNext:function(){
-        commitSheetDates();
+      label:'display-config',
+      beforeNext:function(next){
+        saveConfig();
+        next();
       },
     }],
   },

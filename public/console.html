@@ -45,16 +45,18 @@
           <input class="form-control" v-model="sheetId" :disabled="isLoading">
           <span class="input-group-btn">
             <button class="btn btn-secondary" type="button" :disabled="isLoading" onclick="nextStage(0)">
-              測試
+              {{stage_label=='modify-list'?'修改':'新增'}}
             </button>
-            <button class="btn btn-secondary" type="button" v-if="stage_label=='modify-dates'" :disabled="isLoading||!canCommitSheetId" onclick="nextStage(2)">
-              新增
-            </button>
-            <button class="btn btn-success" type="button" :disabled="isLoading || !canCommitSheetId && stage_label!=='modify-dates'" onclick="nextStage(1)">
+            <button class="btn btn-success" type="button" :disabled="isLoading" onclick="nextStage(1)">
               下一步
             </button>
           </span>
         </div>
+      </form>
+      <form v-if="stage_label=='preview-config'">
+        <button class="btn btn-secondary" type="button" :disabled="isLoading" onclick="nextStage(0)">
+          儲存
+        </button>
       </form>
     <!--
       <div class="form-group">
@@ -181,12 +183,8 @@
         tested_config:{},
 
         sheetId:'',
-        canCommitSheetId:false,
       },
       computed:{
-        canSave:function(){
-          return JSON.stringify(this.config)===JSON.stringify(this.tested_config);
-        },
         numSelDates:function(){
           return this.tested_config.sheet_dates.map(function(sheet_date){
             return sheet_date.sel_dates;
@@ -223,7 +221,9 @@
       */
       methods:{
         deleteSheetDates(i){
-          this.tested_config.sheet_dates.splice(i,1);
+          if(confirm('確定刪除？')){
+            this.tested_config.sheet_dates.splice(i,1);
+          }
         },
 /*
         openWindow: function(sheetId){
@@ -247,12 +247,13 @@
         case 'display-config': return 'Display config';
         case 'modify-list': return 'Please modify list';
         case 'modify-attendance': return 'Please modify attendance';
-        case 'preview-config': return 'Preview tested config';
+        case 'preview-config': return 'Preview tested config and confirm';
         default: return '';
       }
     });
 
     Vue.filter('simpleDate', function(d){
+      var d = new Date(d);
       var M = d.getMonth()+1;
       var D = d.getDate();
       return (M<10?"0"+M:M)+(D<10?"0"+D:D);
@@ -277,31 +278,14 @@
 
     // CONFIG
     function sendConfig(){
+      load('Config');
       socket.emit('config');
     }
     socket.on('config', function(config){
-      //TODO
-      vm.config.api = {
-        client_id: config.client_id,
-        scopes: config.scopes,
-        discovery: config.discovery,
-      };
-      vm.config.list = config.list;
-      vm.config.sheet_dates = [{
-        sheetId: config.attendance_this,
-        sel_dates: [],
-      }, {
-        sheetId: config.attendance_last,
-        sel_dates: [],
-      }];
-      ///////
-      vm.tested_config = {};
-      nextStage();
-    });
-
-    function resetConfig(){
+      vm.config = config;
       vm.tested_config = deepcopy(vm.config);
-    }
+      loadDone(JSON.stringify(vm.config,null,2));
+    });
 
     function deepcopy(obj){
       return JSON.parse(JSON.stringify(obj));
@@ -321,10 +305,6 @@
       }, function(err){
         next(false, err);
       });
-    }
-
-    function setCanCommitSheetId(is_okay){
-      vm.canCommitSheetId = is_okay;
     }
 
     function commitListSheetId(){
@@ -380,9 +360,10 @@
         return fetchDates(sheet_date.sheetId);
       }, Promise.reject)
       .then(function(dates){
-        dates.forEach(function(date){
+        dates.forEach(function(date, i){
           sheet_date.sel_dates.push({
             date:date,
+            i:i,
             sel:false,
           });
         });
@@ -409,15 +390,16 @@
         }
         log(logs);
       }
-
-      // SAVE
-      $('#main').on('submit', function(){
-        if(vm.isLoading || !vm.canSave) return false;
-        socket.emit('save', config);
-        return true;
-      });
-
 */
+
+    function saveConfig(){
+      load('Save');
+      socket.emit('save', vm.tested_config);
+    };
+
+    socket.on('saved', function(err){
+      loadDone(err? err: '');
+    });
     </script>
     <script>
     load('Initialization');
