@@ -12,7 +12,7 @@
         </button>
       </form>
       <form v-if="stage_label=='modify-dates'">
-        <div v-for="(i,sheet_date) in tested_config.sheet_dates">
+        <div v-for="(i,sheet_date) in config.sheet_dates">
           <div class="input-group">
             <span class="input-group-addon">
               {{stage_label | sheetIdText}}
@@ -180,13 +180,11 @@
         logs: '',
 
         config:{},
-        tested_config:{},
-
         sheetId:'',
       },
       computed:{
         numSelDates:function(){
-          return this.tested_config.sheet_dates.map(function(sheet_date){
+          return this.config.sheet_dates.map(function(sheet_date){
             return sheet_date.sel_dates;
           }).reduce(function(a,b){
             return a.concat(b);
@@ -195,34 +193,10 @@
           }).length;
         },
       },
-      /*
-      computed:{
-        canSave: function(){
-          // can save only if the data is tested
-          var config = this.config;
-          var tested_config = this.tested_config;
-          try{
-            Object.keys(config).forEach(function(k){
-              if(typeof config[k]=='string'){
-                if(config[k]!=tested_config[k]) throw "Not passed";
-              }
-              if(Array.isArray(config[k])){
-                config[k].forEach(function(v, i){
-                  if(config[k][i]!=tested_config[k][i]) throw "Not passed";
-                });
-              }
-            });
-          }catch(err){
-            return false;
-          }
-          return true;
-        },
-      },
-      */
       methods:{
         deleteSheetDates(i){
           if(confirm('確定刪除？')){
-            this.tested_config.sheet_dates.splice(i,1);
+            this.config.sheet_dates.splice(i,1);
           }
         },
 /*
@@ -253,6 +227,7 @@
     });
 
     Vue.filter('simpleDate', function(d){
+      if(!d) return 'NaN';
       var d = new Date(d);
       var M = d.getMonth()+1;
       var D = d.getDate();
@@ -283,16 +258,11 @@
     }
     socket.on('config', function(config){
       vm.config = config;
-      vm.tested_config = deepcopy(vm.config);
       loadDone(JSON.stringify(vm.config,null,2));
     });
 
-    function deepcopy(obj){
-      return JSON.parse(JSON.stringify(obj));
-    }
-
     function resetSheetId(which){
-      vm.sheetId = which? vm.tested_config[which]: '';
+      vm.sheetId = which? vm.config[which]: '';
     }
 
     function loadSheetId(next){
@@ -308,19 +278,11 @@
     }
 
     function commitListSheetId(){
-      Vue.set(vm.tested_config, 'list', vm.sheetId);
-    }
-
-    function commitSheetDates(){
-      vm.tested_config.sheet_dates =
-        vm.tested_config.sheet_dates.map(function(sheet_date){
-          delete sheet_date.title;
-          return sheet_date;
-        });
+      Vue.set(vm.config, 'list', vm.sheetId);
     }
 
     function commitAttendanceSheetId(){
-      vm.tested_config.sheet_dates.push({
+      vm.config.sheet_dates.push({
         sheetId:vm.sheetId,
         title:'',
         sel_dates:[],
@@ -330,18 +292,18 @@
     function loadAllSheetDates(next){
       runAuthCheck(vm.config.api)
       .then(function(){
-        return Promise.map(vm.tested_config.sheet_dates, function(sheet_date,i){
+        return Promise.map(vm.config.sheet_dates, function(sheet_date,i){
           if(sheet_date.sel_dates.length>0){
             return Promise.resolve();
           }
           else{
             return fetchTitle(sheet_date.sheetId)
             .then(function(title){
-              Vue.set(vm.tested_config.sheet_dates[i], "title", title);
+              Vue.set(vm.config.sheet_dates[i], "title", title);
               return Promise.resolve();
             }, Promise.reject)
             .then(function(){
-              Vue.set(vm.tested_config.sheet_dates[i], "sel_dates", []);
+              Vue.set(vm.config.sheet_dates[i], "sel_dates", []);
               return loadSheetDates(sheet_date);
             }, Promise.reject);
           }
@@ -370,31 +332,10 @@
         return Promise.resolve();
       }, Promise.reject);
     }
-/*
-
-      function logTitles(sheets){
-        var logs = sheets.map(function(sheet){
-          var titleText;
-          if(sheet.sheetId==="") titleText = '無';
-          else if(sheet.title!==undefined) titleText = sheet.title;
-          else if(sheet.err) titleText = '資料抓取失敗：' + sheet.err + ' (' + sheet.sheetId + ')';
-          else throw "Unexpected titleText";
-          return sheet.description + "： " + titleText;
-        }).join('\n');
-
-        if(sheets.filter(function(sheet){
-          return sheet.title===undefined;
-        }).length==0){
-          vm.tested_config = deepcopy(vm.config);
-          logs += '\n\n確認完畢請按提交！';
-        }
-        log(logs);
-      }
-*/
 
     function saveConfig(){
       load('Save');
-      socket.emit('save', vm.tested_config);
+      socket.emit('save', vm.config);
     };
 
     socket.on('saved', function(err){

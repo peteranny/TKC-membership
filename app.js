@@ -24,6 +24,7 @@ io.on('connection', function(socket){
   });
   socket.on('config', function(){
     console.log('Receive config');
+    delete require.cache[require.resolve(configPath)];
     config = require(configPath);
     console.log('Send config');
     socket.emit('config', config);
@@ -32,7 +33,7 @@ io.on('connection', function(socket){
     console.log('Receive save');
     var code = JSON.stringify(config, null, 2);
     fs.writeFile(configPath, code, function(err){
-      if(err) console.log(err);
+      if(err) console.log('Write :' + err);
       else console.log('Write done');
       socket.emit('saved', err);
     });

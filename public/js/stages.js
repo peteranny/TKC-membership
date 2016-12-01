@@ -86,7 +86,7 @@ var stages = {
   },
   'preview-config':{
     action:function(){
-      log(JSON.stringify(vm.tested_config, null, 2));
+      log(JSON.stringify(vm.config, null, 2));
     },
     to:[{
       label:'display-config',
@@ -96,42 +96,4 @@ var stages = {
       },
     }],
   },
-  /*
-  '':{
-    action:function(){
-    },
-    to:[{
-      label:'',
-      beforeNext:function(){
-      },
-    }],
-  },
-  '':{
-    action:function(){
-    },
-    to:[{
-      label:'',
-      beforeNext:function(){
-      },
-    }],
-  },
-  '':{
-    action:function(){
-    },
-    to:[{
-      label:'',
-      beforeNext:function(){
-      },
-    }],
-  },
-  '':{
-    action:function(){
-    },
-    to:[{
-      label:'',
-      beforeNext:function(){
-      },
-    }],
-  },
-  */
 };
