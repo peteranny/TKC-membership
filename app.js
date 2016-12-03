@@ -15,7 +15,7 @@ var socketIO = require('socket.io');
 var io = socketIO.listen(server);
 var fs = require('fs');
 var Promise = require('bluebird');
-var configPath = "./public/js/config.json";
+var configPath = "./public/config.json";
 
 io.on('connection', function(socket){
   console.log('Receive connection');
