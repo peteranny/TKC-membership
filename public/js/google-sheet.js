@@ -76,8 +76,8 @@ function serial2date(serial) {
   );
   return date;
 }
-/*
-function listMembers(sheetId) {
+
+function listMembers(sheetId, transformRow) {
   return new Promise(function(resolve, reject){
     gapi.client.sheets.spreadsheets.values.get({
       spreadsheetId: sheetId,
@@ -85,60 +85,15 @@ function listMembers(sheetId) {
     })
     .then(function(response) {
       var range = response.result;
-      vm.rows = range.values.map(function(row){
+      var list = range.values.map(function(row){
         return transformRow(row);
       });
-      resolve();
+      resolve(list);
     }, function(response) {
       reject(response.result.error.message);
     });
   });
 }
-*/
-
-/*
-function convertDate(s){
-  if(!s) return null;
-  var matched = s.match(/(\d+)\.(\d+)\.(\d+)/);
-  if(!matched) return null;
-  var y = matched[1];
-  var m = matched[2];
-  var d = matched[3];
-  return genDate(y,m,d);
-}
-*/
-
-/*
-function transformRow(row){
-  return {
-    no: parseInt(row[0]),
-    nickname: row[1],
-    name: row[2],
-    dob: convertDate(row[3]),
-    ident: row[4],
-    tel: row[5],
-    addr: row[6],
-    doj: convertDate(row[7]), // date of join
-    dojf: row[8],
-    dof: convertDate(row[9]), // date of fee
-    dow: convertDate(row[10]), // date of withdrawal
-    unique: undefined,
-    attendance: [],
-    attendSum: undefined,
-    hasFeePaid: undefined,
-    isValid: undefined,
-  };
-}
-*/
-
-/*
-function computeHasFeePaid(){
-  vm.rows.forEach(function(row){
-    var d = row.dof;
-    row.hasFeePaid = d!=null && d.getFullYear()==(new Date()).getFullYear();
-  });
-}
-*/
 
 /*
 function fetchFellowships(sheetId){
@@ -205,9 +160,6 @@ function fetchAttendance(sheetId, fellowships){
 */
 
 /*
-function genDate(y,m,d){
-  return new Date(y,m-1,d);
-}
 */
 
 /*

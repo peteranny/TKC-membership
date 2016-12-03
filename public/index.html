@@ -1,6 +1,7 @@
 <html>
   <head>
     <meta charset="big5">
+    <title>同光教會會員查詢</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css" integrity="sha384-AysaV+vQoT3kOAXZkl02PThvDr8HYKPZhNT5h/CXfBThSRXQ6jW5DO2ekP5ViFdi" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/octicons/4.4.0/font/octicons.min.css" />
     <link rel="stylesheet" href="css/index.css" />
@@ -9,7 +10,7 @@
 
     <div id="authorize-div" style="display: none">
       <div class="alert alert-success" role="alert">
-        <strong>Authorize access to Google Sheets API</strong>
+        <strong>請先登入Google帳號</strong>
       </div>
       <button id="authorize-button" class="btn btn-success" onclick="initClick(event)">Authorize</button>
     </div>
@@ -29,7 +30,7 @@
           </button>
         </span>
         <span class="input-group-btn">
-          <button class="btn btn-info" onclick="location.href=configURI;">
+          <button class="btn btn-info" @onclick="gotoConfig">
             <span class="octicon octicon-gear"></span> 設定
           </button>
         </span>
@@ -105,123 +106,124 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/js/bootstrap.min.js" integrity="sha384-BLiI7JTZm+JWlgKa0M0kGRpJbF2J8q+qreVrKBC47e3K6BW78kGLrCkeRX6I9RoK" crossorigin="anonymous"></script>
     <!-- promise -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.4.6/bluebird.min.js"></script>
-    <!-- Google sheet -->
-    <script src="js/config.js"></script>
-    <script src="js/index.js"></script>
-    <script src="js/google-sheet.js"></script>
-    <script src="https://apis.google.com/js/client.js?onload=init"></script>
     <!-- Vue.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.26/vue.min.js"></script>
     <script>
-var vm = new Vue({
-  el:"#main",
-  data:{
-    rows:[],
-    dates:[],
-    query:"",
-    filters:{
-      showPaidValid:{
-        text:"已繳費有效會員",
-        value: true,
+    var vm = new Vue({
+      el:"#main",
+      data:{
+        rows:[],
+        dates:[],
+        query:"",
+        filters:{
+          showPaidValid:{
+            text:"已繳費有效會員",
+            value: true,
+          },
+          showUnpaidValid: {
+            text:"未繳費有效會員",
+            value: false,
+          },
+          showPaidInvalid: {
+            text:"已繳費無效會員",
+            value: false,
+          },
+          showUnpaidInvalid:{
+            text:"未繳費無效會員",
+            value: false,
+          },
+        },
+        configURI: "console.html",
       },
-      showUnpaidValid: {
-        text:"未繳費有效會員",
-        value: false,
+      computed:{
+        unsolved_rows: function(){
+          return this.rows.filter(function(row){
+            return row.unique!==true;
+          });
+        },
+        queried_rows:function(){
+          return this.rows.filter(function(row){
+            var match_nickname = row.nickname&&row.nickname.toLowerCase().indexOf(vm.query.toLowerCase())!=-1;
+            var match_name = row.name&&row.name.toLowerCase().indexOf(vm.query.toLowerCase())!=-1;
+            var match_type =
+              vm.filters.showPaidValid.value && vm.memberType(row)=='paid_valid' ||
+              vm.filters.showPaidInvalid.value && vm.memberType(row)=='paid_invalid' ||
+              vm.filters.showUnpaidValid.value && vm.memberType(row)=='unpaid_valid' ||
+              vm.filters.showUnpaidInvalid.value && vm.memberType(row)=='unpaid_invalid';
+            var hasQuery = vm.query!="";
+            return hasQuery&&(match_nickname||match_name) || !hasQuery&&match_type;
+          });
+        },
       },
-      showPaidInvalid: {
-        text:"已繳費無效會員",
-        value: false,
+      methods:{
+        memberType: function(row){
+          if(row.isValid===true && row.hasFeePaid===true) return 'paid_valid';
+          if(row.isValid===true && row.hasFeePaid!==true) return 'unpaid_valid';
+          if(row.isValid!==true && row.hasFeePaid===true) return 'paid_invalid';
+          if(row.isValid!==true && row.hasFeePaid!==true) return 'unpaid_invalid';
+        },
+        copyList: function(){
+          $('#clipboard').text(this.queried_rows.filter(function(row){
+            return row.unique===true;
+          }).map(function(row){
+            return row.name+"("+row.nickname+")";
+          }).join('\n'));
+          $('.modal').modal('show')
+        },
+        gotoConfig: function(){
+          location.href = this.configURI;
+        },
       },
-      showUnpaidInvalid:{
-        text:"未繳費無效會員",
-        value: false,
-      },
-    },
-  },
-  computed:{
-    unsolved_rows: function(){
-      return this.rows.filter(function(row){
-        return row.unique!==true;
-      });
-    },
-    queried_rows:function(){
-      return this.rows.filter(function(row){
-        var match_nickname = row.nickname&&row.nickname.toLowerCase().indexOf(vm.query.toLowerCase())!=-1;
-        var match_name = row.name&&row.name.toLowerCase().indexOf(vm.query.toLowerCase())!=-1;
-        var match_type =
-          vm.filters.showPaidValid.value && vm.memberType(row)=='paid_valid' ||
-          vm.filters.showPaidInvalid.value && vm.memberType(row)=='paid_invalid' ||
-          vm.filters.showUnpaidValid.value && vm.memberType(row)=='unpaid_valid' ||
-          vm.filters.showUnpaidInvalid.value && vm.memberType(row)=='unpaid_invalid';
-        var hasQuery = vm.query!="";
-        return hasQuery&&(match_nickname||match_name) || !hasQuery&&match_type;
-      });
-    },
-  },
-  methods:{
-    memberType: function(row){
-      if(row.isValid===true && row.hasFeePaid===true) return 'paid_valid';
-      if(row.isValid===true && row.hasFeePaid!==true) return 'unpaid_valid';
-      if(row.isValid!==true && row.hasFeePaid===true) return 'paid_invalid';
-      if(row.isValid!==true && row.hasFeePaid!==true) return 'unpaid_invalid';
-    },
-    copyList: function(){
-      $('#clipboard').text(this.queried_rows.filter(function(row){
-        return row.unique===true;
-      }).map(function(row){
-        return row.name+"("+row.nickname+")";
-      }).join('\n'));
-      $('.modal').modal('show')
-    },
-  },
-});
-
-Vue.filter('simpleDate', function(d){
-  var M = d.getMonth()+1;
-  var D = d.getDate();
-  return (M<10?"0"+M:M)+(D<10?"0"+D:D);
-});
-Vue.filter('isValidText', function(isValid){
-  return isValid==undefined?'':isValid?"有效會員":"無效會員";
-});
-Vue.filter('hasFeePaidText', function(hasFeePaid){
-  return hasFeePaid==undefined?'':hasFeePaid? '已繳': '未繳';
-});
-
-var configURI = "console.html"
-var loading = {
-  timer:null,
-  loadingText:"載入中",
-  failText:"載入失敗",
-  indicator:"⣾⣽⣻⢿⡿⣟⣯⣷",
-  i:0,
-  dt:100,
-  run:function(isRun){
-    $('#loading').text(loading.loadingText);
-    $('#loading').fadeIn('slow');
-    loading.timer = setInterval(function(){
-      var indicator = loading.indicator.charAt(loading.i);
-      $('#loading').text(indicator + loading.loadingText + indicator);
-      loading.i = (loading.i+1)%loading.indicator.length;
-    }, loading.dt);
-  },
-  close: function(){
-    $('#loading').text(loading.loadingText);
-    $('#loading').fadeOut();
-    clearInterval(loading.timer);
-  },
-  fail:function(err){
-    clearInterval(loading.timer);
-    $('#loading').text(loading.failText).append(
-      $('<h6>').append($('<blockquote>').text(err))
-    ).append(
-      $('<a>').addClass('btn btn-danger btn-lg').text('進入管理介面').attr('href',configURI)
-    );
-  },
-};
-
+    });
+    Vue.filter('simpleDate', function(d){
+      var M = d.getMonth()+1;
+      var D = d.getDate();
+      return (M<10?"0"+M:M)+(D<10?"0"+D:D);
+    });
+    Vue.filter('isValidText', function(isValid){
+      return isValid==undefined?'':isValid?"有效會員":"無效會員";
+    });
+    Vue.filter('hasFeePaidText', function(hasFeePaid){
+      return hasFeePaid==undefined?'':hasFeePaid? '已繳': '未繳';
+    });
     </script>
-
+    <!-- Loading -->
+    <script>
+    var loading = {
+      timer:null,
+      loadingText:"載入中",
+      failText:"載入失敗",
+      indicator:"⣾⣽⣻⢿⡿⣟⣯⣷",
+      i:0,
+      dt:100,
+      run:function(isRun){
+        $('#loading').text(loading.loadingText);
+        $('#loading').fadeIn('slow');
+        loading.timer = setInterval(function(){
+          var indicator = loading.indicator.charAt(loading.i);
+          $('#loading').text(indicator + loading.loadingText + indicator);
+          loading.i = (loading.i+1)%loading.indicator.length;
+        }, loading.dt);
+      },
+      close: function(){
+        $('#loading').text(loading.loadingText);
+        $('#loading').fadeOut();
+        clearInterval(loading.timer);
+      },
+      fail:function(err){
+        clearInterval(loading.timer);
+        $('#loading').text(loading.failText).append(
+          $('<h6>').append($('<blockquote>').text(err))
+        ).append(
+          $('<a>').addClass('btn btn-danger btn-lg').text('進入管理介面').attr('href',vm.configURI)
+        );
+      },
+    };
+    </script>
+    <!-- Google sheet -->
+    <script src="js/index.js"></script>
+    <script src="js/google-sheet.js"></script>
+    <script src="https://apis.google.com/js/client.js?onload=init"></script>
   </body>
 </html>
 
