@@ -58,83 +58,6 @@
           儲存
         </button>
       </form>
-    <!--
-      <div class="form-group">
-        <div class="input-group">
-          <span class="input-group-addon">ClientID</span>
-          <input class="form-control" v-model="config.client_id" disabled>
-        </div>
-      </div>
-      <div class="form-group">
-        <div class="input-group">
-          <span class="input-group-addon">Scope</span>
-          <input class="form-control" v-for="scope in config.scopes" v-model="scope" disabled>
-        </div>
-      </div>
-      <div class="form-group">
-        <div class="input-group">
-          <span class="input-group-addon">Discovery</span>
-          <input class="form-control" v-model="config.discovery" disabled>
-        </div>
-      </div>
-      <div class="form-group">
-        <div class="input-group">
-          <span class="input-group-addon">會員資料</span>
-          <input class="form-control" v-model="config.list" :disabled="isLoading">
-          <span class="input-group-btn">
-            <button class="btn btn-secondary" @click="openWindow(config.list)">
-              <span class="octicon octicon-eye"></span> 查看
-            </button>
-          </span>
-        </div>
-      </div>
-      <div class="form-group">
-        <div class="input-group">
-          <span class="input-group-addon">近期主日出席</span>
-          <input class="form-control" v-model="config.attendance_this" :disabled="isLoading">
-          <span class="input-group-btn">
-            <button class="btn btn-secondary" @click="openWindow(config.attendance_this)">
-              <span class="octicon octicon-eye"></span> 查看
-            </button>
-          </span>
-        </div>
-      </div>
-      <div class="form-group">
-        <div class="input-group">
-          <span class="input-group-addon">上期主日出席</span>
-          <input class="form-control" v-model="config.attendance_last" :disabled="isLoading">
-          <span class="input-group-btn">
-            <button class="btn btn-secondary" @click="openWindow(config.attendance_last)">
-              <span class="octicon octicon-eye"></span> 查看
-            </button>
-          </span>
-        </div>
-      </div>
-      <div class="form-group">
-        <div class="input-group">
-          <span class="input-group-addon">最後一次有效主日</span>
-          <input class="form-control" type="number" v-model="config.year" :disabled="isLoading">
-          <span class="input-group-addon">年</span>
-          <input class="form-control" type="number" v-model="config.month" :disabled="isLoading">
-          <span class="input-group-addon">月</span>
-          <input class="form-control" type="number" v-model="config.day" :disabled="isLoading">
-          <span class="input-group-addon">日</span>
-        </div>
-      </div>
-      <div class="form-group">
-        <div class="input-group">
-          <span class="input-group-addon">會員大會倒數第</span>
-          <input class="form-control" type="number" v-model="config.latest" :disabled="isLoading">
-          <span class="input-group-addon">次主日至倒數第</span>
-          <input class="form-control" type="number" v-model="config.earliest" :disabled="isLoading">
-          <span class="input-group-addon">次主日</span>
-        </div>
-      </div>
-      <input class="btn btn-secondary" type="button" value="測試" :disabled="canSave||isLoading" onclick="sendTest()">
-      <input class="btn btn-secondary" type="button" value="重設" :disabled="isLoading" onclick="sendConfig()">
-      <input class="btn btn-success" type="submit" value="提交" :disabled="!canSave||isLoading">
-      <a href="index.html">回到查詢網頁</a>
-      -->
       <blockquote class="blockquote">
         <pre>
 {{stage_label | staticLogs}}
@@ -146,31 +69,10 @@
     <script src="https://code.jquery.com/jquery-latest.min.js"></script>
     <!-- Bootstrap -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/js/bootstrap.min.js" integrity="sha384-BLiI7JTZm+JWlgKa0M0kGRpJbF2J8q+qreVrKBC47e3K6BW78kGLrCkeRX6I9RoK" crossorigin="anonymous"></script>
-    <!-- Vue.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.26/vue.min.js"></script>
     <!-- Promise -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.4.6/bluebird.min.js"></script>
-    <!-- Stages -->
-    <script src="js/stages.js"></script>
-    <script>
-    function nextStage(i, logs){
-      var stage = stages[vm.stage_label];
-      var i = i? i: 0;
-      stage.to[i].beforeNext(function(x){
-        var next_label = stage.to[i].label;
-        var next_stage = stages[next_label];
-        if(next_stage){
-          vm.stage_label = next_label;
-          next_stage.action(x);
-        }
-        else{
-          throw 'Failed to transfer stage "'+next_label+'"';
-        }
-      });
-    }
-    </script>
-    <!-- Socket.io -->
-    <script src="/socket.io/socket.io.js"></script>
+    <!-- Vue.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.26/vue.min.js"></script>
     <script>
     var vm = new Vue({
       el:"#main",
@@ -199,12 +101,6 @@
             this.config.sheet_dates.splice(i,1);
           }
         },
-/*
-        openWindow: function(sheetId){
-          var url = 'https://docs.google.com/spreadsheets/d/' + sheetId;
-          window.open(url, '', '');
-        },
-      */
       },
     });
 
@@ -234,123 +130,15 @@
       return (M<10?"0"+M:M)+(D<10?"0"+D:D);
     });
     </script>
-    <script>
-    function log(logs){
-      vm.logs = logs;
-    };
-    function load(msg){
-      vm.isLoading = true;
-      log('載入中... ' + msg);
-    }
-    function loadDone(msg){
-      vm.isLoading = false;
-      log(msg);
-    }
-    </script>
-
+    <!-- Socket.io -->
+    <script src="/socket.io/socket.io.js"></script>
     <script>
     var socket = io();
-
-    // CONFIG
-    function sendConfig(){
-      load('Config');
-      socket.emit('config');
-    }
-    socket.on('config', function(config){
-      vm.config = config;
-      loadDone(JSON.stringify(vm.config,null,2));
-    });
-
-    function resetSheetId(which){
-      vm.sheetId = which? vm.config[which]: '';
-    }
-
-    function loadSheetId(next){
-      runAuthCheck(vm.config.api)
-      .then(function(){
-        return fetchTitle(vm.sheetId);
-      }, Promise.reject)
-      .then(function(title){
-        next(true, title);
-      }, function(err){
-        next(false, err);
-      });
-    }
-
-    function commitListSheetId(){
-      Vue.set(vm.config, 'list', vm.sheetId);
-    }
-
-    function commitAttendanceSheetId(){
-      vm.config.sheet_dates.push({
-        sheetId:vm.sheetId,
-        title:'',
-        sel_dates:[],
-      });
-    }
-
-    function loadAllSheetDates(next){
-      runAuthCheck(vm.config.api)
-      .then(function(){
-        return Promise.map(vm.config.sheet_dates, function(sheet_date,i){
-          if(sheet_date.sel_dates.length>0){
-            return Promise.resolve();
-          }
-          else{
-            return fetchTitle(sheet_date.sheetId)
-            .then(function(title){
-              Vue.set(vm.config.sheet_dates[i], "title", title);
-              return Promise.resolve();
-            }, Promise.reject)
-            .then(function(){
-              Vue.set(vm.config.sheet_dates[i], "sel_dates", []);
-              return loadSheetDates(sheet_date);
-            }, Promise.reject);
-          }
-        })
-      })
-      .then(function(){
-        next(true);
-      }, function(err){
-        next(false, err);
-      });
-    }
-
-    function loadSheetDates(sheet_date){
-      return runAuthCheck(vm.config.api)
-      .then(function(){
-        return fetchDates(sheet_date.sheetId);
-      }, Promise.reject)
-      .then(function(dates){
-        dates.forEach(function(date, i){
-          sheet_date.sel_dates.push({
-            date:date,
-            i:i,
-            sel:false,
-          });
-        });
-        return Promise.resolve();
-      }, Promise.reject);
-    }
-
-    function saveConfig(){
-      load('Save');
-      socket.emit('save', vm.config);
-    };
-
-    socket.on('saved', function(err){
-      loadDone(err? err: '');
-    });
     </script>
-    <script>
-    load('Initialization');
-    function init(){
-      loadDone('Done');
-      nextStage();
-    }
-    </script>
-    <!-- Google sheet -->
+    <!-- Stages -->
     <script src="js/console.js"></script>
+    <script src="js/stages.js"></script>
+    <!-- Google sheet -->
     <script src="js/google-sheet.js"></script>
     <script src="https://apis.google.com/js/client.js?onload=init"></script>
   </body>
