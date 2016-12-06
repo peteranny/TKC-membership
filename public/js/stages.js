@@ -11,7 +11,7 @@ var stages = {
   },
   'display-config':{
     action:function(){
-      sendConfig();
+      loadConfig();
     },
     to:[{
       label:'modify-list',

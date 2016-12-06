@@ -121,14 +121,13 @@ function loadSheetDates(sheet_date){
 }
 
 // config
-function sendConfig(){
-  load('Config');
-  socket.emit('config');
+function loadConfig(){
+  load("Config");
+  $.getJSON('config.json', function(config){
+      vm.config = config;
+      loadDone(JSON.stringify(vm.config,null,2));
+  });
 }
-socket.on('config', function(config){
-  vm.config = config;
-  loadDone(JSON.stringify(vm.config,null,2));
-});
 function saveConfig(){
   load('Save');
   socket.emit('save', vm.config);

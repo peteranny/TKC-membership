@@ -22,13 +22,6 @@ io.on('connection', function(socket){
   socket.on('disconnection', function(){
     console.log('Receive disconnection');
   });
-  socket.on('config', function(){
-    console.log('Receive config');
-    delete require.cache[require.resolve(configPath)];
-    config = require(configPath);
-    console.log('Send config');
-    socket.emit('config', config);
-  });
   socket.on('save', function(config){
     console.log('Receive save');
     var code = JSON.stringify(config, null, 2);
