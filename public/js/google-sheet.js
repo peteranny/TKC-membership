@@ -95,6 +95,39 @@ function listMembers(sheetId, transformRow) {
   });
 }
 
+// TODO
+function fetchAttendance(sheetId, selected){
+    // load sheet titles
+    return fetchFellowships()
+    .then(fellowships => Promise.map(fellowships, function(fs){
+        // load table
+        gapi.client.sheets.spreadsheets.values.get({
+            spreadsheetId: sheetId,
+            range: `${fs}!A1:Z`,
+            valueRenderOption: "FORMULA",
+            dateTimeRenderOption: "FORMATTED_STRING",
+        })
+        // process rows
+        .then(function(response){
+            var table =
+                response.result.values.slice(1) // crop date row
+                .map(function(row){ // leave only selected columns
+                    return row.filter(function(col, i){
+                        return selected[i];
+                    });
+                })
+                .map(function(row){ // fill in blank cells
+                    selected.forEach(function(date, i){
+                        row[i] = row[i]? 1: 0;
+                    });
+                    return row;
+                });
+            return Promise.resolve(table);
+        }, function(response){
+            return Promise.reject(response.result.error.message);
+        });
+    });
+}
 /*
 function fetchFellowships(sheetId){
   return new Promise(function(resolve, reject){
@@ -130,34 +163,6 @@ function fetchAttendance_wraper(sheetId, fellowships){
 }
 */
 
-/*
-function fetchAttendance(sheetId, fellowships){
-  return Promise.map(fellowships, function(fs, j){
-    gapi.client.sheets.spreadsheets.values.get({
-      spreadsheetId: sheetId,
-      range: "'"+fs+"'!A1:Y",
-      valueRenderOption: "FORMULA",
-      dateTimeRenderOption: "FORMATTED_STRING",
-    })
-      
-      .then(function(response){
-        var dates = response.result.values[0].slice(1).map(serial2date);
-        if(j==0){
-          vm.dates = dates.concat(vm.dates);
-        }
-        var table = response.result.values.slice(1).map(function(row){
-          for(var k=1;k<dates.length+1;k++){
-            Vue.set(row, k, row[k]==1?1:0);
-          }
-          return row;
-        });
-        return Promise.resolve(table);
-      }, function(response){
-        return Promise.reject(response.result.error.message);
-      });
-  });
-}
-*/
 
 /*
 */

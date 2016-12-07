@@ -36,7 +36,16 @@ function showMain(){
     });
     vm.rows = list;
     //TODO
-    return fetchFellowships(config.attendance_this);
+    return Promise.map(vm.config.sheet_dates, function(sheet_date){
+        var sheetId = sheet_date.sheetId;
+        var selected = sheet_date.sel_dates.map(function(sel_date){
+            return sel_date.sel;
+        });
+        return fetchFellowships(sheetId, selected);
+    })
+    .then(tables){
+        vm.rows = tables.reduce(function(a,b){ return a.concat(b); });
+    }, Promise.reject);
   }, Promise.reject)
 
   .then(function(fellowships){
