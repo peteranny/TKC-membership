@@ -1,98 +1,100 @@
 function checkAuth(client_id, scopes, immediate) {
-  return new Promise(function(resolve, reject){
-    gapi.auth.authorize({
-      client_id: client_id,
-      scope: scopes.join(' '),
-      immediate: immediate,
-    }, function(authResult){
-      if(authResult && !authResult.error){
-        resolve();
-      }
-      else{
-        reject(authResult.error);
-      }
+    return new Promise(function(resolve, reject){
+        gapi.auth.authorize({
+            client_id: client_id,
+            scope: scopes.join(' '),
+            immediate: immediate,
+        }, function(authResult){
+            if(authResult && !authResult.error){
+                resolve();
+            }
+            else{
+                reject(authResult.error);
+            }
+        });
     });
-  });
 }
 
 function loadSheetsApi(discovery){
-  return new Promise(function(resolve, reject){
-    gapi.client.load(discovery).then(function(){
-      resolve();
-    }, function(err){
-      reject(err);
+    return new Promise(function(resolve, reject){
+        gapi.client.load(discovery).then(function(){
+            resolve();
+        }, function(err){
+            reject(err);
+        });
     });
-  });
 }
 
 function fetchTitle(sheetId){
-  return new Promise(function(resolve, reject){
-    gapi.client.sheets.spreadsheets.get({
-      spreadsheetId: sheetId,
-    }).then(function(response){
-      var title = response.result.properties.title;
-      resolve(title);
-    }, function(response){
-      if(!response.result) reject(response.statusText);
-      else reject(response.result.error.message);
+    return new Promise(function(resolve, reject){
+        gapi.client.sheets.spreadsheets.get({
+            spreadsheetId: sheetId,
+        }).then(function(response){
+            var title = response.result.properties.title;
+            resolve(title);
+        }, function(response){
+            if(!response.result) reject(response.statusText);
+            else reject(response.result.error.message);
+        });
     });
-  });
 }
 
 function fetchDates(sheetId){
-  return new Promise(function(resolve, reject){
-    gapi.client.sheets.spreadsheets.values.get({
-      spreadsheetId: sheetId,
-      range: "B1:1",
-      valueRenderOption: "FORMULA",
-      dateTimeRenderOption: "FORMATTED_STRING",
-    }).then(function(response){
-      if(!response.result) return reject(response.statusText);
-      var dates = response.result.values[0].map(serial2date);
-      resolve(dates);
-    }, function(response){
-      if(!response.result) reject(response.statusText);
-      else reject(response.result.error.message);
+    return new Promise(function(resolve, reject){
+        gapi.client.sheets.spreadsheets.values.get({
+            spreadsheetId: sheetId,
+            range: "B1:1",
+            valueRenderOption: "FORMULA",
+            dateTimeRenderOption: "FORMATTED_STRING",
+        }).then(function(response){
+            if(!response.result) return reject(response.statusText);
+            var dates = response.result.values[0].map(serial2date);
+            resolve(dates);
+        }, function(response){
+            if(!response.result) reject(response.statusText);
+            else reject(response.result.error.message);
+        });
     });
-  });
 }
 
 function serial2date(serial) {
-  var utc_days  = Math.floor(serial - 25569);
-  var utc_value = utc_days * 86400;
-  var date_info = new Date(utc_value * 1000);
-  var fractional_day = serial - Math.floor(serial) + 0.0000001;
-  var total_seconds = Math.floor(86400 * fractional_day);
-  var seconds = total_seconds % 60;
-  total_seconds -= seconds;
-  var hours = Math.floor(total_seconds / (60 * 60));
-  var minutes = Math.floor(total_seconds / 60) % 60;
-  var date = new Date(
-    date_info.getFullYear(),
-    date_info.getMonth(),
-    date_info.getDate(),
-    hours, minutes,
-    seconds
-  );
-  return date;
+    var utc_days  = Math.floor(serial - 25569);
+    var utc_value = utc_days * 86400;
+    var date_info = new Date(utc_value * 1000);
+    var fractional_day = serial - Math.floor(serial) + 0.0000001;
+    var total_seconds = Math.floor(86400 * fractional_day);
+    var seconds = total_seconds % 60;
+    total_seconds -= seconds;
+    var hours = Math.floor(total_seconds / (60 * 60));
+    var minutes = Math.floor(total_seconds / 60) % 60;
+    var date = new Date(
+        date_info.getFullYear(),
+        date_info.getMonth(),
+        date_info.getDate(),
+        hours, minutes,
+        seconds
+    );
+    return date;
 }
 
 function listMembers(sheetId, transformRow) {
-  return new Promise(function(resolve, reject){
-    gapi.client.sheets.spreadsheets.values.get({
-      spreadsheetId: sheetId,
-      range: "A2:Z",
-    })
-    .then(function(response) {
-      var range = response.result;
-      var list = range.values.map(function(row){
-        return transformRow(row);
-      });
-      resolve(list);
-    }, function(response) {
-      reject(response.result.error.message);
+    return new Promise(function(resolve, reject){
+        // load table
+        gapi.client.sheets.spreadsheets.values.get({
+            spreadsheetId: sheetId,
+            range: "A2:Z",
+        })
+        // process rows
+        .then(function(response) {
+            var range = response.result;
+            var list = range.values.map(function(row){
+                return transformRow(row);
+            });
+            resolve(list);
+        }, function(response) {
+            reject(response.result.error.message);
+        });
     });
-  });
 }
 
 // TODO
