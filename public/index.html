@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="css/index.css" />
   </head>
   <body>
-
+<!--
     <div id="authorize-div" style="display: none">
       <div class="alert alert-success" role="alert">
         <strong>請先登入Google帳號</strong>
@@ -18,14 +18,14 @@
     <div id="main" style="display: none">
 
       <div id="search-bar" class="input-group">
-        <input type="text" class="form-control" style="padding:right:15px;" placeholder="搜尋名字或外號" v-model="query" :disabled="unsolved_rows.length>0">
+        <input type="text" class="form-control" style="padding:right:15px;" placeholder="搜尋名字或外號" v-model="query" :disabled="unsolved_members.length>0">
         <span class="input-group-btn" v-for="filter in filters">
-          <button :class="['btn', 'btn-secondary', {'active':filter.value}]" @click="filter.value=!filter.value" :disabled="unsolved_rows.length>0">
+          <button :class="['btn', 'btn-secondary', {'active':filter.value}]" @click="filter.value=!filter.value" :disabled="unsolved_members.length>0">
             <span :class="['octicon', filter.value?'octicon-check':'octicon-x']"></span> {{filter.text}}
           </button>
         </span>
         <span class="input-group-btn">
-          <button class="btn btn-success" @click="copyList()" :disabled="unsolved_rows.length>0">
+          <button class="btn btn-success" @click="copyList()" :disabled="unsolved_members.length>0">
             <span class="octicon octicon-file"></span> 複製以下名單！
           </button>
         </span>
@@ -36,10 +36,8 @@
         </span>
       </div>
 
-      <div id="loading" style="display: none"></div>
-
       <div id="content" class="table-responsive">
-        <table class="table" v-if="unsolved_rows.length>0">
+        <table class="table" v-if="unsolved_members.length>0">
           <thead>
             <tr>
               <td>
@@ -47,18 +45,18 @@
               若處理以下名單時發覺有問題，請先至Google sheet查看並調整，再回到此頁面重新刷新。</td>
             </tr>
           </thead>
-          <tr v-for="row in unsolved_rows">
+          <tr v-for="member in unsolved_members">
             <td>
-              <button class="btn btn-danger" v-if="row.unique===false" onclick="solveConflict({{row.no}})">
-                有多個 {{row.no}}. {{row.name}}({{row.nickname}}) 的主日出席記錄，點選我以解決
+              <button class="btn btn-danger" v-if="member.unique===false" onclick="solveConflict({{member.no}})">
+                有多個 {{member.no}}. {{member.name}}({{member.nickname}}) 的主日出席記錄，點選我以解決
               </button>
-              <button class="btn btn-warning" v-if="row.unique===undefined" onclick="confirmAbsence({{row.no}})">
-                查無 {{row.no}}. {{row.name}}({{row.nickname}}) 主日出席記錄，點選我以確認
+              <button class="btn btn-warning" v-if="member.unique===undefined" onclick="confirmAbsence({{member.no}})">
+                查無 {{member.no}}. {{member.name}}({{member.nickname}}) 主日出席記錄，點選我以確認
               </button>
             </td>
           </tr>
         </table>
-        <table class="table" v-if="unsolved_rows.length==0">
+        <table class="table" v-if="unsolved_members.length==0">
           <thead>
             <tr>
               <td>No.</td>
@@ -70,19 +68,19 @@
               <td>是否有效</td>
             </tr>
           </thead>
-          <tr :class="memberType(row)" v-for="row in queried_rows">
-            <td>{{row.no}}</td>
-            <td>{{row.name}}</td>
-            <td>{{row.nickname}}</td>
-            <td>{{row.hasFeePaid | hasFeePaidText}}</td>
-            <td v-for="(i,d) in dates">{{row.attendance[i]}}</td>
-            <td>{{row.attendSum}}</td>
-            <td>{{row.isValid | isValidText}}</td>
+          <tr :class="memberType(member)" v-for="member in queried_members">
+            <td>{{member.no}}</td>
+            <td>{{member.name}}</td>
+            <td>{{member.nickname}}</td>
+            <td>{{member.hasFeePaid | hasFeePaidText}}</td>
+            <td v-for="(i,d) in dates">{{member.attendance[i]}}</td>
+            <td>{{member.attendSum}}</td>
+            <td>{{member.isValid | isValidText}}</td>
           </tr>
-          <tr v-if="query==''&&queried_rows.length==0">
+          <tr v-if="query==''&&queried_members.length==0">
             <td :colspan="6 + dates.length"><em>請點選上方按鈕（可複選）顯示需要的名單<br>或是在文字框內輸入想搜尋的會員</em></td>
           </tr>
-          <tr v-if="query!=''&&queried_rows.length==0">
+          <tr v-if="query!=''&&queried_members.length==0">
             <td :colspan="6 + dates.length"><em>查無名單符合「{{query}}」</em></td>
           </tr>
         </table>
@@ -100,19 +98,15 @@
       </div>
     </div>
 
-    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-latest.min.js"></script>
-    <!-- Bootstrap -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/js/bootstrap.min.js" integrity="sha384-BLiI7JTZm+JWlgKa0M0kGRpJbF2J8q+qreVrKBC47e3K6BW78kGLrCkeRX6I9RoK" crossorigin="anonymous"></script>
-    <!-- promise -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.4.6/bluebird.min.js"></script>
-    <!-- Vue.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.26/vue.min.js"></script>
     <script>
     var vm = new Vue({
       el:"#main",
       data:{
-        rows:[],
+        members:[],
         dates:[],
         query:"",
         filters:{
@@ -133,45 +127,45 @@
             value: false,
           },
         },
-        configURI: "console.html",
+        consoleURI: "console.html",
       },
       computed:{
-        unsolved_rows: function(){
-          return this.rows.filter(function(row){
-            return row.unique!==true;
+        unsolved_members: function(){
+          return this.members.filter(function(member){
+            return member.unique!==true;
           });
         },
-        queried_rows:function(){
-          return this.rows.filter(function(row){
-            var match_nickname = row.nickname&&row.nickname.toLowerCase().indexOf(vm.query.toLowerCase())!=-1;
-            var match_name = row.name&&row.name.toLowerCase().indexOf(vm.query.toLowerCase())!=-1;
+        queried_members:function(){
+          return this.members.filter(function(member){
+            var match_nickname = member.nickname&&member.nickname.toLowerCase().indexOf(vm.query.toLowerCase())!=-1;
+            var match_name = member.name&&member.name.toLowerCase().indexOf(vm.query.toLowerCase())!=-1;
             var match_type =
-              vm.filters.showPaidValid.value && vm.memberType(row)=='paid_valid' ||
-              vm.filters.showPaidInvalid.value && vm.memberType(row)=='paid_invalid' ||
-              vm.filters.showUnpaidValid.value && vm.memberType(row)=='unpaid_valid' ||
-              vm.filters.showUnpaidInvalid.value && vm.memberType(row)=='unpaid_invalid';
+              vm.filters.showPaidValid.value && vm.memberType(member)=='paid_valid' ||
+              vm.filters.showPaidInvalid.value && vm.memberType(member)=='paid_invalid' ||
+              vm.filters.showUnpaidValid.value && vm.memberType(member)=='unpaid_valid' ||
+              vm.filters.showUnpaidInvalid.value && vm.memberType(member)=='unpaid_invalid';
             var hasQuery = vm.query!="";
             return hasQuery&&(match_nickname||match_name) || !hasQuery&&match_type;
           });
         },
       },
       methods:{
-        memberType: function(row){
-          if(row.isValid===true && row.hasFeePaid===true) return 'paid_valid';
-          if(row.isValid===true && row.hasFeePaid!==true) return 'unpaid_valid';
-          if(row.isValid!==true && row.hasFeePaid===true) return 'paid_invalid';
-          if(row.isValid!==true && row.hasFeePaid!==true) return 'unpaid_invalid';
+        memberType: function(member){
+          if(member.isValid===true && member.hasFeePaid===true) return 'paid_valid';
+          if(member.isValid===true && member.hasFeePaid!==true) return 'unpaid_valid';
+          if(member.isValid!==true && member.hasFeePaid===true) return 'paid_invalid';
+          if(member.isValid!==true && member.hasFeePaid!==true) return 'unpaid_invalid';
         },
         copyList: function(){
-          $('#clipboard').text(this.queried_rows.filter(function(row){
-            return row.unique===true;
-          }).map(function(row){
-            return row.name+"("+row.nickname+")";
+          $('#clipboard').text(this.queried_members.filter(function(member){
+            return member.unique===true;
+          }).map(function(member){
+            return member.name+"("+member.nickname+")";
           }).join('\n'));
           $('.modal').modal('show')
         },
         gotoConfig: function(){
-          location.href = this.configURI;
+          location.href = this.consoleURI;
         },
       },
     });
@@ -187,8 +181,8 @@
       return hasFeePaid==undefined?'':hasFeePaid? '已繳': '未繳';
     });
     </script>
-    <!-- Loading -->
     <script>
+    $('#main').append($('<div>').attr('id','loading'));
     var loading = {
       timer:null,
       loadingText:"載入中",
@@ -215,15 +209,15 @@
         $('#loading').text(loading.failText).append(
           $('<h6>').append($('<blockquote>').text(err))
         ).append(
-          $('<a>').addClass('btn btn-danger btn-lg').text('進入管理介面').attr('href',vm.configURI)
+          $('<a>').addClass('btn btn-danger btn-lg').text('進入管理介面').attr('href',vm.consoleURI)
         );
       },
     };
     </script>
-    <!-- Google sheet -->
     <script src="js/index.js"></script>
     <script src="js/google-sheet.js"></script>
     <script src="https://apis.google.com/js/client.js?onload=init"></script>
+	-->  
   </body>
 </html>
 

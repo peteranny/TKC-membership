@@ -1,0 +1,133 @@
+var config = null;
+function init(){
+  $.getJSON("config.json", function(json) {
+    config = json;
+    checkAuth(config.api.client_id, config.api.scopes, true)
+    .then(showMain, hideMain);
+  });
+}
+
+function initClick(){
+  checkAuth(config.api.client_id, config.api.scopes, false)
+  .then(showMain, hideMain);
+}
+
+function hideMain(){
+  $('#authorize-div').show();
+  $('#main').hide();
+}
+
+function showMain(){
+  $('#authorize-div').hide();
+  $('#main').show();
+
+  loading.run();
+
+  loadSheetsApi(config.api.discovery)
+
+  .then(function(){
+    return listMembers(config.list, transformRow);
+  }, Promise.reject)
+
+  .then(function(members){
+    members.forEach(function(member){
+      var d = member.dof;
+      member.hasFeePaid = d!=null && d.getFullYear()==(new Date()).getFullYear();
+    });
+    vm.members = members;
+  }, Promise.reject)
+
+    // TODO: not tested yet
+  .then(function(){
+    return Promise.reduce(config.sheet_dates, function(members, sheet_date){
+        // dates
+        vm.dates = vm.dates.concat(
+            sheet_date.sel_dates.filter(function(sel_date){
+                return sel_date.sel;
+            }).map(function(sel_date){
+                return sel_date.date;
+            })
+        );
+        // table
+        return fetchAttendance(sheet_date.sheetId, sheet_date.sel_dates)
+        .then(function(table){
+            var table_map = {};
+            table.forEach(function(row){
+                if(!tableMap[row.nickname]){
+                    // initialize
+                    tableMap[row.nickname] = [];
+                }
+                // push one record for this nickname
+                tableMap[row.nickname].push({
+                    fellowship: row.fellowship,
+                    attendances: row.attendnaces,
+                });
+            });
+            members.forEach(function(member){
+                // union
+                table_map[member.nickname].forEach(function(fs_attendances){
+                    var fs = fs_attendances.fellowship;
+                    var attendances = fs_attendances.attedances;
+                    if(!member.attendances[fs]){
+                        // initialize attendances
+                        member.attendances[fs] = [];
+                    }
+                    member.attendances[fs].concat(attendances);
+                });
+            });
+        }, Promise.reject);
+    }, vm.members);
+  }, Promise.reject)
+
+  .then(function(){
+    return fetchAttendance_wraper(config.attendance_this, fellowships);
+  }, Promise.reject)
+
+  .then(function(fellowships){
+    return cropAttendance(config.year, config.month, config.day, config.latest, config.earliest, fellowships, config.attendance_last);
+  }, Promise.reject)
+
+  .then(function(){
+    return nameAsKey();
+  }, Promise.reject)
+
+  .then(combineListAndAttendance, Promise.reject)
+
+  .then(function(){
+    loading.close();
+  }, function(err){
+    loading.fail(err);
+  });
+}
+
+function transformRow(member){
+  return {
+    no: parseInt(member[0]),
+    nickname: member[1],
+    name: member[2],
+    doj: convertDate(member[7]), // date of join
+    dojf: member[8],
+    dof: convertDate(member[9]), // date of fee
+    dow: convertDate(member[10]), // date of withdrawal
+    unique: undefined,
+    attendances: {},
+    attendSum: undefined,
+    hasFeePaid: undefined,
+    isValid: undefined,
+  };
+}
+
+function convertDate(s){
+  if(!s) return null;
+  var matched = s.match(/(\d+)\.(\d+)\.(\d+)/);
+  if(!matched) return null;
+  var y = matched[1];
+  var m = matched[2];
+  var d = matched[3];
+  return genDate(y,m,d);
+}
+
+function genDate(y,m,d){
+  return new Date(y,m-1,d);
+}
+

@@ -97,10 +97,10 @@ function listMembers(sheetId, transformRow) {
     });
 }
 
-// TODO
-function fetchAttendance(sheetId, selected){
+// TODO: not tested yet
+function fetchAttendance(sheetId, sel_dates){
     // load sheet titles
-    return fetchFellowships()
+    return fetchFellowships(sheetId)
     .then(fellowships => Promise.map(fellowships, function(fs){
         // load table
         gapi.client.sheets.spreadsheets.values.get({
@@ -111,26 +111,34 @@ function fetchAttendance(sheetId, selected){
         })
         // process rows
         .then(function(response){
-            var table =
+            return Promise.resolve(
                 response.result.values.slice(1) // crop date row
-                .map(function(row){ // leave only selected columns
-                    return row.filter(function(col, i){
-                        return selected[i];
-                    });
+                .map(function(row){
+                    return {
+                        fellowship: fs,
+                        nickname: row[0],
+                        // leave only selected columns
+                        attendances: (function(row){
+                            var attendances = [];
+                            for(var i=0;i<sel_dates.length;i++){
+                                if(sel_dates[i].sel) attendances.push(row[i]?1:0);
+                            }
+                            return attendances;
+                        })(row.slice(1)),
+                    };
                 })
-                .map(function(row){ // fill in blank cells
-                    selected.forEach(function(date, i){
-                        row[i] = row[i]? 1: 0;
-                    });
-                    return row;
-                });
-            return Promise.resolve(table);
+            );
         }, function(response){
             return Promise.reject(response.result.error.message);
         });
-    });
+    }), Promise.reject)
+    .then(function(tables){
+        return Promise.resolve(
+            tables.reduce(function(a,b){return a.concat(b);})
+        );
+    }, Promise.reject);
 }
-/*
+
 function fetchFellowships(sheetId){
   return new Promise(function(resolve, reject){
     gapi.client.sheets.spreadsheets.get({
@@ -146,7 +154,6 @@ function fetchFellowships(sheetId){
     });
   });
 }
-*/
 
 /*
 */

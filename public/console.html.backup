@@ -5,6 +5,7 @@
     <link rel="stylesheet" href="css/index.css" />
   </head>
   <body>
+<!--
     <div id="main">
       <pre>Stage: {{stage_label}}</pre>
       <form v-if="stage_label=='display-config'">
@@ -66,13 +67,9 @@
         </pre>
       </blockquote>
     </div>
-    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-latest.min.js"></script>
-    <!-- Bootstrap -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/js/bootstrap.min.js" integrity="sha384-BLiI7JTZm+JWlgKa0M0kGRpJbF2J8q+qreVrKBC47e3K6BW78kGLrCkeRX6I9RoK" crossorigin="anonymous"></script>
-    <!-- Promise -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.4.6/bluebird.min.js"></script>
-    <!-- Vue.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.26/vue.min.js"></script>
     <script>
     var vm = new Vue({
@@ -131,16 +128,14 @@
       return (M<10?"0"+M:M)+(D<10?"0"+D:D);
     });
     </script>
-    <!-- Socket.io -->
     <script src="/socket.io/socket.io.js"></script>
     <script>
     var socket = io();
     </script>
-    <!-- Stages -->
     <script src="js/console.js"></script>
     <script src="js/stages.js"></script>
-    <!-- Google sheet -->
     <script src="js/google-sheet.js"></script>
     <script src="https://apis.google.com/js/client.js?onload=init"></script>
+-->
   </body>
 </html>
