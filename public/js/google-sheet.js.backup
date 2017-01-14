@@ -1,4 +1,5 @@
-function checkAuth(client_id, scopes, immediate) {
+/*
+   function checkAuth(client_id, scopes, immediate) {
     return new Promise(function(resolve, reject){
         gapi.auth.authorize({
             client_id: client_id,
