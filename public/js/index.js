@@ -7,7 +7,6 @@ function init(){
             config.api.scopes,
             true
         ).then(function(){
-            log('Authcheck passed');
             run();
         }).catch(function(err){
             log('Error in init: ', err);
@@ -27,4 +26,11 @@ function initClick(){
 
 function run(){
     vm.logged_in = true;
+    var chain =
+        runLoadSheetsApi(config.api.discovery)
+        .catch(function(err){
+            log(err);
+        }).then(function(){
+            log('Done');
+        });
 }

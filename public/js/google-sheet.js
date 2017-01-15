@@ -15,3 +15,13 @@ function runGoogleAuth(client_id, scopes, immediate) {
     });
 }
 
+function runLoadSheetsApi(discovery){
+    return new Promise(function(resolve, reject){
+        gapi.client.load(discovery).then(function(){
+            resolve();
+        }, function(err){
+            reject(err);
+        });
+    });
+}
+
