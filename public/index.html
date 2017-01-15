@@ -1,229 +1,236 @@
 <html>
-  <head>
-    <meta charset="big5">
-    <title>同光教會會員查詢</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css" integrity="sha384-AysaV+vQoT3kOAXZkl02PThvDr8HYKPZhNT5h/CXfBThSRXQ6jW5DO2ekP5ViFdi" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/octicons/4.4.0/font/octicons.min.css" />
-    <link rel="stylesheet" href="css/index.css" />
-  </head>
-  <body>
-<!--
-    <div id="authorize-div" style="display: none">
-      <div class="alert alert-success" role="alert">
-        <strong>請先登入Google帳號</strong>
-      </div>
-      <button id="authorize-button" class="btn btn-success" onclick="initClick(event)">Authorize</button>
-    </div>
+    <head>
+        <meta charset="big5">
+        <title>同光教會會員查詢</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css" integrity="sha384-AysaV+vQoT3kOAXZkl02PThvDr8HYKPZhNT5h/CXfBThSRXQ6jW5DO2ekP5ViFdi" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/octicons/4.4.0/font/octicons.min.css" />
+        <link rel="stylesheet" href="css/index.css" />
+    </head>
+    <body>
+        <div id="main">
+            <div v-if="!logged_in">
+                <div class="alert alert-success" role="alert">
+                    <strong>請先登入Google帳號</strong>
+                </div>
+                <button id="authorize-button" class="btn btn-success" onclick="initClick(event)">Authorize</button>
+            </div>
 
-    <div id="main" style="display: none">
+            <div v-if="logged_in">
+                123
+            </div>
+            <!--
 
-      <div id="search-bar" class="input-group">
-        <input type="text" class="form-control" style="padding:right:15px;" placeholder="搜尋名字或外號" v-model="query" :disabled="unsolved_members.length>0">
-        <span class="input-group-btn" v-for="filter in filters">
-          <button :class="['btn', 'btn-secondary', {'active':filter.value}]" @click="filter.value=!filter.value" :disabled="unsolved_members.length>0">
-            <span :class="['octicon', filter.value?'octicon-check':'octicon-x']"></span> {{filter.text}}
-          </button>
-        </span>
-        <span class="input-group-btn">
-          <button class="btn btn-success" @click="copyList()" :disabled="unsolved_members.length>0">
-            <span class="octicon octicon-file"></span> 複製以下名單！
-          </button>
-        </span>
-        <span class="input-group-btn">
-          <button class="btn btn-info" @onclick="gotoConfig">
-            <span class="octicon octicon-gear"></span> 設定
-          </button>
-        </span>
-      </div>
+                <div id="search-bar" class="input-group">
+                <input type="text" class="form-control" style="padding:right:15px;" placeholder="搜尋名字或外號" v-model="query" :disabled="unsolved_members.length>0">
+                <span class="input-group-btn" v-for="filter in filters">
+                <button :class="['btn', 'btn-secondary', {'active':filter.value}]" @click="filter.value=!filter.value" :disabled="unsolved_members.length>0">
+                <span :class="['octicon', filter.value?'octicon-check':'octicon-x']"></span> {{filter.text}}
+                </button>
+                </span>
+                <span class="input-group-btn">
+                <button class="btn btn-success" @click="copyList()" :disabled="unsolved_members.length>0">
+                <span class="octicon octicon-file"></span> 複製以下名單！
+                </button>
+                </span>
+                <span class="input-group-btn">
+                <button class="btn btn-info" @onclick="gotoConfig">
+                <span class="octicon octicon-gear"></span> 設定
+                </button>
+                </span>
+                </div>
 
-      <div id="content" class="table-responsive">
-        <table class="table" v-if="unsolved_members.length>0">
-          <thead>
-            <tr>
-              <td>
-              請先完成以下的處理，才能完整顯示會員名單。<br>
-              若處理以下名單時發覺有問題，請先至Google sheet查看並調整，再回到此頁面重新刷新。</td>
-            </tr>
-          </thead>
-          <tr v-for="member in unsolved_members">
-            <td>
-              <button class="btn btn-danger" v-if="member.unique===false" onclick="solveConflict({{member.no}})">
+                <div id="content" class="table-responsive">
+                <table class="table" v-if="unsolved_members.length>0">
+                <thead>
+                <tr>
+                <td>
+                請先完成以下的處理，才能完整顯示會員名單。<br>
+                若處理以下名單時發覺有問題，請先至Google sheet查看並調整，再回到此頁面重新刷新。</td>
+                </tr>
+                </thead>
+                <tr v-for="member in unsolved_members">
+                <td>
+                <button class="btn btn-danger" v-if="member.unique===false" onclick="solveConflict({{member.no}})">
                 有多個 {{member.no}}. {{member.name}}({{member.nickname}}) 的主日出席記錄，點選我以解決
-              </button>
-              <button class="btn btn-warning" v-if="member.unique===undefined" onclick="confirmAbsence({{member.no}})">
+                </button>
+                <button class="btn btn-warning" v-if="member.unique===undefined" onclick="confirmAbsence({{member.no}})">
                 查無 {{member.no}}. {{member.name}}({{member.nickname}}) 主日出席記錄，點選我以確認
-              </button>
-            </td>
-          </tr>
-        </table>
-        <table class="table" v-if="unsolved_members.length==0">
-          <thead>
-            <tr>
-              <td>No.</td>
-              <td>姓名</td>
-              <td>外號</td>
-              <td>會費</td>
-              <td v-for="d in dates"><span class="tag tag-default">{{d | simpleDate}}</span></td>
-              <td>次數</td>
-              <td>是否有效</td>
-            </tr>
-          </thead>
-          <tr :class="memberType(member)" v-for="member in queried_members">
-            <td>{{member.no}}</td>
-            <td>{{member.name}}</td>
-            <td>{{member.nickname}}</td>
-            <td>{{member.hasFeePaid | hasFeePaidText}}</td>
-            <td v-for="(i,d) in dates">{{member.attendance[i]}}</td>
-            <td>{{member.attendSum}}</td>
-            <td>{{member.isValid | isValidText}}</td>
-          </tr>
-          <tr v-if="query==''&&queried_members.length==0">
-            <td :colspan="6 + dates.length"><em>請點選上方按鈕（可複選）顯示需要的名單<br>或是在文字框內輸入想搜尋的會員</em></td>
-          </tr>
-          <tr v-if="query!=''&&queried_members.length==0">
-            <td :colspan="6 + dates.length"><em>查無名單符合「{{query}}」</em></td>
-          </tr>
-        </table>
-      </div>
+                </button>
+                </td>
+                </tr>
+                </table>
+                <table class="table" v-if="unsolved_members.length==0">
+                <thead>
+                <tr>
+                <td>No.</td>
+                <td>姓名</td>
+                <td>外號</td>
+                <td>會費</td>
+                <td v-for="d in dates"><span class="tag tag-default">{{d | simpleDate}}</span></td>
+                <td>次數</td>
+                <td>是否有效</td>
+                </tr>
+                </thead>
+                <tr :class="memberType(member)" v-for="member in queried_members">
+                <td>{{member.no}}</td>
+                <td>{{member.name}}</td>
+                <td>{{member.nickname}}</td>
+                <td>{{member.hasFeePaid | hasFeePaidText}}</td>
+                <td v-for="(i,d) in dates">{{member.attendance[i]}}</td>
+                <td>{{member.attendSum}}</td>
+                <td>{{member.isValid | isValidText}}</td>
+                </tr>
+                <tr v-if="query==''&&queried_members.length==0">
+                <td :colspan="6 + dates.length"><em>請點選上方按鈕（可複選）顯示需要的名單<br>或是在文字框內輸入想搜尋的會員</em></td>
+                </tr>
+                <tr v-if="query!=''&&queried_members.length==0">
+                <td :colspan="6 + dates.length"><em>查無名單符合「{{query}}」</em></td>
+                </tr>
+                </table>
+                </div>
+                */
+                </div>
+                /*
+                <div class="modal fade">
+                <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                <div class="modal-body">
+                <textarea id="clipboard"></textarea>
+                </div>
+                </div>
+                </div>
+                </div>
 
-    </div>
-
-    <div class="modal fade">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-body">
-            <textarea id="clipboard"></textarea>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/js/bootstrap.min.js" integrity="sha384-BLiI7JTZm+JWlgKa0M0kGRpJbF2J8q+qreVrKBC47e3K6BW78kGLrCkeRX6I9RoK" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.26/vue.min.js"></script>
+                <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/js/bootstrap.min.js" integrity="sha384-BLiI7JTZm+JWlgKa0M0kGRpJbF2J8q+qreVrKBC47e3K6BW78kGLrCkeRX6I9RoK" crossorigin="anonymous"></script>
+                <script>
+var vm = new Vue({
+el:"#main",
+data:{
+members:[],
+dates:[],
+query:"",
+filters:{
+showPaidValid:{
+text:"已繳費有效會員",
+value: true,
+},
+showUnpaidValid: {
+text:"未繳費有效會員",
+value: false,
+},
+showPaidInvalid: {
+text:"已繳費無效會員",
+value: false,
+},
+showUnpaidInvalid:{
+text:"未繳費無效會員",
+value: false,
+},
+},
+consoleURI: "console.html",
+},
+computed:{
+unsolved_members: function(){
+return this.members.filter(function(member){
+return member.unique!==true;
+});
+},
+queried_members:function(){
+return this.members.filter(function(member){
+var match_nickname = member.nickname&&member.nickname.toLowerCase().indexOf(vm.query.toLowerCase())!=-1;
+var match_name = member.name&&member.name.toLowerCase().indexOf(vm.query.toLowerCase())!=-1;
+var match_type =
+vm.filters.showPaidValid.value && vm.memberType(member)=='paid_valid' ||
+vm.filters.showPaidInvalid.value && vm.memberType(member)=='paid_invalid' ||
+vm.filters.showUnpaidValid.value && vm.memberType(member)=='unpaid_valid' ||
+vm.filters.showUnpaidInvalid.value && vm.memberType(member)=='unpaid_invalid';
+var hasQuery = vm.query!="";
+return hasQuery&&(match_nickname||match_name) || !hasQuery&&match_type;
+});
+},
+},
+methods:{
+memberType: function(member){
+if(member.isValid===true && member.hasFeePaid===true) return 'paid_valid';
+if(member.isValid===true && member.hasFeePaid!==true) return 'unpaid_valid';
+if(member.isValid!==true && member.hasFeePaid===true) return 'paid_invalid';
+if(member.isValid!==true && member.hasFeePaid!==true) return 'unpaid_invalid';
+},
+copyList: function(){
+$('#clipboard').text(this.queried_members.filter(function(member){
+return member.unique===true;
+}).map(function(member){
+return member.name+"("+member.nickname+")";
+                }).join('\n'));
+$('.modal').modal('show')
+},
+    gotoConfig: function(){
+        location.href = this.consoleURI;
+    },
+    },
+    });
+Vue.filter('simpleDate', function(d){
+    var M = d.getMonth()+1;
+    var D = d.getDate();
+    return (M<10?"0"+M:M)+(D<10?"0"+D:D);
+});
+Vue.filter('isValidText', function(isValid){
+    return isValid==undefined?'':isValid?"有效會員":"無效會員";
+});
+Vue.filter('hasFeePaidText', function(hasFeePaid){
+    return hasFeePaid==undefined?'':hasFeePaid? '已繳': '未繳';
+});
+                </script>
     <script>
-    var vm = new Vue({
-      el:"#main",
-      data:{
-        members:[],
-        dates:[],
-        query:"",
-        filters:{
-          showPaidValid:{
-            text:"已繳費有效會員",
-            value: true,
-          },
-          showUnpaidValid: {
-            text:"未繳費有效會員",
-            value: false,
-          },
-          showPaidInvalid: {
-            text:"已繳費無效會員",
-            value: false,
-          },
-          showUnpaidInvalid:{
-            text:"未繳費無效會員",
-            value: false,
-          },
-        },
-        consoleURI: "console.html",
-      },
-      computed:{
-        unsolved_members: function(){
-          return this.members.filter(function(member){
-            return member.unique!==true;
-          });
-        },
-        queried_members:function(){
-          return this.members.filter(function(member){
-            var match_nickname = member.nickname&&member.nickname.toLowerCase().indexOf(vm.query.toLowerCase())!=-1;
-            var match_name = member.name&&member.name.toLowerCase().indexOf(vm.query.toLowerCase())!=-1;
-            var match_type =
-              vm.filters.showPaidValid.value && vm.memberType(member)=='paid_valid' ||
-              vm.filters.showPaidInvalid.value && vm.memberType(member)=='paid_invalid' ||
-              vm.filters.showUnpaidValid.value && vm.memberType(member)=='unpaid_valid' ||
-              vm.filters.showUnpaidInvalid.value && vm.memberType(member)=='unpaid_invalid';
-            var hasQuery = vm.query!="";
-            return hasQuery&&(match_nickname||match_name) || !hasQuery&&match_type;
-          });
-        },
-      },
-      methods:{
-        memberType: function(member){
-          if(member.isValid===true && member.hasFeePaid===true) return 'paid_valid';
-          if(member.isValid===true && member.hasFeePaid!==true) return 'unpaid_valid';
-          if(member.isValid!==true && member.hasFeePaid===true) return 'paid_invalid';
-          if(member.isValid!==true && member.hasFeePaid!==true) return 'unpaid_invalid';
-        },
-        copyList: function(){
-          $('#clipboard').text(this.queried_members.filter(function(member){
-            return member.unique===true;
-          }).map(function(member){
-            return member.name+"("+member.nickname+")";
-          }).join('\n'));
-          $('.modal').modal('show')
-        },
-        gotoConfig: function(){
-          location.href = this.consoleURI;
-        },
-      },
-    });
-    Vue.filter('simpleDate', function(d){
-      var M = d.getMonth()+1;
-      var D = d.getDate();
-      return (M<10?"0"+M:M)+(D<10?"0"+D:D);
-    });
-    Vue.filter('isValidText', function(isValid){
-      return isValid==undefined?'':isValid?"有效會員":"無效會員";
-    });
-    Vue.filter('hasFeePaidText', function(hasFeePaid){
-      return hasFeePaid==undefined?'':hasFeePaid? '已繳': '未繳';
-    });
-    </script>
-    <script>
-    $('#main').append($('<div>').attr('id','loading'));
-    var loading = {
-      timer:null,
-      loadingText:"載入中",
-      failText:"載入失敗",
-      indicator:"⣾⣽⣻⢿⡿⣟⣯⣷",
-      i:0,
-      dt:100,
-      run:function(isRun){
+$('#main').append($('<div>').attr('id','loading'));
+var loading = {
+    timer:null,
+    loadingText:"載入中",
+    failText:"載入失敗",
+    indicator:"⣾⣽⣻⢿⡿⣟⣯⣷",
+    i:0,
+    dt:100,
+    run:function(isRun){
         $('#loading').text(loading.loadingText);
         $('#loading').fadeIn('slow');
         loading.timer = setInterval(function(){
-          var indicator = loading.indicator.charAt(loading.i);
-          $('#loading').text(indicator + loading.loadingText + indicator);
-          loading.i = (loading.i+1)%loading.indicator.length;
+            var indicator = loading.indicator.charAt(loading.i);
+            $('#loading').text(indicator + loading.loadingText + indicator);
+            loading.i = (loading.i+1)%loading.indicator.length;
         }, loading.dt);
-      },
-      close: function(){
+    },
+    close: function(){
         $('#loading').text(loading.loadingText);
         $('#loading').fadeOut();
         clearInterval(loading.timer);
-      },
-      fail:function(err){
+    },
+    fail:function(err){
         clearInterval(loading.timer);
         $('#loading').text(loading.failText).append(
-          $('<h6>').append($('<blockquote>').text(err))
-        ).append(
-          $('<a>').addClass('btn btn-danger btn-lg').text('進入管理介面').attr('href',vm.consoleURI)
-        );
-      },
-    };
+                $('<h6>').append($('<blockquote>').text(err))
+                ).append(
+                    $('<a>').addClass('btn btn-danger btn-lg').text('進入管理介面').attr('href',vm.consoleURI)
+                    );
+    },
+};
     </script>
     <script src="js/index.js"></script>
-	-->  
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-latest.min.js"></script>
-    <!-- Promise -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.4.6/bluebird.min.js"></script>
-    <!-- Scripts -->
-    <script src="js/log.js"></script>
-    <script src="js/index.js"></script>
-    <!-- Google sheet -->
-    <script src="js/google-sheet.js"></script>
-    <script src="https://apis.google.com/js/client.js?onload=init"></script>
-  </body>
+    -->  
+</div>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-latest.min.js"></script>
+<!-- Promise -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.4.6/bluebird.min.js"></script>
+<!-- Vue -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.26/vue.min.js"></script>
+<script src="js/vm.js"></script>
+<!-- Scripts -->
+<script src="js/log.js"></script>
+<script src="js/index.js"></script>
+<!-- Google sheet -->
+<script src="js/google-sheet.js"></script>
+<script src="https://apis.google.com/js/client.js?onload=init"></script>
+    </body>
 </html>
 

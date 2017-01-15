@@ -13,3 +13,4 @@ docker-compose.yml
 
 # others
 *~
+*.swp
