@@ -10,8 +10,8 @@ function log(){
         $('<pre>')
         .text(text)
         .css({
-            'background-color': 'rgba(0,0,0,0.7)',
-            'color': 'white',
+            'background-color': 'rgba(0, 100, 0, 0.7)',
+            'color': 'lightgreen',
         })
         .css({
             'margin': '1em',
@@ -33,7 +33,7 @@ function log(){
         .hover(function(){
             $(this).css('color', 'yellow');
         }, function(){
-            $(this).css('color', 'white');
+            $(this).css('color', 'lightgreen');
         })
         .hide()
         .appendTo($('body'))

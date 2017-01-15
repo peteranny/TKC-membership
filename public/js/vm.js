@@ -2,15 +2,22 @@ var vm = new Vue({
     el: '#main',
     data:{
         logged_in: false,
+        members: [],
         query: '',
-        filters:[],
+        filters: [],
+        console_uri: 'TODO',
     },
     computed:{
+        queried_members: function(){
+            return this.members;
+        },
         unsolved_members: function(){
-            return [];
+            return this.members.filter(function(member){
+                return !member.unique || member.sum<0;
+            });
         },
         isSolved: function(){
-            return this.unsolved_members.length == 0;
+            return this.unsolved_members.length==0;
         },
     },
     methods:{
@@ -20,5 +27,14 @@ var vm = new Vue({
         gotoConfig: function(){
             log('goto config');
         },
+        solveConflict: function(no){
+            log('solve conflict');
+        },
+        confirmAbsence: function(no){
+            log('confirm absence');
+        },
+        memberType: function(member){
+            return;
+        }
     },
 });

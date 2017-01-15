@@ -25,3 +25,20 @@ function runLoadSheetsApi(discovery){
     });
 }
 
+function runGetMembers(sheetId, procRow) {
+    return new Promise(function(resolve, reject){
+        gapi.client.sheets.spreadsheets.values.get({
+            spreadsheetId: sheetId,
+            range: 'A2:Z',
+        }).then(function(response) {
+            var range = response.result;
+            var rows = range.values;
+            var list = rows.map(procRow);
+            resolve(list);
+        }, function(response) {
+            var err = response.result.error.message;
+            reject(err);
+        });
+    });
+}
+

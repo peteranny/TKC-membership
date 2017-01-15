@@ -35,69 +35,79 @@
                     </span>
                 </div>
                 <div id="content" class="table-responsive">
-                    <!--
-
-                        <table class="table" v-if="unsolved_members.length>0">
+                    <table class="table" v-if="!isSolved">
                         <thead>
-                        <tr>
-                        <td>
-                        請先完成以下的處理，才能完整顯示會員名單。<br>
-                        若處理以下名單時發覺有問題，請先至Google sheet查看並調整，再回到此頁面重新刷新。</td>
-                        </tr>
+                            <tr>
+                                <td>
+                                    請先完成以下的處理，才能完整顯示會員名單。<br>
+                                    若處理以下名單時發覺有問題，請先至Google sheet查看並調整，再回到此頁面重新刷新。
+                                </td>
+                            </tr>
                         </thead>
                         <tr v-for="member in unsolved_members">
-                        <td>
-                        <button class="btn btn-danger" v-if="member.unique===false" onclick="solveConflict({{member.no}})">
-                        有多個 {{member.no}}. {{member.name}}({{member.nickname}}) 的主日出席記錄，點選我以解決
-                        </button>
-                        <button class="btn btn-warning" v-if="member.unique===undefined" onclick="confirmAbsence({{member.no}})">
-                        查無 {{member.no}}. {{member.name}}({{member.nickname}}) 主日出席記錄，點選我以確認
-                        </button>
-                        </td>
+                            <td>
+                                <button class="btn btn-danger" v-if="!member.unique" @click="solveConflict(member.no)">
+                                    有多個 {{member.no}}. {{member.name}}({{member.nickname}}) 的主日出席記錄，點選我以解決
+                                </button>
+                                <button class="btn btn-warning" v-if="member.unique && member.sum<0" @click="confirmAbsence(member.no)">
+                                    查無 {{member.no}}. {{member.name}}({{member.nickname}}) 主日出席記錄，點選我以確認
+                                </button>
+                            </td>
                         </tr>
-                        </table>
-                        <table class="table" v-if="unsolved_members.length==0">
+                    </table>
+                    <table class="table" v-if="isSolved">
                         <thead>
-                        <tr>
-                        <td>No.</td>
-                        <td>姓名</td>
-                        <td>外號</td>
-                        <td>會費</td>
-                        <td v-for="d in dates"><span class="tag tag-default">{{d | simpleDate}}</span></td>
-                        <td>次數</td>
-                        <td>是否有效</td>
-                        </tr>
+                            <tr>
+                                <td>No.</td>
+                                <td>姓名</td>
+                                <td>外號</td>
+                                <!--
+                                <td>會費</td>
+                                    <td v-for="d in dates"><span class="tag tag-default">{{d | simpleDate}}</span></td>
+                                <td>次數</td>
+                                <td>是否有效</td>
+                                -->
+                            </tr>
                         </thead>
                         <tr :class="memberType(member)" v-for="member in queried_members">
-                        <td>{{member.no}}</td>
-                        <td>{{member.name}}</td>
-                        <td>{{member.nickname}}</td>
-                        <td>{{member.hasFeePaid | hasFeePaidText}}</td>
-                        <td v-for="(i,d) in dates">{{member.attendance[i]}}</td>
-                        <td>{{member.attendSum}}</td>
-                        <td>{{member.isValid | isValidText}}</td>
+                            <td>{{member.no}}</td>
+                            <td>{{member.name}}</td>
+                            <td>{{member.nickname}}</td>
+                            <!--
+                            <td>{{member.hasFeePaid | hasFeePaidText}}</td>
+                            <td v-for="(i,d) in dates">{{member.attendance[i]}}</td>
+                            <td>{{member.attendSum}}</td>
+                            <td>{{member.isValid | isValidText}}</td>
+                            -->
                         </tr>
-                        <tr v-if="query==''&&queried_members.length==0">
-                        <td :colspan="6 + dates.length"><em>請點選上方按鈕（可複選）顯示需要的名單<br>或是在文字框內輸入想搜尋的會員</em></td>
+                        <tr v-if="query=='' && queried_members.length==0">
+                            <!--
+                            <td :colspan="6 + dates.length">
+                                <em>請點選上方按鈕（可複選）顯示需要的名單<br>或是在文字框內輸入想搜尋的會員</em>
+                            </td>
+                            -->
                         </tr>
-                        <tr v-if="query!=''&&queried_members.length==0">
-                        <td :colspan="6 + dates.length"><em>查無名單符合「{{query}}」</em></td>
+                        <tr v-if="query!='' && queried_members.length==0">
+                            <!--
+                            <td :colspan="6 + dates.length">
+                                <em>查無名單符合「{{query}}」</em>i
+                            </td>
+                            -->
                         </tr>
-                        </table>
-                        </div>
-                        */
-                        </div>
-                        /*
-                        <div class="modal fade">
-                        <div class="modal-dialog" role="document">
-                        <div class="modal-content">
+                    </table>
+                </div>
+            </div>
+            <!--/*
+            <div class="modal fade">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
                         <div class="modal-body">
-                        <textarea id="clipboard"></textarea>
+                            <textarea id="clipboard"></textarea>
                         </div>
-                        </div>
-                        </div>
-                    -->
-                        </div>
+                    </div>
+                </div>
+                -->
+            </div>
         </div>
         <!--
             <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/js/bootstrap.min.js" integrity="sha384-BLiI7JTZm+JWlgKa0M0kGRpJbF2J8q+qreVrKBC47e3K6BW78kGLrCkeRX6I9RoK" crossorigin="anonymous"></script>
@@ -158,9 +168,9 @@ if(member.isValid!==true && member.hasFeePaid!==true) return 'unpaid_invalid';
 copyList: function(){
 $('#clipboard').text(this.queried_members.filter(function(member){
 return member.unique===true;
-                        }).map(function(member){
-                            return member.name+"("+member.nickname+")";
-                        }).join('\n'));
+            }).map(function(member){
+                return member.name+"("+member.nickname+")";
+            }).join('\n'));
 $('.modal').modal('show')
 },
     gotoConfig: function(){
@@ -227,6 +237,7 @@ var loading = {
 <script src="js/vm.js"></script>
 <!-- Scripts -->
 <script src="js/log.js"></script>
+<script src="js/loading.js"></script>
 <script src="js/index.js"></script>
 <!-- Google sheet -->
 <script src="js/google-sheet.js"></script>
