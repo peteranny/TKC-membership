@@ -17,19 +17,19 @@
 
             <div v-if="logged_in">
                 <div id="search-bar" class="input-group">
-                    <input type="text" class="form-control" style="padding:right:15px;" placeholder="搜尋名字或外號" v-model="query" :disabled="unsolved_members.length>0">
+                    <input type="text" class="form-control" placeholder="搜尋名字或外號" v-model="query" :disabled="!isSolved">
                     <span class="input-group-btn" v-for="filter in filters">
-                        <button :class="['btn', 'btn-secondary', {'active':filter.value}]" @click="filter.value=!filter.value" :disabled="unsolved_members.length>0">
+                        <button :class="['btn', 'btn-secondary', {'active':filter.value}]" @click="filter.value=!filter.value" :disabled="!isSolved">
                             <span :class="['octicon', filter.value?'octicon-check':'octicon-x']"></span> {{filter.text}}
                         </button>
                     </span>
                     <span class="input-group-btn">
-                        <button class="btn btn-success" @click="copyList()" :disabled="unsolved_members.length>0">
+                        <button class="btn btn-success" @click="copyList" :disabled="!isSolved">
                             <span class="octicon octicon-file"></span> 複製以下名單！
                         </button>
                     </span>
                     <span class="input-group-btn">
-                        <button class="btn btn-info" @onclick="gotoConfig">
+                        <button class="btn btn-info" @click="gotoConfig">
                             <span class="octicon octicon-gear"></span> 設定
                         </button>
                     </span>
