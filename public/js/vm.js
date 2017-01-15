@@ -3,9 +3,11 @@ var vm = new Vue({
     data:{
         logged_in: false,
         members: [],
+        dates: [],
         query: '',
         filters: [],
         console_uri: 'TODO',
+        valid_threshold: 6,
     },
     computed:{
         queried_members: function(){
@@ -13,7 +15,7 @@ var vm = new Vue({
         },
         unsolved_members: function(){
             return this.members.filter(function(member){
-                return !member.unique || member.sum<0;
+                return !member.unique;
             });
         },
         isSolved: function(){
@@ -35,6 +37,12 @@ var vm = new Vue({
         },
         memberType: function(member){
             return;
-        }
+        },
+        isValid: function(hasFeePaid, attendance){
+            var sum = attendance.reduce(function(a, b){
+                return a + b;
+            }, 0);
+            return hasFeepaid && sum >= this.valid_threshold;
+        },
     },
 });

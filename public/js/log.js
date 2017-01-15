@@ -36,6 +36,6 @@ function log(){
             $(this).css('color', 'lightgreen');
         })
         .hide()
-        .appendTo($('body'))
+        .prependTo($('body'))
         .show('slow');
 }

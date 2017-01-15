@@ -31,21 +31,13 @@ function runGetMembers(sheetId) {
             spreadsheetId: sheetId,
             range: 'A2:Z',
         }).then(function(response) {
-            var range = response.result;
-            var rows = range.values;
+            var rows = response.result.values;
             var list = rows.map(function(row){
                 return {
                     no: parseInt(row[0]),
                     nickname: row[1],
                     name: row[2],
-                    unique: true,//TODO
-                    sum: 0,//TODO
-                    /*
-                        attendances: {},
-                        attendSum: undefined,
-                        hasFeePaid: undefined,
-                        isValid: undefined,
-                        */
+                    hasFeePaied: true, // TODO: row[9]
                 };
             });
             resolve(list);
@@ -55,7 +47,7 @@ function runGetMembers(sheetId) {
     });
 }
 
-function runGetAttendances(sheetId, sel_dates){
+function runGetAttendances(sheetId){
     return new Promise(function(resolve, reject){
         gapi.client.sheets.spreadsheets.values.get({
             spreadsheetId: sheetId,
@@ -63,22 +55,18 @@ function runGetAttendances(sheetId, sel_dates){
             valueRenderOption: "FORMATTED_VALUE",
         }).then(function(response){
             var table = response.result.values;
-            var dates = table[0].slice(2).filter(function(col, i){
-                return sel_dates[i].sel;
-            });
-            var attendances = table.slice(1).map(function(row){
-                var attendance = [];
-                for(var i=0;i<sel_dates.length;i++){
-                    // leave only selected columns
-                    if(sel_dates[i].sel) attendance.push(row[i]? 1: 0);
-                }
+            var dates = table[0].slice(2);
+            var member_attendances = table.slice(1).map(function(row){
                 return {
                     nickname: row[0],
                     group: row[1],
-                    attendance,
+                    attendance: row.slice(2),
                 };
             });
-            resolve(attendances);
+            resolve({
+                dates: dates,
+                member_attendances: member_attendances,
+            });
         }, function(response){
             reject(response.result.error.message);
         });
