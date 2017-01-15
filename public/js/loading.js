@@ -14,23 +14,29 @@ var Loading = {
     }).appendTo($('body')),
 
     indicators: '⣾⣽⣻⢿⡿⣟⣯⣷',
+    loading_text: '載入中',
+    fail_text: '載入失敗',
+    console_text: '進入管理介面',
+
     dt: 100,
-    loadingText: '載入中',
-    failText: '載入失敗',
-    consoleText: '進入管理介面',
     timer: null,
-    on: function(isRun){
-        $('#loading').text(Loading.loadingText);
-        $('#loading').fadeIn('slow');
-        function next(i){
+    on: function(message){
+        Loading.$el.fadeIn('slow');
+        (function next(i){
             var indicator = Loading.indicators.charAt(i);
-            Loading.$el.text(
-                indicator + Loading.loadingText + indicator
-            );
+            Loading.$el
+                .empty()
+                .text(
+                    indicator + Loading.loading_text + indicator
+                );
+            if(message)
+                Loading.$el.append(
+                    $('<h2>').append($('<blockquote>').text(message))
+                );
+            if(Loading.timer) clearTimeout(Loading.timer);
             var j = (i + 1) % Loading.indicators.length;
             Loading.timer = setTimeout(next.bind(null, j), Loading.dt);
-        }
-        next(0);
+        })(0);
     },
     off: function(err){
         clearInterval(Loading.timer);
@@ -38,16 +44,17 @@ var Loading = {
             Loading.$el.fadeOut();
         }else{
             Loading.$el
-                .text(Loading.failText)
+                .empty()
+                .text(Loading.fail_text)
                 .append(
-                    $('<h6>')
-                    .append($('<blockquote>').text(err))
+                    $('<h2>').append($('<blockquote>').text(err))
                 ).append(
                     $('<a>')
                     .addClass('btn btn-danger btn-lg')
-                    .text(consoleText)
+                    .text(Loading.console_text)
                     .attr('href', vm.console_uri)
                 );
         }
     },
-};
+}
+

@@ -1,3 +1,5 @@
+Loading.on();
+
 var config = null;
 function init(){
     $.getJSON('config.json')
@@ -30,41 +32,42 @@ function initClick(){
 
 function run(){
     vm.logged_in = true;
-    Loading.on();
+    Loading.on('Google API');
     var chain =
         runLoadSheetsApi(
             config.api.discovery
         ).then(function(){
+            Loading.on('Members');
             function convertDate(s){
                 if(!s) return null;
                 var matched = s.match(/(\d+)\.(\d+)\.(\d+)/);
                 if(!matched) return null;
-                var y = matched[1];
-                var m = matched[2];
-                var d = matched[3];
-                return new Date(y,m-1,d);
+                var y = matched[1], m = matched[2], d = matched[3];
+                return new Date(y, m-1, d);
             }
             return runGetMembers(
-                config.list,
-                function(row){ return {
-                    no: parseInt(row[0]),
-                    nickname: row[1],
-                    name: row[2],
-                    unique: true,//TODO
-                    sum: 0,//TODO
-                    /*
-                        attendances: {},
-                        attendSum: undefined,
-                        hasFeePaid: undefined,
-                        isValid: undefined,
-                        */
-                }}
+                config.list
             );
         }).then(function(members){
+            Loading.on('Attendances');
             vm.members = members;
+            return Promise.map(
+                config.attendances_dates,
+                function(one){
+                    return runGetAttendances(
+                        one.sheetId,
+                        one.sel_dates
+                    );
+                }
+            ).then(function(many){
+                return many.reduce(function(a, b){
+                    return a.concat(b);
+                }, []);
+            });
+        }).then(function(data){
+            log(data);
+            Loading.off();
         }).catch(function(err){
             Loading.off(err);
-        }).then(function(){
-            Loading.off();
         });
 }
