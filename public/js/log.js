@@ -6,12 +6,36 @@ function log(){
             y
         );
     }, '');
-    $('<pre>')
-    .text(text)
-    .css('background-color', 'rgba(0,0,0,0.1')
-    .css('margin', '1em')
-    .css('padding', '1em')
-    .hide()
-    .prependTo($('body'))
-    .show('slow');
+    var ele =
+        $('<pre>')
+        .text(text)
+        .css({
+            'background-color': 'rgba(0,0,0,0.7)',
+            'color': 'white',
+        })
+        .css({
+            'margin': '1em',
+            'padding': '1em',
+            'width': 'calc(100% - 2em)',
+            'height': 'calc(100% - 2em)',
+        })
+        .css({
+            'position': 'fixed',
+            'top': '0px',
+            'left': '0px',
+            'z-index': 999,
+        })
+        .corner()
+        .css('cursor', 'pointer')
+        .click(function(){
+            $(this).hide('show')
+        })
+        .hover(function(){
+            $(this).css('color', 'yellow');
+        }, function(){
+            $(this).css('color', 'white');
+        })
+        .hide()
+        .appendTo($('body'))
+        .show('slow');
 }
