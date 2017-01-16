@@ -102,15 +102,15 @@ function run(){
                 for(var i in members){
                     var member = members[i];
                     var nickname = member.nickname;
-                    // unique
+                    // solved
                     Object.assign(member, {
-                        unique: members_dict[nickname].length == 1,
+                        solved: members_dict[nickname].length == 1,
                     });
                     // attendance
-                    if(member.unique){
+                    if(member.solved){
                         Object.assign(member, members_dict[nickname][0]);
                     }else{
-                        // ununique candidates
+                        // unsolved candidates
                         Object.assign(member, {
                             candidates: members_dict[nickname],
                         });

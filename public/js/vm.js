@@ -15,7 +15,7 @@ var vm = new Vue({
         },
         unsolved_members: function(){
             return this.members.filter(function(member){
-                return !member.unique;
+                return !member.solved;
             });
         },
         isSolved: function(){
@@ -39,12 +39,12 @@ var vm = new Vue({
                 if(chosen==null) return;
                 chosen = parseInt(chosen);
             }while( !(chosen>0 && chosen<=member.candidates.length) );
-            member.attendance = member.candidates[chosen-1].attendance;
+            Object.assign(member, member.candidates[chosen-1]);
             delete member.candidates;
-            member.unique = true;
+            member.solved = true;
         },
-        confirmAbsence: function(no){
-            log('confirm absence');
+        confirmAbsence: function(member){
+            member.solved = true;
         },
         memberType: function(member){
             return;
@@ -53,7 +53,7 @@ var vm = new Vue({
             var sum = attendance.reduce(function(a, b){
                 return a + b;
             }, 0);
-            return hasFeepaid && sum >= this.valid_threshold;
+            return hasFeePaid && sum >= this.valid_threshold;
         },
     },
 });
