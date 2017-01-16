@@ -12,7 +12,22 @@ var vm = new Vue({
     },
     computed:{
         queried_members: function(){
-            return this.members;
+            return this.members.filter(function(member){
+                var hasQuery = this.query!='';
+                var match_nickname =
+                    member.nickname&&
+                    member.nickname.toLowerCase().indexOf(this.query.toLowerCase())!=-1;
+                var match_name =
+                    member.name&&
+                    member.name.toLowerCase().indexOf(this.query.toLowerCase())!=-1;
+                var is_paid = this.hasFeePaid(member);
+                var is_valid = this.isValid(member);
+                /* filters */
+                return (
+                    hasQuery&&(match_nickname||match_name)
+                    || !hasQuery//&&match_type;
+                );
+            }.bind(this));
         },
         unsolved_members: function(){
             return this.members.filter(function(member){
