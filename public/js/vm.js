@@ -45,6 +45,10 @@ var vm = new Vue({
             member.solved = true;
         },
         confirmAbsence: function(member){
+            // absent
+            Object.assign(member, {
+                attendance: '0'.repeat(this.dates.length).split('').map(function(x){ return parseInt(x) }),
+            });
             member.solved = true;
         },
         memberType: function(member){

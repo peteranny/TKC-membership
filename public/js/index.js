@@ -101,6 +101,7 @@ function run(){
                         members_dict[nickname].push(m_a);
                 }
                 // append meta data to members
+                Loading.on('Generate meta data');
                 for(var i in members){
                     var member = members[i];
                     var nickname = member.nickname;
