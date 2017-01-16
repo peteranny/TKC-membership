@@ -1,3 +1,22 @@
+const filters = {
+    showPaidValid: {
+        text: "已繳費有效會員",
+        sel: true,
+    },
+    showUnpaidValid: {
+        text: "未繳費有效會員",
+        sel: false,
+    },
+    showPaidInvalid: {
+        text: "已繳費無效會員",
+        sel: false,
+    },
+    showUnpaidInvalid: {
+        text: "未繳費無效會員",
+        sel: false,
+    },
+};
+
 var vm = new Vue({
     el: '#main',
     data:{
@@ -5,7 +24,7 @@ var vm = new Vue({
         members: [],
         dates: [],
         query: '',
-        filters: [],
+        filters,
         console_uri: 'TODO',
         attendance_threshold: 6,
         paid_year: 2017,
@@ -22,10 +41,14 @@ var vm = new Vue({
                     member.name.toLowerCase().indexOf(this.query.toLowerCase())!=-1;
                 var is_paid = this.hasFeePaid(member);
                 var is_valid = this.isValid(member);
-                /* filters */
+                var match_filter =
+                    filters.showPaidValid.sel && is_paid && is_valid ||
+                    filters.showPaidInvalid.sel && is_paid && !is_valid ||
+                    filters.showUnpaidValid.sel && !is_paid && is_valid ||
+                    filters.showUnpaidInvalid.sel && !is_paid && !is_valid;
                 return (
                     hasQuery&&(match_nickname||match_name)
-                    || !hasQuery//&&match_type;
+                    || !hasQuery&&match_filter
                 );
             }.bind(this));
         },
@@ -69,11 +92,6 @@ var vm = new Vue({
         memberType: function(member){
             return;
         },
-        attendanceSum: function(member){
-            return member.attendance.reduce(function(a, b){
-                return a + b;
-            }, 0);
-        },
         hasFeePaid: function(member){
             var dof = member.date_of_last_fee_paid;
             return (
@@ -82,20 +100,26 @@ var vm = new Vue({
                 false
             );
         },
+        attendanceSum: function(member){
+            return member.attendance.reduce(function(a, b){
+                return a + b;
+            }, 0);
+        },
         isValid: function(member){
-            var sum = this.attendanceSum(member);
-            var paid = this.hasFeePaid(member);
-            return paid && sum >= this.attendance_threshold;
+            return this.attendanceSum(member) >= this.attendance_threshold;
+        },
+        canVote: function(member){
+            return this.hasFeePaid(member) && this.isValid(member);
         },
     },
 });
 
-Vue.filter('isValidText', function(isValid){
-    return isValid==undefined?'':isValid?"有效會員":"無效會員";
+Vue.filter('canVoteText', function(canVote){
+    return canVote? '有': '無';
 });
 
-Vue.filter('attendanceText', function(isValid){
-    return isValid==undefined?'':isValid?"有效會員":"無效會員";
+Vue.filter('attendanceText', function(attendance){
+    return attendance? '有效會員': '無效會員';
 });
 
 Vue.filter('hasFeePaidText', function(hasFeePaid){

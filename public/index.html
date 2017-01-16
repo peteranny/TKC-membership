@@ -19,8 +19,8 @@
                 <div id="search-bar" class="input-group">
                     <input type="text" class="form-control" placeholder="搜尋名字或外號" v-model="query" :disabled="!isSolved">
                     <span class="input-group-btn" v-for="filter in filters">
-                        <button :class="['btn', 'btn-secondary', {'active':filter.value}]" @click="filter.value=!filter.value" :disabled="!isSolved">
-                            <span :class="['octicon', filter.value?'octicon-check':'octicon-x']"></span> {{filter.text}}
+                        <button :class="['btn', 'btn-secondary', {'active':filter.sel}]" @click="filter.sel=!filter.sel" :disabled="!isSolved">
+                            <span :class="['octicon', filter.sel?'octicon-check':'octicon-x']"></span> {{filter.text}}
                         </button>
                     </span>
                     <span class="input-group-btn">
@@ -73,31 +73,25 @@
                                 </td>
                                 <td>次數</td>
                                 <td>會費</td>
-                                <td>是否有效</td>
+                                <td>投票權</td>
                             </tr>
                         </thead>
-                        <tr :class="{'valid':isValid(member)}" v-for="member in queried_members">
+                        <tr :class="{'valid':canVote(member)}" v-for="member in queried_members">
                             <td>{{member.no}}</td>
                             <td>{{member.name}}</td>
                             <td>{{member.nickname}}</td>
                             <td v-for="(i,d) in dates"><span :class="['attendance', member.attendance[i]?'presence':'absence']"></span></td>
-                            <td><span :class="{'passed':attendanceSum(member)>=attendance_threshold}">{{attendanceSum(member)}}</span></td>
+                            <td><span :class="{'passed':isValid(member)}">{{attendanceSum(member)}}</span></td>
                             <td><span :class="{'passed':hasFeePaid(member)}">{{hasFeePaid(member) | hasFeePaidText}}</span></td>
-                            <td>{{isValid(member) | isValidText}}</td>
+                            <td><span :class="{'passed':canVote(member)}">{{canVote(member) | canVoteText}}</span></td>
                         </tr>
-                        <tr v-if="query=='' && queried_members.length==0">
-                            <!--
-                            <td :colspan="6 + dates.length">
+                        <tr v-if="queried_members.length==0">
+                            <td v-if="query==''" :colspan="6 + dates.length">
                                 <em>請點選上方按鈕（可複選）顯示需要的名單<br>或是在文字框內輸入想搜尋的會員</em>
                             </td>
-                            -->
-                        </tr>
-                        <tr v-if="query!='' && queried_members.length==0">
-                            <!--
-                            <td :colspan="6 + dates.length">
+                            <td v-if="query!=''" :colspan="6 + dates.length">
                                 <em>查無名單符合「{{query}}」</em>i
                             </td>
-                            -->
                         </tr>
                     </table>
                 </div>
