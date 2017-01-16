@@ -37,7 +37,7 @@ function runGetMembers(sheetId) {
                     no: parseInt(row[0]),
                     nickname: row[1],
                     name: row[2],
-                    hasFeePaied: true, // TODO: row[9]
+                    hasFeePaid: true, // TODO: row[9]
                 };
             });
             resolve(list);

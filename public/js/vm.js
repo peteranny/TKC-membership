@@ -29,8 +29,19 @@ var vm = new Vue({
         gotoConfig: function(){
             log('goto config');
         },
-        solveConflict: function(no){
-            log('solve conflict');
+        solveConflict: function(member){
+            var msg =
+                '請問' + member.name + '(' + member.nickname + ')是:\n' +
+                member.candidates.map(function(one, i){ return (i+1) + ') ' + one.group }).join('\n');
+            var chosen = -1;
+            do{
+                chosen = prompt(msg);
+                if(chosen==null) return;
+                chosen = parseInt(chosen);
+            }while( !(chosen>0 && chosen<=member.candidates.length) );
+            member.attendance = member.candidates[chosen-1].attendance;
+            delete member.candidates;
+            member.unique = true;
         },
         confirmAbsence: function(no){
             log('confirm absence');

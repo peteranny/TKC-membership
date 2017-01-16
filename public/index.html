@@ -46,7 +46,7 @@
                         </thead>
                         <tr v-for="member in unsolved_members">
                             <td>
-                                <button class="btn btn-danger" v-if="member.candidates.length > 1" @click="solveConflict(member.no)">
+                                <button class="btn btn-danger" v-if="member.candidates.length > 1" @click="solveConflict(member)">
                                     有多個 {{member.no}}. {{member.name}}({{member.nickname}}) 的主日出席記錄，點選我以解決
                                 </button>
                                 <button class="btn btn-warning" v-if="member.candidates.length==0" @click="confirmAbsence(member.no)">
