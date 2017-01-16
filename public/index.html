@@ -77,14 +77,13 @@
                             <td>{{member.no}}</td>
                             <td>{{member.name}}</td>
                             <td>{{member.nickname}}</td>
-                            <!--
+                            <td v-for="(i,d) in dates"><span :class="['attendance', member.attendance[i]?'presence':'absence']"></span></td>
                             <td>{{member.hasFeePaid | hasFeePaidText}}</td>
-                            -->
-                            <td v-for="(i,d) in dates">{{member.attendance[i]}}</td>
                             <!--
                             <td>{{member.attendSum}}</td>
                             <td>{{member.isValid | isValidText}}</td>
                             -->
+                            <td>{{isValid(member.hasFeePaid, member.attendance) | isValidText}}</td>
                         </tr>
                         <tr v-if="query=='' && queried_members.length==0">
                             <!--

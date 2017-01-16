@@ -57,3 +57,15 @@ var vm = new Vue({
         },
     },
 });
+
+Vue.filter('isValidText', function(isValid){
+    return isValid==undefined?'':isValid?"有效會員":"無效會員";
+});
+
+Vue.filter('attendanceText', function(isValid){
+    return isValid==undefined?'':isValid?"有效會員":"無效會員";
+});
+
+Vue.filter('hasFeePaidText', function(hasFeePaid){
+    return hasFeePaid==undefined?'':hasFeePaid? '已繳': '未繳';
+});
