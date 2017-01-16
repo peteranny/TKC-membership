@@ -63,7 +63,12 @@ var vm = new Vue({
     },
     methods:{
         copyList: function(){
-            log('copy list');
+            $('#clipboard').text(
+                this.queried_members.map(function(member){
+                    return member.name+"("+member.nickname+")";
+                }).join('\n')
+            );
+            $('.modal').modal('show');
         },
         gotoConfig: function(){
             log('goto config');
