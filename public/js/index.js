@@ -116,10 +116,8 @@ function run(){
                         });
                     }
                 }
+                vm.dates = dates;
                 vm.members = members;
-                // leave sum and isValid to Vue
-            }).then(function(){
-                log(vm.members);
             });
         }).then(function(){
             Loading.off();

@@ -63,7 +63,11 @@
                                 <td>外號</td>
                                 <!--
                                 <td>會費</td>
-                                    <td v-for="d in dates"><span class="tag tag-default">{{d | simpleDate}}</span></td>
+                                -->
+                                <td v-for="date in dates">
+                                    <span class="tag tag-default">{{date}}</span>
+                                </td>
+                                <!--
                                 <td>次數</td>
                                 <td>是否有效</td>
                                 -->
@@ -75,7 +79,9 @@
                             <td>{{member.nickname}}</td>
                             <!--
                             <td>{{member.hasFeePaid | hasFeePaidText}}</td>
+                            -->
                             <td v-for="(i,d) in dates">{{member.attendance[i]}}</td>
+                            <!--
                             <td>{{member.attendSum}}</td>
                             <td>{{member.isValid | isValidText}}</td>
                             -->
