@@ -32,23 +32,23 @@ function initClick(){
 
 function run(){
     vm.logged_in = true;
-    Loading.on('Google API');
+    Loading.on('Load Google API');
     var chain =
         runLoadSheetsApi(
             config.api.discovery
         ).then(function(){
-            Loading.on('Members');
+            Loading.on('Load members');
             return runGetMembers(
                 config.list
             );
         }).then(function(members){
-            Loading.on('Attendances');
             var members_dict = {};
             for(var i in members){
                 var member = members[i];
                 members_dict[member.nickname] = [];
             }
             // collect from every sheet
+            Loading.on('Load attendances');
             return Promise.map(
                 config.attendances_dates,
                 function(one){
@@ -86,12 +86,14 @@ function run(){
                 var dates = [];
                 var member_attendances = [];
                 // concatenate
+                Loading.on('Concatenate attendances');
                 for(i in many){
                     var one = many[i];
                     [].push.apply(dates, one.dates);
                     [].push.apply(member_attendances, one.member_attendances);
                 }
                 // group attendances according to nickname
+                Loading.on('Concatenate attendances');
                 for(var i in member_attendances){
                     var m_a = member_attendances[i];
                     var nickname = m_a.nickname;

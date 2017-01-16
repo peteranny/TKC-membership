@@ -7,7 +7,8 @@ var vm = new Vue({
         query: '',
         filters: [],
         console_uri: 'TODO',
-        valid_threshold: 6,
+        attendance_threshold: 6,
+        paid_year: 2017,
     },
     computed:{
         queried_members: function(){
@@ -49,11 +50,23 @@ var vm = new Vue({
         memberType: function(member){
             return;
         },
-        isValid: function(hasFeePaid, attendance){
-            var sum = attendance.reduce(function(a, b){
+        attendanceSum: function(member){
+            return member.attendance.reduce(function(a, b){
                 return a + b;
             }, 0);
-            return hasFeePaid && sum >= this.valid_threshold;
+        },
+        hasFeePaid: function(member){
+            var dof = member.date_of_last_fee_paid;
+            return (
+                dof?
+                new Date(dof.replace(/\D/g, ' ')).getFullYear() == this.paid_year:
+                false
+            );
+        },
+        isValid: function(member){
+            var sum = this.attendanceSum(member);
+            var paid = this.hasFeePaid(member);
+            return paid && sum >= this.attendance_threshold;
         },
     },
 });
@@ -67,5 +80,5 @@ Vue.filter('attendanceText', function(isValid){
 });
 
 Vue.filter('hasFeePaidText', function(hasFeePaid){
-    return hasFeePaid==undefined?'':hasFeePaid? '已繳': '未繳';
+    return hasFeePaid? '已繳': '未繳';
 });
