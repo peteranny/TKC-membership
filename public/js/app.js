@@ -17,7 +17,7 @@ const filters = {
     },
 };
 
-var vm = new Vue({
+var app = new Vue({
     el: '#main',
     data:{
         logged_in: false,

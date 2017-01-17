@@ -52,7 +52,7 @@ var Loading = {
                     $('<a>')
                     .addClass('btn btn-danger btn-lg')
                     .text(Loading.console_text)
-                    .attr('href', vm.console_uri)
+                    .attr('href', app.console_uri)
                 );
         }
     },

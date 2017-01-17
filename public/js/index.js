@@ -31,7 +31,7 @@ function initClick(){
 }
 
 function run(){
-    vm.logged_in = true;
+    app.logged_in = true;
     Loading.on('Load Google API');
     var chain =
         runLoadSheetsApi(
@@ -119,8 +119,8 @@ function run(){
                         });
                     }
                 }
-                vm.dates = dates;
-                vm.members = members;
+                app.dates = dates;
+                app.members = members;
             });
         }).then(function(){
             Loading.off();
