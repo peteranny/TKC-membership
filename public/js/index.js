@@ -14,8 +14,8 @@ function init(){
                 true
             ).then(function(){
                 run();
-            }).catch(function(err){
-                log('Error in init: ', err);
+            }, function(err){
+                Loading.off();
             });
         });
 }
