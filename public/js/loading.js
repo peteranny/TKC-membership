@@ -11,6 +11,7 @@ var Loading = {
         'font-weight': 'bold',
         'text-align': 'center',
         'overflow': 'hidden',
+        'z-index': 999,
     }).appendTo($('body')),
 
     indicators: '⣾⣽⣻⢿⡿⣟⣯⣷',
