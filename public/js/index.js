@@ -57,7 +57,7 @@ function run(){
                     ).then(function(data){
                         var sel_dates =
                             data.dates.filter(function(col, i){
-                                return one.sel_dates[i].sel;
+                                return one.dates_sel[i];
                             });
                         // select attendance on specific dates
                         var member_sel_attendances =
@@ -66,8 +66,8 @@ function run(){
                                 var group = m_a.group;
                                 var attendance = m_a.attendance;
                                 var sel_attendance = [];
-                                for(var i = 0; i < one.sel_dates.length; i++){
-                                    if(one.sel_dates[i].sel)
+                                for(var i = 0; i < one.dates_sel.length; i++){
+                                    if(one.dates_sel[i])
                                         sel_attendance.push(attendance[i]? 1: 0);
                                 }
                                 return {

@@ -10,62 +10,18 @@
     "attendances_dates": [
         {
             "sheetId": "1Bqam_dHyxn78JhYosgO2VN4x_91EKb01EdbI2A9foUI",
-            "sel_dates": [
-                {
-                    "date": "2016-03-19T16:00:00.000Z",
-                    "i": 0,
-                    "sel": true
-                },
-                {
-                    "date": "2016-03-26T16:00:00.000Z",
-                    "i": 1,
-                    "sel": true
-                },
-                {
-                    "date": "2016-04-02T16:00:00.000Z",
-                    "i": 2,
-                    "sel": true
-                },
-                {
-                    "date": "2016-04-09T16:00:00.000Z",
-                    "i": 3,
-                    "sel": true
-                },
-                {
-                    "date": "2016-04-16T16:00:00.000Z",
-                    "i": 4,
-                    "sel": true
-                },
-                {
-                    "date": "2016-04-23T16:00:00.000Z",
-                    "i": 5,
-                    "sel": true
-                },
-                {
-                    "date": "2016-04-30T16:00:00.000Z",
-                    "i": 6,
-                    "sel": true
-                },
-                {
-                    "date": "2016-05-07T16:00:00.000Z",
-                    "i": 7,
-                    "sel": true
-                },
-                {
-                    "date": "2016-05-14T16:00:00.000Z",
-                    "i": 8,
-                    "sel": true
-                },
-                {
-                    "date": "2016-05-21T16:00:00.000Z",
-                    "i": 9,
-                    "sel": true
-                },
-                {
-                    "date": "2016-05-28T16:00:00.000Z",
-                    "i": 10,
-                    "sel": true
-                }
+            "dates_sel": [
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
             ]
         }
     ]
