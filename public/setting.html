@@ -105,7 +105,7 @@
                   <div class="card-block">
                       <div class="form-group input-group">
                           <span class="input-group-btn">
-                              <button :class="['btn', isEdit('list_sheet_id')?'btn-success':'btn-secondary']" @click="edit('list_sheet_id')" :disabled="!isEdit()&&!isEdit('list_sheet_id')">
+                              <button :class="['btn', isEdit('list_sheet_id')?'btn-success':'btn-secondary']" @click="edit('list_sheet_id')" :disabled="isEdit() && !isEdit('list_sheet_id')">
                                   <span class="octicon octicon-pencil"></span> {{editText('list_sheet_id')}}
                               </button>
                           </span>
@@ -125,7 +125,7 @@
                   <div class="card-block">
                       <div class="form-group input-group">
                           <span class="input-group-btn">
-                              <button :class="['btn', isEdit('attend_sheet_'+i+'_id')?'btn-success':'btn-secondary']" @click="edit('attend_sheet_'+i+'_id')" :disabled="!isEdit()&&!isEdit('attend_sheet_'+i+'_id')">
+                              <button :class="['btn', isEdit('attend_sheet_'+i+'_id')?'btn-success':'btn-secondary']" @click="edit('attend_sheet_'+i+'_id')" :disabled="isEdit()&&!isEdit('attend_sheet_'+i+'_id')">
                                   <span class="octicon octicon-pencil"></span> {{editText('attend_sheet_'+i+'_id')}}
                               </button>
                           </span>
@@ -137,7 +137,7 @@
                           </span>
                       </div>
                       <div class="btn-group">
-                          <button :class="['btn', isEdit('attend_sheet_'+i+'_date')?'btn-success':'btn-secondary']" @click="edit('attend_sheet_'+i+'_date')" :disabled="!isEdit()&&!isEdit('attend_sheet_'+i+'_date')">
+                          <button :class="['btn', isEdit('attend_sheet_'+i+'_date')?'btn-success':'btn-secondary']" @click="edit('attend_sheet_'+i+'_date')" :disabled="isEdit()&&!isEdit('attend_sheet_'+i+'_date')">
                               <span class="octicon octicon-pencil"></span> {{editText('attend_sheet_'+i+'_date')}}
                           </button>
                           <button v-for="date in attendances_dates.dates" :class="['btn', 'btn-secondary', {'active':!date.sel}]" @click="date.sel=!date.sel" :disabled="!isEdit('attend_sheet_'+i+'_date')">
@@ -148,6 +148,7 @@
               </div>
           </div>
       </div>
+      <button class="btn btn-primary" :disabled="!canSave" @click="save">Save</button>
     </div>
 <!--
     <script src="https://code.jquery.com/jquery-latest.min.js"></script>
@@ -244,15 +245,19 @@
                     view: '開啟資料表',
                 },
             },
+            computed: {
+                canSave: function(){
+                    return !this.isEdit();
+                },
+            },
             methods: {
                 isEdit: function(target){
-                    if(target === undefined) target = '';
+                    if(target === undefined) return this.editing !== '';
                     return this.editing === target;
                 },
                 edit: function(target){
                     if(this.isEdit(target)){
                         this.editing = '';
-                        log(this.config);
                     }
                     else{
                         this.editing = target;
@@ -260,6 +265,9 @@
                 },
                 editText: function(target){
                     return this.isEdit(target)? this.text.save: this.text.edit;
+                },
+                save: function(){
+                    log(this.config)
                 },
             },
         });
