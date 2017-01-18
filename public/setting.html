@@ -81,6 +81,11 @@
               <div class="form-group input-group">
                   <span class="input-group-addon">Client ID</span>
                   <input class="form-control" v-model="config.api.client_id">
+                  <span class="input-group-btn">
+                      <button class="btn btn-secondary">
+                          <span class="octicon octicon-edit"></span>
+                      </button>
+                  </span>
               </div>
               <div class="form-group input-group">
                   <span class="input-group-addon">Scopes</span>
@@ -93,13 +98,33 @@
           </div>
           <div class="tab-pane active" id="sheets">
               <div class="form-group input-group">
-                  <span class="input-group-addon">會員資料表</span>
-                  <input class="form-control" v-model="config.list">
+                  <span class="input-group-addon">{{text.list}}</span>
+                  <input class="form-control" v-model="config.list" :disabled="!isEdit('list_sheet_id')">
+                  <span class="input-group-btn">
+                      <button :class="['btn', isEdit('list_sheet_id')?'btn-success':'btn-secondary']" @click="edit('list_sheet_id')" :disabled="!isEdit()&&!isEdit('list_sheet_id')">
+                          <span class="octicon octicon-pencil"></span> {{editText('list_sheet_id')}}
+                      </button>
+                  </span>
+                  <span class="input-group-btn">
+                      <button class="btn btn-secondary">
+                          <span class="octicon octicon-eye"></span> {{text.view}}
+                      </button>
+                  </span>
               </div>
               <div class="form-group" v-for="(i, attendances_dates) in config.attendances_dates">
                   <div class="form-group input-group">
-                      <span class="input-group-addon">主日出席表</span>
-                      <input class="form-control" v-model="config.attendances_dates[i].sheetId">
+                      <span class="input-group-addon">{{text.attend}}</span>
+                      <input class="form-control" v-model="config.attendances_dates[i].sheetId" :disabled="!isEdit('attend_sheet_'+i+'_id')">
+                      <span class="input-group-btn">
+                          <button :class="['btn', isEdit('attend_sheet_'+i+'_id')?'btn-success':'btn-secondary']" @click="edit('attend_sheet_'+i+'_id')" :disabled="!isEdit()&&!isEdit('attend_sheet_'+i+'_id')">
+                              <span class="octicon octicon-pencil"></span> {{editText('attend_sheet_'+i+'_id')}}
+                          </button>
+                      </span>
+                      <span class="input-group-btn">
+                          <button class="btn btn-secondary">
+                              <span class="octicon octicon-eye"></span> {{text.view}}
+                          </button>
+                      </span>
                   </div>
                   <div class="btn-group">
                       <button v-for="sel in attendances_dates.dates_sel" :class="['btn', 'btn-secondary', {'active':sel}]" @click="sel=!sel">
@@ -191,15 +216,37 @@
         <!-- Vue -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.26/vue.min.js"></script>
         <script>
-        const app = new Vue({
+        var app = new Vue({
             el: '#main',
             data: {
                 config: {
                 },
-                tested_config: {
+                editing: '',
+                text: {
+                    list: '主會員資料',
+                    attend: '表日出席表',
+                    edit: '修改',
+                    save: '確定',
+                    view: '開啟資料表',
                 },
             },
             methods: {
+                isEdit: function(target){
+                    if(target === undefined) target = '';
+                    return this.editing === target;
+                },
+                edit: function(target){
+                    if(this.isEdit(target)){
+                        this.editing = '';
+                        log(this.config);
+                    }
+                    else{
+                        this.editing = target;
+                    }
+                },
+                editText: function(target){
+                    return this.isEdit(target)? this.text.save: this.text.edit;
+                },
             },
         });
         </script>
@@ -207,6 +254,8 @@
         <script src="js/log.js"></script>
         <script src="js/loading.js"></script>
         <script>
+        function deepcopy(x){ return JSON.parse(JSON.stringify(x)) }
+        function deepequal(a, b){ return JSON.stringify(a) === JSON.stringify(b) }
         function init(){
             Loading.on();
             $.getJSON('config.json', function(json){
