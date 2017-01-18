@@ -5,15 +5,14 @@
     <link rel="stylesheet" href="css/index.css" />
   </head>
   <body>
+    <div id="main" class="container-fluid">
 <!--
-    <div id="main">
       <pre>Stage: {{stage_label}}</pre>
       <form v-if="stage_label=='display-config'">
         <button class="btn btn-secondary" type="button" :disabled="isLoading" onclick="nextStage()">
           修改資料
         </button>
       </form>
-      <form v-if="stage_label=='modify-dates'">
         <div v-for="(i,sheet_date) in config.sheet_dates">
           <div class="input-group">
             <span class="input-group-addon">
@@ -66,7 +65,52 @@
 {{logs}}
         </pre>
       </blockquote>
+      -->
+      <p>
+      <ul class="nav nav-tabs">
+          <li class="nav-item">
+              <a class="nav-link active" data-toggle="tab" href="#sheets">Google sheet settings</a>
+          </li>
+          <li class="nav-item">
+              <a class="nav-link" data-toggle="tab" href="#api">API configures</a>
+          </li>
+      </ul>
+      </p>
+      <div class="tab-content">
+          <div class="tab-pane" id="api">
+              <div class="form-group input-group">
+                  <span class="input-group-addon">Client ID</span>
+                  <input class="form-control" v-model="config.api.client_id">
+              </div>
+              <div class="form-group input-group">
+                  <span class="input-group-addon">Scopes</span>
+                  <input class="form-control" v-for="scope in config.api.scopes" v-model="scope">
+              </div>
+              <div class="form-group input-group">
+                  <span class="input-group-addon">Discovery</span>
+                  <input class="form-control" v-model="config.api.discovery">
+              </div>
+          </div>
+          <div class="tab-pane active" id="sheets">
+              <div class="form-group input-group">
+                  <span class="input-group-addon">會員資料表</span>
+                  <input class="form-control" v-model="config.list">
+              </div>
+              <div class="form-group" v-for="(i, attendances_dates) in config.attendances_dates">
+                  <div class="form-group input-group">
+                      <span class="input-group-addon">主日出席表</span>
+                      <input class="form-control" v-model="config.attendances_dates[i].sheetId">
+                  </div>
+                  <div class="btn-group">
+                      <button v-for="sel in attendances_dates.dates_sel" :class="['btn', 'btn-secondary', {'active':sel}]" @click="sel=!sel">
+                          abc
+                      </button>
+                  </div>
+              </div>
+          </div>
+      </div>
     </div>
+<!--
     <script src="https://code.jquery.com/jquery-latest.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/js/bootstrap.min.js" integrity="sha384-BLiI7JTZm+JWlgKa0M0kGRpJbF2J8q+qreVrKBC47e3K6BW78kGLrCkeRX6I9RoK" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.4.6/bluebird.min.js"></script>
@@ -137,5 +181,43 @@
     <script src="js/google-sheet.js"></script>
     <script src="https://apis.google.com/js/client.js?onload=init"></script>
 -->
+        <!-- JQuery -->
+        <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+        <script src="http://malsup.github.io/jquery.corner.js"></script>
+        <!-- Bootstrap -->
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/js/bootstrap.min.js" integrity="sha384-BLiI7JTZm+JWlgKa0M0kGRpJbF2J8q+qreVrKBC47e3K6BW78kGLrCkeRX6I9RoK" crossorigin="anonymous"></script>
+        <!-- Promise -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.4.6/bluebird.min.js"></script>
+        <!-- Vue -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.26/vue.min.js"></script>
+        <script>
+        const app = new Vue({
+            el: '#main',
+            data: {
+                config: {
+                },
+                tested_config: {
+                },
+            },
+            methods: {
+            },
+        });
+        </script>
+        <!-- Scripts -->
+        <script src="js/log.js"></script>
+        <script src="js/loading.js"></script>
+        <script>
+        function init(){
+            Loading.on();
+            $.getJSON('config.json', function(json){
+                log(json);
+                app.config = json;
+                Loading.off();
+            });
+        }
+        </script>
+        <!-- Google sheet -->
+        <script src="js/google-sheet.js"></script>
+        <script src="https://apis.google.com/js/client.js?onload=init"></script>
   </body>
 </html>
