@@ -71,7 +71,7 @@ var app = new Vue({
             $('.modal').modal('show');
         },
         gotoConfig: function(){
-            log('goto config');
+            document.location = 'setting.html';
         },
         solveConflict: function(member){
             var msg =

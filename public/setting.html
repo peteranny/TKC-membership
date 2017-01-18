@@ -1,0 +1,141 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css" integrity="sha384-AysaV+vQoT3kOAXZkl02PThvDr8HYKPZhNT5h/CXfBThSRXQ6jW5DO2ekP5ViFdi" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/octicons/4.4.0/font/octicons.min.css" />
+    <link rel="stylesheet" href="css/index.css" />
+  </head>
+  <body>
+<!--
+    <div id="main">
+      <pre>Stage: {{stage_label}}</pre>
+      <form v-if="stage_label=='display-config'">
+        <button class="btn btn-secondary" type="button" :disabled="isLoading" onclick="nextStage()">
+          修改資料
+        </button>
+      </form>
+      <form v-if="stage_label=='modify-dates'">
+        <div v-for="(i,sheet_date) in config.sheet_dates">
+          <div class="input-group">
+            <span class="input-group-addon">
+              {{stage_label | sheetIdText}}
+            </span>
+            <input class="form-control" v-model="sheet_date.sheetId" disabled>
+            <span class="input-group-btn">
+              <button type="button" class="btn btn-danger" :disabled="isLoading" @click="deleteSheetDates(i)">
+                刪除這個表
+              </button>
+            </span>
+          </div>
+          <div>
+            {{sheet_date.title}}
+          </div>
+          <div class="button-group">
+            <button v-for="sel_date in sheet_date.sel_dates" type="button" :class="['btn', 'btn-secondary', {'active':sel_date.sel}]" :disabled="isLoading" @click="sel_date.sel=!sel_date.sel">
+              {{sel_date.date | simpleDate}}
+            </button>
+          </div>
+        </div>
+        <div>
+          Selected {{numSelDates}} dates
+        </div>
+      </form>
+      <form v-if="stage_label=='modify-list'||stage_label=='modify-dates'">
+        <div class="input-group">
+          <span class="input-group-addon">
+            {{stage_label | sheetIdText}}
+          </span>
+          <input class="form-control" v-model="sheetId" :disabled="isLoading">
+          <span class="input-group-btn">
+            <button class="btn btn-secondary" type="button" :disabled="isLoading" onclick="nextStage(0)">
+              {{stage_label=='modify-list'?'修改':'新增'}}
+            </button>
+            <button class="btn btn-success" type="button" :disabled="isLoading" onclick="nextStage(1)">
+              下一步
+            </button>
+          </span>
+        </div>
+      </form>
+      <form v-if="stage_label=='preview-config'">
+        <button class="btn btn-secondary" type="button" :disabled="isLoading" onclick="nextStage(0)">
+          儲存
+        </button>
+      </form>
+      <blockquote class="blockquote">
+        <pre>
+{{stage_label | staticLogs}}
+{{logs}}
+        </pre>
+      </blockquote>
+    </div>
+    <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/js/bootstrap.min.js" integrity="sha384-BLiI7JTZm+JWlgKa0M0kGRpJbF2J8q+qreVrKBC47e3K6BW78kGLrCkeRX6I9RoK" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.4.6/bluebird.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.26/vue.min.js"></script>
+    <script>
+    var vm = new Vue({
+      el:"#main",
+      data:{
+        stage_label: 'init',
+        isLoading:true,
+        logs: '',
+
+        config:{},
+        sheetId:'',
+      },
+      computed:{
+        numSelDates:function(){
+          return this.config.sheet_dates.map(function(sheet_date){
+            return sheet_date.sel_dates;
+          }).reduce(function(a,b){
+            return a.concat(b);
+          }, []).filter(function(v){
+            return v.sel;
+          }).length;
+        },
+      },
+      methods:{
+        deleteSheetDates(i){
+          if(confirm('確定刪除？')){
+            this.config.sheet_dates.splice(i,1);
+          }
+        },
+      },
+    });
+
+    Vue.filter('sheetIdText', function(stage_label){
+      switch(stage_label){
+        case 'modify-list': return '會員資料表';
+        case 'modify-dates': return '主日出席表';
+        default: return '';
+      }
+    });
+
+    Vue.filter('staticLogs', function(stage_label){
+      switch(stage_label){
+        case 'display-config': return 'Display config';
+        case 'modify-list': return 'Please modify list';
+        case 'modify-attendance': return 'Please modify attendance';
+        case 'preview-config': return 'Preview tested config and confirm';
+        default: return '';
+      }
+    });
+
+    Vue.filter('simpleDate', function(d){
+      if(!d) return 'NaN';
+      var d = new Date(d);
+      var M = d.getMonth()+1;
+      var D = d.getDate();
+      return (M<10?"0"+M:M)+(D<10?"0"+D:D);
+    });
+    </script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+    var socket = io();
+    </script>
+    <script src="js/console.js"></script>
+    <script src="js/stages.js"></script>
+    <script src="js/google-sheet.js"></script>
+    <script src="https://apis.google.com/js/client.js?onload=init"></script>
+-->
+  </body>
+</html>
