@@ -97,39 +97,50 @@
               </div>
           </div>
           <div class="tab-pane active" id="sheets">
-              <div class="form-group input-group">
-                  <span class="input-group-addon">{{text.list}}</span>
-                  <input class="form-control" v-model="config.list" :disabled="!isEdit('list_sheet_id')">
-                  <span class="input-group-btn">
-                      <button :class="['btn', isEdit('list_sheet_id')?'btn-success':'btn-secondary']" @click="edit('list_sheet_id')" :disabled="!isEdit()&&!isEdit('list_sheet_id')">
-                          <span class="octicon octicon-pencil"></span> {{editText('list_sheet_id')}}
-                      </button>
-                  </span>
-                  <span class="input-group-btn">
-                      <button class="btn btn-secondary">
-                          <span class="octicon octicon-eye"></span> {{text.view}}
-                      </button>
-                  </span>
-              </div>
-              <div class="form-group" v-for="(i, attendances_dates) in config.attendances_dates">
-                  <div class="form-group input-group">
-                      <span class="input-group-addon">{{text.attend}}</span>
-                      <input class="form-control" v-model="config.attendances_dates[i].sheetId" :disabled="!isEdit('attend_sheet_'+i+'_id')">
-                      <span class="input-group-btn">
-                          <button :class="['btn', isEdit('attend_sheet_'+i+'_id')?'btn-success':'btn-secondary']" @click="edit('attend_sheet_'+i+'_id')" :disabled="!isEdit()&&!isEdit('attend_sheet_'+i+'_id')">
-                              <span class="octicon octicon-pencil"></span> {{editText('attend_sheet_'+i+'_id')}}
-                          </button>
-                      </span>
-                      <span class="input-group-btn">
-                          <button class="btn btn-secondary">
-                              <span class="octicon octicon-eye"></span> {{text.view}}
-                          </button>
-                      </span>
+              <div class="card">
+                  <div class="card-header">
+                      {{text.list}}{{config.list.title? ' : ' + config.list.title: ''}}
                   </div>
-                  <div class="btn-group">
-                      <button v-for="sel in attendances_dates.dates_sel" :class="['btn', 'btn-secondary', {'active':sel}]" @click="sel=!sel">
-                          abc
-                      </button>
+                  <div class="card-block">
+                      <div class="form-group input-group">
+                          <input class="form-control" v-model="config.list.sheetId" :disabled="!isEdit('list_sheet_id')">
+                          <span class="input-group-btn">
+                              <button :class="['btn', isEdit('list_sheet_id')?'btn-success':'btn-secondary']" @click="edit('list_sheet_id')" :disabled="!isEdit()&&!isEdit('list_sheet_id')">
+                                  <span class="octicon octicon-pencil"></span> {{editText('list_sheet_id')}}
+                              </button>
+                          </span>
+                          <span class="input-group-btn">
+                              <button class="btn btn-secondary">
+                                  <span class="octicon octicon-eye"></span> {{text.view}}
+                              </button>
+                          </span>
+                      </div>
+                  </div>
+              </div>
+              <div class="card" v-for="(i, attendances_dates) in config.attendances_dates">
+                  <div class="card-header">
+                      {{text.attend}}{{config.attendances_dates[i].title? ' : ' + config.attendances_dates[i].title: ''}}
+                  </div>
+                  <div class="card-block">
+                      <div class="form-group input-group">
+                          <span class="input-group-addon">{{text.attend}}</span>
+                          <input class="form-control" v-model="config.attendances_dates[i].sheetId" :disabled="!isEdit('attend_sheet_'+i+'_id')">
+                          <span class="input-group-btn">
+                              <button :class="['btn', isEdit('attend_sheet_'+i+'_id')?'btn-success':'btn-secondary']" @click="edit('attend_sheet_'+i+'_id')" :disabled="!isEdit()&&!isEdit('attend_sheet_'+i+'_id')">
+                                  <span class="octicon octicon-pencil"></span> {{editText('attend_sheet_'+i+'_id')}}
+                              </button>
+                          </span>
+                          <span class="input-group-btn">
+                              <button class="btn btn-secondary">
+                                  <span class="octicon octicon-eye"></span> {{text.view}}
+                              </button>
+                          </span>
+                      </div>
+                      <div class="btn-group">
+                          <button v-for="sel in attendances_dates.dates_sel" :class="['btn', 'btn-secondary', {'active':sel}]" @click="sel=!sel">
+                              abc
+                          </button>
+                      </div>
                   </div>
               </div>
           </div>
@@ -223,8 +234,8 @@
                 },
                 editing: '',
                 text: {
-                    list: '主會員資料',
-                    attend: '表日出席表',
+                    list: '會員資料表',
+                    attend: '主日出席表',
                     edit: '修改',
                     save: '確定',
                     view: '開啟資料表',
@@ -265,21 +276,24 @@
                 runGoogleAuth(
                     app.config.api.client_id,
                     app.config.api.scopes,
-                    true
+                    false
                 ).then(function(){
                     Loading.on('Load Google sheet API');
                     return runLoadSheetsApi(app.config.api.discovery);
                 }).then(function(){
                     Loading.on('Load list title');
-                    return runGetTitle(app.config.list);
+                    return runGetTitle(app.config.list.sheetId);
                 }).then(function(title){
-                    log(title);
+                    app.$set('config.list.title', title);
                     Loading.on('Load attendance titles');
                     return Promise.map(app.config.attendances_dates, function(attendance_dates){
                         return runGetTitle(attendance_dates.sheetId);
                     });
                 }).then(function(titles){
-                    log(titles);
+                    for(var i in titles){
+                        var title = titles[i];
+                        app.$set('config.attendances_dates[' + i + '].title', title);
+                    }
                     Loading.on('Load attendance dates');
                     return Promise.map(app.config.attendances_dates, function(attendance_dates){
                         return runGetAttendances(attendance_dates.sheetId, true);

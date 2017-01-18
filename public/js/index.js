@@ -39,7 +39,7 @@ function run(){
         ).then(function(){
             Loading.on('Load members');
             return runGetMembers(
-                config.list
+                config.list.sheetId
             );
         }).then(function(members){
             var members_dict = {};
@@ -57,7 +57,7 @@ function run(){
                     ).then(function(data){
                         var sel_dates =
                             data.dates.filter(function(col, i){
-                                return one.dates_sel[i];
+                                return one.dates[i].sel;
                             });
                         // select attendance on specific dates
                         var member_sel_attendances =
@@ -66,8 +66,8 @@ function run(){
                                 var group = m_a.group;
                                 var attendance = m_a.attendance;
                                 var sel_attendance = [];
-                                for(var i = 0; i < one.dates_sel.length; i++){
-                                    if(one.dates_sel[i])
+                                for(var i = 0; i < one.dates.length; i++){
+                                    if(one.dates[i].sel)
                                         sel_attendance.push(attendance[i]? 1: 0);
                                 }
                                 return {

@@ -6,22 +6,22 @@
         ],
         "discovery": "https://sheets.googleapis.com/$discovery/rest?version=v4"
     },
-    "list": "1TDcdilPsHpnRJ6MjAZO7ifHvbrrW-0UA38UupMlO-zA",
+    "list": {"sheetId": "1TDcdilPsHpnRJ6MjAZO7ifHvbrrW-0UA38UupMlO-zA"},
     "attendances_dates": [
         {
             "sheetId": "1Bqam_dHyxn78JhYosgO2VN4x_91EKb01EdbI2A9foUI",
-            "dates_sel": [
-                true,
-                true,
-                false,
-                true,
-                true,
-                false,
-                true,
-                true,
-                false,
-                false,
-                true
+            "dates": [
+                {"sel": true},
+                {"sel": true},
+                {"sel": false},
+                {"sel": true},
+                {"sel": true},
+                {"sel": false},
+                {"sel": true},
+                {"sel": true},
+                {"sel": false},
+                {"sel": false},
+                {"sel": true}
             ]
         }
     ]
