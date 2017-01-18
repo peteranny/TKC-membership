@@ -68,6 +68,7 @@
       -->
       <p>
       <ul class="nav nav-tabs">
+          <!-- TODO: check unsaved on click -->
           <li class="nav-item">
               <a class="nav-link active" data-toggle="tab" href="#sheets">Google sheet settings</a>
           </li>
@@ -103,12 +104,12 @@
                   </div>
                   <div class="card-block">
                       <div class="form-group input-group">
-                          <input class="form-control" v-model="config.list.sheetId" :disabled="!isEdit('list_sheet_id')">
                           <span class="input-group-btn">
                               <button :class="['btn', isEdit('list_sheet_id')?'btn-success':'btn-secondary']" @click="edit('list_sheet_id')" :disabled="!isEdit()&&!isEdit('list_sheet_id')">
                                   <span class="octicon octicon-pencil"></span> {{editText('list_sheet_id')}}
                               </button>
                           </span>
+                          <input class="form-control" v-model="config.list.sheetId" :disabled="!isEdit('list_sheet_id')">
                           <span class="input-group-btn">
                               <button class="btn btn-secondary">
                                   <span class="octicon octicon-eye"></span> {{text.view}}
@@ -123,13 +124,12 @@
                   </div>
                   <div class="card-block">
                       <div class="form-group input-group">
-                          <span class="input-group-addon">{{text.attend}}</span>
-                          <input class="form-control" v-model="config.attendances_dates[i].sheetId" :disabled="!isEdit('attend_sheet_'+i+'_id')">
                           <span class="input-group-btn">
                               <button :class="['btn', isEdit('attend_sheet_'+i+'_id')?'btn-success':'btn-secondary']" @click="edit('attend_sheet_'+i+'_id')" :disabled="!isEdit()&&!isEdit('attend_sheet_'+i+'_id')">
                                   <span class="octicon octicon-pencil"></span> {{editText('attend_sheet_'+i+'_id')}}
                               </button>
                           </span>
+                          <input class="form-control" v-model="config.attendances_dates[i].sheetId" :disabled="!isEdit('attend_sheet_'+i+'_id')">
                           <span class="input-group-btn">
                               <button class="btn btn-secondary">
                                   <span class="octicon octicon-eye"></span> {{text.view}}
@@ -137,8 +137,11 @@
                           </span>
                       </div>
                       <div class="btn-group">
-                          <button v-for="sel in attendances_dates.dates_sel" :class="['btn', 'btn-secondary', {'active':sel}]" @click="sel=!sel">
-                              abc
+                          <button :class="['btn', isEdit('attend_sheet_'+i+'_date')?'btn-success':'btn-secondary']" @click="edit('attend_sheet_'+i+'_date')" :disabled="!isEdit()&&!isEdit('attend_sheet_'+i+'_date')">
+                              <span class="octicon octicon-pencil"></span> {{editText('attend_sheet_'+i+'_date')}}
+                          </button>
+                          <button v-for="date in attendances_dates.dates" :class="['btn', 'btn-secondary', {'active':!date.sel}]" @click="date.sel=!date.sel" :disabled="!isEdit('attend_sheet_'+i+'_date')">
+                              <span :class="['octicon', date.sel?'octicon-check':'octicon-x']"></span> {{date.text}}
                           </button>
                       </div>
                   </div>
@@ -299,7 +302,13 @@
                         return runGetAttendances(attendance_dates.sheetId, true);
                     });
                 }).then(function(many_dates){
-                    log(many_dates);
+                    for(var i in many_dates){
+                        var dates = many_dates[i];
+                        for(var j in dates){
+                            var date = dates[j];
+                            app.$set('config.attendances_dates[' + i + '].dates[' + j + '].text', date);
+                        }
+                    }
                     Loading.off();
                 }).catch(function(err){
                     Loading.off(err);
