@@ -47,7 +47,7 @@ function runGetMembers(sheetId) {
     });
 }
 
-function runGetAttendances(sheetId){
+function runGetAttendances(sheetId, dates_only){
     return new Promise(function(resolve, reject){
         gapi.client.sheets.spreadsheets.values.get({
             spreadsheetId: sheetId,
@@ -56,6 +56,10 @@ function runGetAttendances(sheetId){
         }).then(function(response){
             var table = response.result.values;
             var dates = table[0].slice(2);
+            if(dates_only){
+                resolve(dates);
+                return;
+            }
             var member_attendances = table.slice(1).map(function(row){
                 return {
                     nickname: row[0],
@@ -69,6 +73,19 @@ function runGetAttendances(sheetId){
             });
         }, function(response){
             reject(response.result.error.message);
+        });
+    });
+}
+
+function runGetTitle(sheetId){
+    return new Promise(function(resolve, reject){
+        gapi.client.sheets.spreadsheets.get({
+            spreadsheetId: sheetId,
+        }).then(function(response){
+            resolve(response.result.properties.title);
+        }, function(response){
+            if(!response.result) reject(response.statusText);
+            else reject(response.result.error.message);
         });
     });
 }

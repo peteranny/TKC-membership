@@ -257,11 +257,39 @@
         function deepcopy(x){ return JSON.parse(JSON.stringify(x)) }
         function deepequal(a, b){ return JSON.stringify(a) === JSON.stringify(b) }
         function init(){
-            Loading.on();
+            Loading.on('Load config');
             $.getJSON('config.json', function(json){
                 log(json);
                 app.config = json;
-                Loading.off();
+                Loading.on('Load Google authentication');
+                runGoogleAuth(
+                    app.config.api.client_id,
+                    app.config.api.scopes,
+                    true
+                ).then(function(){
+                    Loading.on('Load Google sheet API');
+                    return runLoadSheetsApi(app.config.api.discovery);
+                }).then(function(){
+                    Loading.on('Load list title');
+                    return runGetTitle(app.config.list);
+                }).then(function(title){
+                    log(title);
+                    Loading.on('Load attendance titles');
+                    return Promise.map(app.config.attendances_dates, function(attendance_dates){
+                        return runGetTitle(attendance_dates.sheetId);
+                    });
+                }).then(function(titles){
+                    log(titles);
+                    Loading.on('Load attendance dates');
+                    return Promise.map(app.config.attendances_dates, function(attendance_dates){
+                        return runGetAttendances(attendance_dates.sheetId, true);
+                    });
+                }).then(function(many_dates){
+                    log(many_dates);
+                    Loading.off();
+                }).catch(function(err){
+                    Loading.off(err);
+                });
             });
         }
         </script>
