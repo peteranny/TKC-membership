@@ -1,226 +1,95 @@
 <html>
-  <head>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css" integrity="sha384-AysaV+vQoT3kOAXZkl02PThvDr8HYKPZhNT5h/CXfBThSRXQ6jW5DO2ekP5ViFdi" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/octicons/4.4.0/font/octicons.min.css" />
-    <link rel="stylesheet" href="css/index.css" />
-  </head>
-  <body>
-    <div id="main" class="container-fluid">
-<!--
-      <pre>Stage: {{stage_label}}</pre>
-      <form v-if="stage_label=='display-config'">
-        <button class="btn btn-secondary" type="button" :disabled="isLoading" onclick="nextStage()">
-          修改資料
-        </button>
-      </form>
-        <div v-for="(i,sheet_date) in config.sheet_dates">
-          <div class="input-group">
-            <span class="input-group-addon">
-              {{stage_label | sheetIdText}}
-            </span>
-            <input class="form-control" v-model="sheet_date.sheetId" disabled>
-            <span class="input-group-btn">
-              <button type="button" class="btn btn-danger" :disabled="isLoading" @click="deleteSheetDates(i)">
-                刪除這個表
-              </button>
-            </span>
-          </div>
-          <div>
-            {{sheet_date.title}}
-          </div>
-          <div class="button-group">
-            <button v-for="sel_date in sheet_date.sel_dates" type="button" :class="['btn', 'btn-secondary', {'active':sel_date.sel}]" :disabled="isLoading" @click="sel_date.sel=!sel_date.sel">
-              {{sel_date.date | simpleDate}}
-            </button>
-          </div>
+    <head>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css" integrity="sha384-AysaV+vQoT3kOAXZkl02PThvDr8HYKPZhNT5h/CXfBThSRXQ6jW5DO2ekP5ViFdi" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/octicons/4.4.0/font/octicons.min.css" />
+        <link rel="stylesheet" href="css/index.css" />
+    </head>
+    <body>
+        <div id="main" class="container-fluid">
+            <p>
+            <ul class="nav nav-tabs">
+                <!-- TODO: check unsaved on click -->
+                <li class="nav-item">
+                    <a class="nav-link active" data-toggle="tab" href="#sheets">Google sheet settings</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#api">API configures</a>
+                </li>
+            </ul>
+            </p>
+            <div class="tab-content">
+                <div class="tab-pane" id="api">
+                    <div class="form-group input-group">
+                        <span class="input-group-addon">Client ID</span>
+                        <input class="form-control" v-model="config.api.client_id">
+                        <span class="input-group-btn">
+                            <button class="btn btn-secondary">
+                                <span class="octicon octicon-edit"></span>
+                            </button>
+                        </span>
+                    </div>
+                    <div class="form-group input-group">
+                        <span class="input-group-addon">Scopes</span>
+                        <input class="form-control" v-for="scope in config.api.scopes" v-model="scope">
+                    </div>
+                    <div class="form-group input-group">
+                        <span class="input-group-addon">Discovery</span>
+                        <input class="form-control" v-model="config.api.discovery">
+                    </div>
+                </div>
+                <div class="tab-pane active" id="sheets">
+                    <div class="card">
+                        <div class="card-header">
+                            {{text.list}}{{config.list.title? ' : ' + config.list.title: ''}}
+                        </div>
+                        <div class="card-block">
+                            <div class="form-group input-group">
+                                <span class="input-group-btn">
+                                    <button :class="['btn', isEdit('list')?'btn-success':'btn-secondary']" @click="edit('list', true)" :disabled="isEdit() && !isEdit('list')">
+                                        <span class="octicon octicon-pencil"></span> {{editText('list')}}
+                                    </button>
+                                </span>
+                                <input class="form-control" v-model="config.list.sheetId" :disabled="!isEdit('list')">
+                                <span class="input-group-btn">
+                                    <button class="btn btn-secondary">
+                                        <span class="octicon octicon-eye"></span> {{text.view}}
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card" v-for="(i, attendances_dates) in config.attendances_dates">
+                        <div class="card-header">
+                            {{text.attend}}{{config.attendances_dates[i].title? ' : ' + config.attendances_dates[i].title: ''}}
+                        </div>
+                        <div class="card-block">
+                            <div class="form-group input-group">
+                                <span class="input-group-btn">
+                                    <button :class="['btn', isEdit('attendances_dates['+i+']')?'btn-success':'btn-secondary']" @click="edit('attendances_dates['+i+']', true)" :disabled="isEdit()&&!isEdit('attendances_dates['+i+']')">
+                                        <span class="octicon octicon-pencil"></span> {{editText('attendances_dates['+i+']')}}
+                                    </button>
+                                </span>
+                                <input class="form-control" v-model="config.attendances_dates[i].sheetId" :disabled="!isEdit('attendances_dates['+i+']')">
+                                <span class="input-group-btn">
+                                    <button class="btn btn-secondary">
+                                        <span class="octicon octicon-eye"></span> {{text.view}}
+                                    </button>
+                                </span>
+                            </div>
+                            <div class="btn-group">
+                                <button :class="['btn', isEdit('attend_sheet_'+i+'_date')?'btn-success':'btn-secondary']" @click="edit('attend_sheet_'+i+'_date', false)" :disabled="isEdit()&&!isEdit('attend_sheet_'+i+'_date')">
+                                    <span class="octicon octicon-pencil"></span> {{editText('attend_sheet_'+i+'_date')}}
+                                </button>
+                                <button v-for="date in attendances_dates.dates" :class="['btn', 'btn-secondary', {'active':!date.sel}]" @click="date.sel=!date.sel" :disabled="!isEdit('attend_sheet_'+i+'_date')">
+                                    <span :class="['octicon', date.sel?'octicon-check':'octicon-x']"></span> {{date.text}}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-primary" :disabled="!canSave" @click="save">Save</button>
         </div>
-        <div>
-          Selected {{numSelDates}} dates
-        </div>
-      </form>
-      <form v-if="stage_label=='modify-list'||stage_label=='modify-dates'">
-        <div class="input-group">
-          <span class="input-group-addon">
-            {{stage_label | sheetIdText}}
-          </span>
-          <input class="form-control" v-model="sheetId" :disabled="isLoading">
-          <span class="input-group-btn">
-            <button class="btn btn-secondary" type="button" :disabled="isLoading" onclick="nextStage(0)">
-              {{stage_label=='modify-list'?'修改':'新增'}}
-            </button>
-            <button class="btn btn-success" type="button" :disabled="isLoading" onclick="nextStage(1)">
-              下一步
-            </button>
-          </span>
-        </div>
-      </form>
-      <form v-if="stage_label=='preview-config'">
-        <button class="btn btn-secondary" type="button" :disabled="isLoading" onclick="nextStage(0)">
-          儲存
-        </button>
-      </form>
-      <blockquote class="blockquote">
-        <pre>
-{{stage_label | staticLogs}}
-{{logs}}
-        </pre>
-      </blockquote>
-      -->
-      <p>
-      <ul class="nav nav-tabs">
-          <!-- TODO: check unsaved on click -->
-          <li class="nav-item">
-              <a class="nav-link active" data-toggle="tab" href="#sheets">Google sheet settings</a>
-          </li>
-          <li class="nav-item">
-              <a class="nav-link" data-toggle="tab" href="#api">API configures</a>
-          </li>
-      </ul>
-      </p>
-      <div class="tab-content">
-          <div class="tab-pane" id="api">
-              <div class="form-group input-group">
-                  <span class="input-group-addon">Client ID</span>
-                  <input class="form-control" v-model="config.api.client_id">
-                  <span class="input-group-btn">
-                      <button class="btn btn-secondary">
-                          <span class="octicon octicon-edit"></span>
-                      </button>
-                  </span>
-              </div>
-              <div class="form-group input-group">
-                  <span class="input-group-addon">Scopes</span>
-                  <input class="form-control" v-for="scope in config.api.scopes" v-model="scope">
-              </div>
-              <div class="form-group input-group">
-                  <span class="input-group-addon">Discovery</span>
-                  <input class="form-control" v-model="config.api.discovery">
-              </div>
-          </div>
-          <div class="tab-pane active" id="sheets">
-              <div class="card">
-                  <div class="card-header">
-                      {{text.list}}{{config.list.title? ' : ' + config.list.title: ''}}
-                  </div>
-                  <div class="card-block">
-                      <div class="form-group input-group">
-                          <span class="input-group-btn">
-                              <button :class="['btn', isEdit('list')?'btn-success':'btn-secondary']" @click="edit('list', true)" :disabled="isEdit() && !isEdit('list')">
-                                  <span class="octicon octicon-pencil"></span> {{editText('list')}}
-                              </button>
-                          </span>
-                          <input class="form-control" v-model="config.list.sheetId" :disabled="!isEdit('list')">
-                          <span class="input-group-btn">
-                              <button class="btn btn-secondary">
-                                  <span class="octicon octicon-eye"></span> {{text.view}}
-                              </button>
-                          </span>
-                      </div>
-                  </div>
-              </div>
-              <div class="card" v-for="(i, attendances_dates) in config.attendances_dates">
-                  <div class="card-header">
-                      {{text.attend}}{{config.attendances_dates[i].title? ' : ' + config.attendances_dates[i].title: ''}}
-                  </div>
-                  <div class="card-block">
-                      <div class="form-group input-group">
-                          <span class="input-group-btn">
-                              <button :class="['btn', isEdit('attendances_dates['+i+']')?'btn-success':'btn-secondary']" @click="edit('attendances_dates['+i+']', true)" :disabled="isEdit()&&!isEdit('attendances_dates['+i+']')">
-                                  <span class="octicon octicon-pencil"></span> {{editText('attendances_dates['+i+']')}}
-                              </button>
-                          </span>
-                          <input class="form-control" v-model="config.attendances_dates[i].sheetId" :disabled="!isEdit('attendances_dates['+i+']')">
-                          <span class="input-group-btn">
-                              <button class="btn btn-secondary">
-                                  <span class="octicon octicon-eye"></span> {{text.view}}
-                              </button>
-                          </span>
-                      </div>
-                      <div class="btn-group">
-                          <button :class="['btn', isEdit('attend_sheet_'+i+'_date')?'btn-success':'btn-secondary']" @click="edit('attend_sheet_'+i+'_date', false)" :disabled="isEdit()&&!isEdit('attend_sheet_'+i+'_date')">
-                              <span class="octicon octicon-pencil"></span> {{editText('attend_sheet_'+i+'_date')}}
-                          </button>
-                          <button v-for="date in attendances_dates.dates" :class="['btn', 'btn-secondary', {'active':!date.sel}]" @click="date.sel=!date.sel" :disabled="!isEdit('attend_sheet_'+i+'_date')">
-                              <span :class="['octicon', date.sel?'octicon-check':'octicon-x']"></span> {{date.text}}
-                          </button>
-                      </div>
-                  </div>
-              </div>
-          </div>
-      </div>
-      <button class="btn btn-primary" :disabled="!canSave" @click="save">Save</button>
-    </div>
-<!--
-    <script src="https://code.jquery.com/jquery-latest.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/js/bootstrap.min.js" integrity="sha384-BLiI7JTZm+JWlgKa0M0kGRpJbF2J8q+qreVrKBC47e3K6BW78kGLrCkeRX6I9RoK" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.4.6/bluebird.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.26/vue.min.js"></script>
-    <script>
-    var vm = new Vue({
-      el:"#main",
-      data:{
-        stage_label: 'init',
-        isLoading:true,
-        logs: '',
-
-        config:{},
-        sheetId:'',
-      },
-      computed:{
-        numSelDates:function(){
-          return this.config.sheet_dates.map(function(sheet_date){
-            return sheet_date.sel_dates;
-          }).reduce(function(a,b){
-            return a.concat(b);
-          }, []).filter(function(v){
-            return v.sel;
-          }).length;
-        },
-      },
-      methods:{
-        deleteSheetDates(i){
-          if(confirm('確定刪除？')){
-            this.config.sheet_dates.splice(i,1);
-          }
-        },
-      },
-    });
-
-    Vue.filter('sheetIdText', function(stage_label){
-      switch(stage_label){
-        case 'modify-list': return '會員資料表';
-        case 'modify-dates': return '主日出席表';
-        default: return '';
-      }
-    });
-
-    Vue.filter('staticLogs', function(stage_label){
-      switch(stage_label){
-        case 'display-config': return 'Display config';
-        case 'modify-list': return 'Please modify list';
-        case 'modify-attendance': return 'Please modify attendance';
-        case 'preview-config': return 'Preview tested config and confirm';
-        default: return '';
-      }
-    });
-
-    Vue.filter('simpleDate', function(d){
-      if(!d) return 'NaN';
-      var d = new Date(d);
-      var M = d.getMonth()+1;
-      var D = d.getDate();
-      return (M<10?"0"+M:M)+(D<10?"0"+D:D);
-    });
-    </script>
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-    var socket = io();
-    </script>
-    <script src="js/console.js"></script>
-    <script src="js/stages.js"></script>
-    <script src="js/google-sheet.js"></script>
-    <script src="https://apis.google.com/js/client.js?onload=init"></script>
--->
         <!-- JQuery -->
         <script src="https://code.jquery.com/jquery-latest.min.js"></script>
         <script src="https://malsup.github.io/jquery.corner.js"></script>
@@ -231,93 +100,93 @@
         <!-- Vue -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.26/vue.min.js"></script>
         <script>
-        var app = new Vue({
-            el: '#main',
-            data: {
-                config: {
-                },
-                editing: '',
-                text: {
-                    list: '會員資料表',
-                    attend: '主日出席表',
-                    edit: '修改',
-                    save: '確定',
-                    view: '開啟資料表',
-                },
-            },
-            computed: {
-                canSave: function(){
-                    return !this.isEdit();
-                },
-            },
-            methods: {
-                isEdit: function(target){
-                    if(target === undefined) return this.editing !== '';
-                    return this.editing === target;
-                },
-                edit: function(target, toGetTitle){
-                    if(this.isEdit(target)){
-                        this.editing = '';
-                        if(toGetTitle){
-                            Loading.on('Load sheet title');
-                            runGoogleAuth(
-                                this.config.api.client_id,
-                                this.config.api.scopes,
-                                false
+var app = new Vue({
+    el: '#main',
+    data: {
+        config: {
+        },
+        editing: '',
+        text: {
+            list: '會員資料表',
+            attend: '主日出席表',
+            edit: '修改',
+            save: '確定',
+            view: '開啟資料表',
+        },
+    },
+    computed: {
+        canSave: function(){
+            return !this.isEdit();
+        },
+    },
+    methods: {
+        isEdit: function(target){
+            if(target === undefined) return this.editing !== '';
+            return this.editing === target;
+        },
+        edit: function(target, toGetTitle){
+            if(this.isEdit(target)){
+                this.editing = '';
+                if(toGetTitle){
+                    Loading.on('Load sheet title');
+                    runGoogleAuth(
+                            this.config.api.client_id,
+                            this.config.api.scopes,
+                            false
                             ).then(function(){
-                                return runGetTitle(eval('app.config.'+target+'.sheetId'));
-                            }).then(function(title){
+                        return runGetTitle(eval('app.config.'+target+'.sheetId'));
+                    }).then(function(title){
                                 app.$set('config.'+target+'.title', title);
                                 Loading.off();
                             }).catch(function(err){
-                                log(err);
-                                app.$set('config.'+target+'.title', '');
-                                Loading.off();
-                            });
-                        }
-                    }
-                    else{
-                        this.editing = target;
-                    }
-                },
-                editText: function(target){
-                    return this.isEdit(target)? this.text.save: this.text.edit;
-                },
-                save: function(){
-                    log(this.config)
-                },
-            },
-        });
+                        log(err);
+                        app.$set('config.'+target+'.title', '');
+                        Loading.off();
+                    });
+                }
+            }
+            else{
+                this.editing = target;
+            }
+        },
+        editText: function(target){
+            return this.isEdit(target)? this.text.save: this.text.edit;
+        },
+        save: function(){
+            log(this.config)
+        },
+    },
+});
         </script>
         <!-- Scripts -->
         <script src="js/log.js"></script>
         <script src="js/loading.js"></script>
         <script>
-        function deepcopy(x){ return JSON.parse(JSON.stringify(x)) }
-        function deepequal(a, b){ return JSON.stringify(a) === JSON.stringify(b) }
-        function init(){
-            Loading.on('Load config');
-            $.getJSON('config.json', function(json){
-                log(json);
-                app.config = json;
-                Loading.on('Load Google authentication');
-                runGoogleAuth(
-                    app.config.api.client_id,
-                    app.config.api.scopes,
-                    false
+function deepcopy(x){ return JSON.parse(JSON.stringify(x)) }
+function deepequal(a, b){ return JSON.stringify(a) === JSON.stringify(b) }
+function init(){
+    Loading.on('Load config');
+    $.getJSON('config.json', function(json){
+        log(json);
+        app.config = json;
+        Loading.on('Load Google authentication');
+        runGoogleAuth(
+                app.config.api.client_id,
+                app.config.api.scopes,
+                false
                 ).then(function(){
-                    Loading.on('Load Google sheet API');
-                    return runLoadSheetsApi(app.config.api.discovery);
-                }).then(function(){
+            Loading.on('Load Google sheet API');
+            return runLoadSheetsApi(app.config.api.discovery);
+        }).then(function(){
                     Loading.on('Load list title');
                     return runGetTitle(app.config.list.sheetId);
                 }).then(function(title){
-                    app.$set('config.list.title', title);
-                    Loading.on('Load attendance titles');
-                    return Promise.map(app.config.attendances_dates, function(attendance_dates){
-                        return runGetTitle(attendance_dates.sheetId);
-                    });
-                }).then(function(titles){
+            app.$set('config.list.title', title);
+            Loading.on('Load attendance titles');
+            return Promise.map(app.config.attendances_dates, function(attendance_dates){
+                return runGetTitle(attendance_dates.sheetId);
+            });
+        }).then(function(titles){
                     for(var i in titles){
                         var title = titles[i];
                         app.$set('config.attendances_dates[' + i + '].title', title);
@@ -327,22 +196,22 @@
                         return runGetAttendances(attendance_dates.sheetId, true);
                     });
                 }).then(function(many_dates){
-                    for(var i in many_dates){
-                        var dates = many_dates[i];
-                        for(var j in dates){
-                            var date = dates[j];
-                            app.$set('config.attendances_dates[' + i + '].dates[' + j + '].text', date);
-                        }
-                    }
-                    Loading.off();
-                }).catch(function(err){
+            for(var i in many_dates){
+                var dates = many_dates[i];
+                for(var j in dates){
+                    var date = dates[j];
+                    app.$set('config.attendances_dates[' + i + '].dates[' + j + '].text', date);
+                }
+            }
+            Loading.off();
+        }).catch(function(err){
                     Loading.off(err);
                 });
-            });
-        }
+    });
+}
         </script>
         <!-- Google sheet -->
         <script src="js/google-sheet.js"></script>
         <script src="https://apis.google.com/js/client.js?onload=init"></script>
-  </body>
+    </body>
 </html>
