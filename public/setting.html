@@ -58,7 +58,9 @@
                             </div>
                         </div>
                     </div>
-                    <hr>
+                    <p class="alert alert-info">
+                        已選取 {{n_sel_dates}} 個主日
+                    </p>
                     <div class="card" v-for="(i, attendances_dates) in config.attendances_dates">
                         <div class="card-header">
                             {{text.attend}}{{attendances_dates.title? ' : ' + attendances_dates.title: ''}}
@@ -123,6 +125,13 @@ var app = new Vue({
     computed: {
         canSave: function(){
             return !this.isEdit() && !deepequal(this.config, this.init_config);
+        },
+        n_sel_dates: function(){
+            return this.config.attendances_dates.reduce(function(a, b){
+                return a + b.dates.reduce(function(c, d){
+                    return c + (d.sel? 1: 0);
+                }, 0);
+            }, 0);
         },
     },
     methods: {
