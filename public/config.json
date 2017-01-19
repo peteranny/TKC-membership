@@ -1,28 +1,65 @@
 {
-    "api": {
-        "client_id": "398747948038-b2e8dbdklgvhfcpll5ass57kh3t648fu.apps.googleusercontent.com",
-        "scopes": [
-            "https://www.googleapis.com/auth/spreadsheets.readonly"
-        ],
-        "discovery": "https://sheets.googleapis.com/$discovery/rest?version=v4"
-    },
-    "list": {"sheetId": "1TDcdilPsHpnRJ6MjAZO7ifHvbrrW-0UA38UupMlO-zA"},
-    "attendances_dates": [
+  "api": {
+    "client_id": "398747948038-b2e8dbdklgvhfcpll5ass57kh3t648fu.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/spreadsheets.readonly"
+    ],
+    "discovery": "https://sheets.googleapis.com/$discovery/rest?version=v4"
+  },
+  "list": {
+    "sheetId": "1TDcdilPsHpnRJ6MjAZO7ifHvbrrW-0UA38UupMlO-zA",
+    "title": "同光會員名冊(新)"
+  },
+  "attendances_dates": [
+    {
+      "sheetId": "1Bqam_dHyxn78JhYosgO2VN4x_91EKb01EdbI2A9foUI",
+      "dates": [
         {
-            "sheetId": "1Bqam_dHyxn78JhYosgO2VN4x_91EKb01EdbI2A9foUI",
-            "dates": [
-                {"sel": true},
-                {"sel": true},
-                {"sel": false},
-                {"sel": true},
-                {"sel": true},
-                {"sel": false},
-                {"sel": true},
-                {"sel": true},
-                {"sel": false},
-                {"sel": false},
-                {"sel": true}
-            ]
+          "sel": true,
+          "text": "3/20"
+        },
+        {
+          "sel": true,
+          "text": "3/27"
+        },
+        {
+          "sel": true,
+          "text": "4/3"
+        },
+        {
+          "sel": true,
+          "text": "4/10"
+        },
+        {
+          "sel": true,
+          "text": "4/17"
+        },
+        {
+          "sel": true,
+          "text": "4/24"
+        },
+        {
+          "sel": true,
+          "text": "5/1"
+        },
+        {
+          "sel": true,
+          "text": "5/8"
+        },
+        {
+          "sel": true,
+          "text": "5/15"
+        },
+        {
+          "sel": true,
+          "text": "5/22"
+        },
+        {
+          "sel": true,
+          "text": "5/29"
         }
-    ]
+      ],
+      "title": "同光主日出席記錄"
+    }
+  ]
 }
