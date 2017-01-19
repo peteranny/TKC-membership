@@ -6,6 +6,13 @@
     </head>
     <body>
         <div id="main" class="container-fluid">
+            <p></p>
+            <p>
+            <button class="btn btn-primary" @click="gotoIndex"><span class="octicon octicon-home"></span> 回首頁</button>
+            <button class="btn btn-success" :disabled="!canSave" @click="save">儲存</button>
+            <button class="btn btn-danger" :disabled="!canSave" @click="reset">重置</button>
+            <em v-if="canSave">尚未儲存資料，請按儲存以確認變更</em>
+            </p>
             <p>
             <ul class="nav nav-tabs">
                 <!-- TODO: check unsaved on click -->
@@ -83,10 +90,6 @@
                     </div>
                 </div>
             </div>
-            <button class="btn btn-primary" @click="gotoIndex"><span class="octicon octicon-home"></span> 回首頁</button>
-            <button class="btn btn-success" :disabled="!canSave" @click="save">儲存</button>
-            <button class="btn btn-danger" :disabled="!canSave" @click="reset">重置</button>
-            <em v-if="canSave">尚未儲存資料，請按儲存以確認變更</em>
         </div>
         <!-- JQuery -->
         <script src="https://code.jquery.com/jquery-latest.min.js"></script>
