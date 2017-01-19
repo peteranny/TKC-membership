@@ -51,7 +51,7 @@
                                 </span>
                                 <input class="form-control" v-model="config.list.sheetId" :disabled="!isEdit('list')">
                                 <span class="input-group-btn">
-                                    <button class="btn btn-secondary">
+                                    <button class="btn btn-secondary" @click="gotoSheet(config.list.sheetId)">
                                         <span class="octicon octicon-eye"></span> {{text.view}}
                                     </button>
                                 </span>
@@ -60,7 +60,7 @@
                     </div>
                     <div class="card" v-for="(i, attendances_dates) in config.attendances_dates">
                         <div class="card-header">
-                            {{text.attend}}{{config.attendances_dates[i].title? ' : ' + config.attendances_dates[i].title: ''}}
+                            {{text.attend}}{{attendances_dates.title? ' : ' + attendances_dates.title: ''}}
                         </div>
                         <div class="card-block">
                             <div class="form-group input-group">
@@ -69,9 +69,9 @@
                                         <span class="octicon octicon-pencil"></span> {{editText('attendances_dates['+i+']')}}
                                     </button>
                                 </span>
-                                <input class="form-control" v-model="config.attendances_dates[i].sheetId" :disabled="!isEdit('attendances_dates['+i+']')">
+                                <input class="form-control" v-model="attendances_dates.sheetId" :disabled="!isEdit('attendances_dates['+i+']')">
                                 <span class="input-group-btn">
-                                    <button class="btn btn-secondary">
+                                    <button class="btn btn-secondary" @click="gotoSheet(attendances_dates.sheetId)">
                                         <span class="octicon octicon-eye"></span> {{text.view}}
                                     </button>
                                 </span>
@@ -175,6 +175,10 @@ var app = new Vue({
                 return;
             }
             document.location = this.index_url;
+        },
+        gotoSheet: function(sheetId){
+            const url = 'https://docs.google.com/spreadsheets/d/' + sheetId;
+            window.open(url);
         },
     },
 });
