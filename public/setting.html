@@ -91,6 +91,7 @@
             <button class="btn btn-primary" @click="gotoIndex"><span class="octicon octicon-home"></span> 回首頁</button>
             <button class="btn btn-success" :disabled="!canSave" @click="save">儲存</button>
             <button class="btn btn-danger" :disabled="!canSave" @click="reset">重置</button>
+            <em v-if="canSave">尚未儲存資料，請按儲存以確認變更</em>
         </div>
         <!-- JQuery -->
         <script src="https://code.jquery.com/jquery-latest.min.js"></script>
@@ -135,17 +136,16 @@ var app = new Vue({
                 if(toGetTitle){
                     Loading.on('Load sheet title');
                     runGoogleAuth(
-                            this.config.api.client_id,
-                            this.config.api.scopes,
-                            false
-                            ).then(function(){
+                        this.config.api.client_id,
+                        this.config.api.scopes,
+                        false
+                    ).then(function(){
                         return runGetTitle(eval('app.config.'+target+'.sheetId'));
                     }).then(function(title){
-                                app.$set('config.'+target+'.title', title);
-                                Loading.off();
-                            }).catch(function(err){
-                        log(err);
-                        app.$set('config.'+target+'.title', '');
+                        app.$set('config.'+target+'.title', title);
+                        Loading.off();
+                    }).catch(function(err){
+                        app.$set('config.'+target+'.title', err);
                         Loading.off();
                     });
                 }
@@ -241,7 +241,6 @@ function sendSave(config){
     socket.emit('save', config);
 }
 socket.on('saved', function(){
-    log('Saved');
     app.init_config = app.config;
     app.config = deepcopy(app.init_config);
 });
