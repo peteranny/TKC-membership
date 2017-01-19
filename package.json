@@ -1,19 +1,19 @@
 {
-  "name": "tkc-member",
-  "version": "1.0.0",
-  "description": "A sample Node.js app using Express 4",
-  "engines": {
-    "node": "5.9.1"
-  },
-  "main": "app.js",
-  "scripts": {
-    "start": "node app"
-  },
-  "dependencies": {
-    "ejs": "2.4.1",
-    "express": "4.13.3",
-    "socket.io": "^1.5.1",
-    "bluebird": "^3.4.6"
-  },
-  "license": "MIT"
+    "name": "tkc-member",
+    "version": "1.0.0",
+    "description": "A sample Node.js app using Express 4",
+    "engines": {
+        "node": "5.9.1"
+    },
+    "main": "server.js",
+    "scripts": {
+        "start": "node server"
+    },
+    "dependencies": {
+        "ejs": "2.4.1",
+        "express": "4.13.3",
+        "socket.io": "^1.5.1",
+        "bluebird": "^3.4.6"
+    },
+    "license": "MIT"
 }

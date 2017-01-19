@@ -187,15 +187,15 @@ function init(){
                 return runGetTitle(attendance_dates.sheetId);
             });
         }).then(function(titles){
-                    for(var i in titles){
-                        var title = titles[i];
-                        app.$set('config.attendances_dates[' + i + '].title', title);
-                    }
-                    Loading.on('Load attendance dates');
-                    return Promise.map(app.config.attendances_dates, function(attendance_dates){
-                        return runGetAttendances(attendance_dates.sheetId, true);
-                    });
-                }).then(function(many_dates){
+            for(var i in titles){
+                var title = titles[i];
+                app.$set('config.attendances_dates[' + i + '].title', title);
+            }
+            Loading.on('Load attendance dates');
+            return Promise.map(app.config.attendances_dates, function(attendance_dates){
+                return runGetAttendances(attendance_dates.sheetId, true);
+            });
+        }).then(function(many_dates){
             for(var i in many_dates){
                 var dates = many_dates[i];
                 for(var j in dates){
@@ -205,9 +205,17 @@ function init(){
             }
             Loading.off();
         }).catch(function(err){
-                    Loading.off(err);
-                });
+            Loading.off(err);
+        });
     });
+}
+        </script>
+        <!-- Socket IO -->
+        <script src="/socket.io/socket.io.js"></script>
+        <script>
+var socket = io();
+function sendSave(config){
+    socket.emit('save', config);
 }
         </script>
         <!-- Google sheet -->
