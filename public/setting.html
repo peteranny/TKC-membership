@@ -103,6 +103,8 @@
 var app = new Vue({
     el: '#main',
     data: {
+        init_config: {
+        },
         config: {
         },
         editing: '',
@@ -116,7 +118,7 @@ var app = new Vue({
     },
     computed: {
         canSave: function(){
-            return !this.isEdit();
+            return !this.isEdit() && !deepequal(this.config, this.init_config);
         },
     },
     methods: {
@@ -167,8 +169,10 @@ function deepequal(a, b){ return JSON.stringify(a) === JSON.stringify(b) }
 function init(){
     Loading.on('Load config');
     $.getJSON('config.json', function(json){
-        log(json);
-        app.config = json;
+        app.init_config = json;
+        app.config = deepcopy(app.init_config);
+
+        // start promise chain
         Loading.on('Load Google authentication');
         runGoogleAuth(
                 app.config.api.client_id,
@@ -219,6 +223,8 @@ function sendSave(config){
 }
 socket.on('saved', function(){
     log('Saved');
+    app.init_config = app.config;
+    app.config = deepcopy(app.init_config);
 });
         </script>
         <!-- Google sheet -->
