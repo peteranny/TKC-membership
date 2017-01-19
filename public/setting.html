@@ -88,7 +88,8 @@
                     </div>
                 </div>
             </div>
-            <button class="btn btn-primary" :disabled="!canSave" @click="save">Save</button>
+            <button class="btn btn-success" :disabled="!canSave" @click="save">Save</button>
+            <button class="btn btn-danger" :disabled="!canSave" @click="reset">Reset</button>
         </div>
         <!-- JQuery -->
         <script src="https://code.jquery.com/jquery-latest.min.js"></script>
@@ -155,7 +156,14 @@ var app = new Vue({
             return this.isEdit(target)? this.text.save: this.text.edit;
         },
         save: function(){
-            sendSave(this.config);
+            if(confirm('Are you sure to save?')){
+                sendSave(this.config);
+            }
+        },
+        reset: function(){
+            if(confirm('Are you sure to reset?')){
+                this.config = deepcopy(this.init_config);
+            }
         },
     },
 });
