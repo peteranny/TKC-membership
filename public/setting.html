@@ -14,7 +14,6 @@
             </p>
             <p>
             <ul class="nav nav-tabs">
-                <!-- TODO: check unsaved on click -->
                 <li class="nav-item">
                     <a class="nav-link active" data-toggle="tab" href="#sheets">Google sheet settings</a>
                 </li>
@@ -59,6 +58,7 @@
                             </div>
                         </div>
                     </div>
+                    <hr>
                     <div class="card" v-for="(i, attendances_dates) in config.attendances_dates">
                         <div class="card-header">
                             {{text.attend}}{{attendances_dates.title? ' : ' + attendances_dates.title: ''}}
@@ -86,6 +86,9 @@
                                 </button>
                             </div>
                         </div>
+                    </div>
+                    <div>
+                        <button class="btn btn-secondary" @click="addAttendancesSheet"><span class="octicon octicon-plus"></span> 新增更多主日出席表</button>
                     </div>
                 </div>
             </div>
@@ -176,6 +179,9 @@ var app = new Vue({
         gotoSheet: function(sheetId){
             const url = 'https://docs.google.com/spreadsheets/d/' + sheetId;
             window.open(url);
+        },
+        addAttendancesSheet: function(){
+            log('This funcion has not completed yet');
         },
     },
 });
