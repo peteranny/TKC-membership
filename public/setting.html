@@ -88,8 +88,9 @@
                     </div>
                 </div>
             </div>
-            <button class="btn btn-success" :disabled="!canSave" @click="save">Save</button>
-            <button class="btn btn-danger" :disabled="!canSave" @click="reset">Reset</button>
+            <button class="btn btn-primary" @click="gotoIndex"><span class="octicon octicon-home"></span> 回首頁</button>
+            <button class="btn btn-success" :disabled="!canSave" @click="save">儲存</button>
+            <button class="btn btn-danger" :disabled="!canSave" @click="reset">重置</button>
         </div>
         <!-- JQuery -->
         <script src="https://code.jquery.com/jquery-latest.min.js"></script>
@@ -116,6 +117,7 @@ var app = new Vue({
             save: '確定',
             view: '開啟資料表',
         },
+        index_url: 'index.html',
     },
     computed: {
         canSave: function(){
@@ -164,6 +166,15 @@ var app = new Vue({
             if(confirm('Are you sure to reset?')){
                 this.config = deepcopy(this.init_config);
             }
+        },
+        gotoIndex: function(){
+            if(this.isEdit() && !confirm('You are editting. Are you sure to leave?')){
+                return;
+            }
+            if(this.canSave && !confirm('You have not saved. Are you sure to leave?')){
+                return;
+            }
+            document.location = this.index_url;
         },
     },
 });
