@@ -68,7 +68,7 @@
                         <div class="card-block">
                             <div class="form-group input-group">
                                 <span class="input-group-btn">
-                                    <button :class="['btn', isEdit('attendances_dates['+i+']')?'btn-success':'btn-secondary']" @click="edit('attendances_dates['+i+']', true)" :disabled="isEdit()&&!isEdit('attendances_dates['+i+']')">
+                                    <button :class="['btn', isEdit('attendances_dates['+i+']')?'btn-success':'btn-secondary']" @click="edit('attendances_dates['+i+']', true, modDates(i))" :disabled="isEdit()&&!isEdit('attendances_dates['+i+']')">
                                         <span class="octicon octicon-pencil"></span> {{editText('attendances_dates['+i+']')}}
                                     </button>
                                 </span>
@@ -149,14 +149,14 @@ var app = new Vue({
                         this.config.api.scopes,
                         false
                     ).then(function(){
-                        return runGetTitle(eval('app.config.'+target+'.sheetId'));
-                    }).then(function(title){
-                        app.$set('config.'+target+'.title', title);
-                    }).catch(function(err){
-                        app.$set('config.'+target+'.title', err);
+                        return runGetTitle(eval('app.config.'+target+'.sheetId')).then(function(title){
+                            app.$set('config.'+target+'.title', title);
+                        }).catch(function(err){
+                            app.$set('config.'+target+'.title', err);
+                        });
                     }).then(function(){
                         /* TODO: not tested */
-                        if(nextStep) return nextStep;
+                        if(nextStep) return nextStep();
                     }).catch(function(err){
                         log(err);
                         return;
@@ -174,21 +174,23 @@ var app = new Vue({
         },
         /* TODO: not tested */
         modDates: function(i){
-            /* TODO: rename attendnaces_dates */
-            var attendance_dates = this.config.attendances_dates[i];
-            var init_attendance_dates = this.init_config.attendances_dates[i];
-            return runGetAttendances(attendance_dates.sheetId, true).then(function(dates){
-                var as_init = attendance_dates.sheetId === init_attendnace_dates.sheetId;
-                for(var j in dates){
-                    var date = dates[j];
-                    app.$set('config.attendances_dates[' + i + '].dates[' + j + '].text', date);
-                    app.$set('config.attendances_dates[' + i + '].dates[' + j + '].sel',
-                        as_init? init_attendnace_dates.dates[j].sel: true
-                    );
-                }
-            }).catch(function(err){
-                app.$set('config.attendance_dates[' + i + '].dates', []);
-            });
+            return function(){
+                /* TODO: rename attendnaces_dates */
+                var attendance_dates = this.config.attendances_dates[i];
+                var init_attendance_dates = this.init_config.attendances_dates[i];
+                return runGetAttendances(attendance_dates.sheetId, true).then(function(dates){
+                    var as_init = attendance_dates.sheetId === init_attendnace_dates.sheetId;
+                    for(var j in dates){
+                        var date = dates[j];
+                        app.$set('config.attendances_dates[' + i + '].dates[' + j + '].text', date);
+                        app.$set('config.attendances_dates[' + i + '].dates[' + j + '].sel',
+                            as_init? init_attendnace_dates.dates[j].sel: true
+                        );
+                    }
+                }).catch(function(err){
+                    app.$set('config.attendance_dates[' + i + '].dates', []);
+                });
+            }.bind(this);
         },
         save: function(){
             if(confirm('Are you sure to save?')){
