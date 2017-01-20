@@ -149,12 +149,15 @@ var app = new Vue({
                 this.editing = '';
                 if(toGetTitle){
                     Loading.on('Load sheet title');
+                    var sheetId = eval('app.config.'+target+'.sheetId');
+                    sheetId = sheetId.replace(/^https:\/\/docs.google.com\/spreadsheets\/d\/(.*?)\/.*$/, '$1');
+                    app.$set('config.'+target+'.sheetId', sheetId);
                     runGoogleAuth(
                         this.config.api.client_id,
                         this.config.api.scopes,
                         false
                     ).then(function(){
-                        return runGetTitle(eval('app.config.'+target+'.sheetId')).then(function(title){
+                        return runGetTitle(sheetId).then(function(title){
                             app.$set('config.'+target+'.title', title);
                         }).catch(function(err){
                             app.$set('config.'+target+'.title', err);
