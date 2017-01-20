@@ -84,21 +84,40 @@ function run(){
                 }
             ).then(function(many){
                 var dates = [];
-                var member_attendances = [];
-                // concatenate
+                var member_attendances_dict = {};
                 Loading.on('Concatenate attendances');
                 for(i in many){
                     var one = many[i];
+                    one.member_attendances.forEach(function(m_a){
+                        var nickname = m_a.nickname;
+                        var group = m_a.group;
+                        if(!member_attendances_dict[nickname]){
+                            member_attendances_dict[nickname] = {};
+                        }
+                        if(!member_attendances_dict[nickname][group]){
+                            // insert previous absence
+                            var attendance = [];
+                            for(j in dates){ attendance.push(0) }
+                            member_attendances_dict[nickname][group] = attendance;
+                        }
+                        // concatenate attendance
+                        [].push.apply(member_attendances_dict[nickname][group], m_a.attendance);
+                    });
                     [].push.apply(dates, one.dates);
-                    [].push.apply(member_attendances, one.member_attendances);
                 }
                 // group attendances according to nickname
                 Loading.on('Concatenate attendances');
-                for(var i in member_attendances){
-                    var m_a = member_attendances[i];
-                    var nickname = m_a.nickname;
-                    if(members_dict[nickname])
-                        members_dict[nickname].push(m_a);
+                for(var nickname in member_attendances_dict){
+                    for(var group in member_attendances_dict[nickname]){
+                        var attendance = member_attendances_dict[nickname][group];
+                        // preserve only members in the list
+                        if(members_dict[nickname]){
+                            members_dict[nickname].push({
+                                group: group,
+                                attendance: attendance,
+                            });
+                        }
+                    }
                 }
                 // append meta data to members
                 Loading.on('Generate meta data');
