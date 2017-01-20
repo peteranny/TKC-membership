@@ -79,7 +79,7 @@
                                     </button>
                                 </span>
                             </div>
-                            <div class="btn-group">
+                            <div class="form-group btn-group">
                                 <button :class="['btn', isEdit('attend_sheet_'+i+'_date')?'btn-success':'btn-secondary']" @click="edit('attend_sheet_'+i+'_date', false)" :disabled="isEdit()&&!isEdit('attend_sheet_'+i+'_date')">
                                     <span class="octicon octicon-pencil"></span> {{editText('attend_sheet_'+i+'_date')}}
                                 </button>
@@ -87,6 +87,7 @@
                                     <span :class="['octicon', date.sel?'octicon-check':'octicon-x']"></span> {{date.text}}
                                 </button>
                             </div>
+                            <button class="btn btn-secondary" @click="deleteAttendancesSheet(i)">刪除此主日出席表</button>
                         </div>
                     </div>
                     <div>
@@ -123,8 +124,12 @@ var app = new Vue({
         index_url: 'index.html',
     },
     computed: {
+        isModified: function(){
+            function deepequal(a, b){ return JSON.stringify(a) === JSON.stringify(b) }
+            return !deepequal(this.config, this.init_config);
+        },
         canSave: function(){
-            return !this.isEdit() && !deepequal(this.config, this.init_config);
+            return !this.isEdit() && this.isModified;
         },
         n_sel_dates: function(){
             return this.config.attendances.reduce(function(a, b){
@@ -219,6 +224,9 @@ var app = new Vue({
                 dates: [],
             });
         },
+        deleteAttendancesSheet: function(i){
+            this.config.attendances.splice(i, 1);
+        },
     },
 });
         </script>
@@ -227,7 +235,6 @@ var app = new Vue({
         <script src="js/loading.js"></script>
         <script>
 function deepcopy(x){ return JSON.parse(JSON.stringify(x)) }
-function deepequal(a, b){ return JSON.stringify(a) === JSON.stringify(b) }
 function init(){
     Loading.on('Load config');
     $.getJSON('config.json', function(json){
