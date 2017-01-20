@@ -176,7 +176,7 @@ var app = new Vue({
                 var attendances = this.config.attendances[i];
                 var init_attendances = this.init_config.attendances[i];
                 return runGetAttendances(attendances.sheetId, true).then(function(dates){
-                    var as_init = attendances.sheetId === init_attendances.sheetId;
+                    var as_init = init_attendances && attendances.sheetId === init_attendances.sheetId;
                     app.$set('config.attendances[' + i + '].dates', []);
                     for(var j in dates){
                         var date = dates[j];
@@ -214,7 +214,7 @@ var app = new Vue({
             window.open(url);
         },
         addAttendancesSheet: function(){
-            this.attenances.push({
+            this.config.attendances.push({
                 sheetId: '',
                 dates: [],
             });
