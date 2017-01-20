@@ -50,14 +50,14 @@ function run(){
             // collect from every sheet
             Loading.on('Load attendances');
             return Promise.map(
-                config.attendances_dates,
-                function(one){
+                config.attendances,
+                function(attendances){
                     return runGetAttendances(
-                        one.sheetId
+                        attendances.sheetId
                     ).then(function(data){
                         var sel_dates =
                             data.dates.filter(function(col, i){
-                                return one.dates[i].sel;
+                                return attendances.dates[i].sel;
                             });
                         // select attendance on specific dates
                         var member_sel_attendances =
@@ -66,8 +66,8 @@ function run(){
                                 var group = m_a.group;
                                 var attendance = m_a.attendance;
                                 var sel_attendance = [];
-                                for(var i = 0; i < one.dates.length; i++){
-                                    if(one.dates[i].sel)
+                                for(var i = 0; i < attendances.dates.length; i++){
+                                    if(attendances.dates[i].sel)
                                         sel_attendance.push(attendance[i]? 1: 0);
                                 }
                                 return {

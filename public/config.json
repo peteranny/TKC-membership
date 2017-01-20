@@ -10,7 +10,7 @@
     "sheetId": "1TDcdilPsHpnRJ6MjAZO7ifHvbrrW-0UA38UupMlO-zA",
     "title": "同光會員名冊(新)"
   },
-  "attendances_dates": [
+  "attendances": [
     {
       "sheetId": "1Bqam_dHyxn78JhYosgO2VN4x_91EKb01EdbI2A9foUI",
       "dates": [
@@ -57,6 +57,14 @@
         {
           "sel": true,
           "text": "5/29"
+        },
+        {
+          "text": "8/21",
+          "sel": true
+        },
+        {
+          "text": "8/28",
+          "sel": true
         }
       ],
       "title": "同光主日出席記錄"

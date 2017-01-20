@@ -61,20 +61,20 @@
                     <p class="alert alert-info">
                         已選取 {{n_sel_dates}} 個主日
                     </p>
-                    <div class="card" v-for="(i, attendances_dates) in config.attendances_dates">
+                    <div class="card" v-for="(i, attendances) in config.attendances">
                         <div class="card-header">
-                            {{text.attend}}{{attendances_dates.title? ' : ' + attendances_dates.title: ''}}
+                            {{text.attend}}{{attendances.title? ' : ' + attendances.title: ''}}
                         </div>
                         <div class="card-block">
                             <div class="form-group input-group">
                                 <span class="input-group-btn">
-                                    <button :class="['btn', isEdit('attendances_dates['+i+']')?'btn-success':'btn-secondary']" @click="edit('attendances_dates['+i+']', true, modDates(i))" :disabled="isEdit()&&!isEdit('attendances_dates['+i+']')">
-                                        <span class="octicon octicon-pencil"></span> {{editText('attendances_dates['+i+']')}}
+                                    <button :class="['btn', isEdit('attendances['+i+']')?'btn-success':'btn-secondary']" @click="edit('attendances['+i+']', true, modDates(i))" :disabled="isEdit()&&!isEdit('attendances['+i+']')">
+                                        <span class="octicon octicon-pencil"></span> {{editText('attendances['+i+']')}}
                                     </button>
                                 </span>
-                                <input class="form-control" v-model="attendances_dates.sheetId" :disabled="!isEdit('attendances_dates['+i+']')">
+                                <input class="form-control" v-model="attendances.sheetId" :disabled="!isEdit('attendances['+i+']')">
                                 <span class="input-group-btn">
-                                    <button class="btn btn-secondary" @click="gotoSheet(attendances_dates.sheetId)">
+                                    <button class="btn btn-secondary" @click="gotoSheet(attendances.sheetId)">
                                         <span class="octicon octicon-eye"></span> {{text.view}}
                                     </button>
                                 </span>
@@ -83,7 +83,7 @@
                                 <button :class="['btn', isEdit('attend_sheet_'+i+'_date')?'btn-success':'btn-secondary']" @click="edit('attend_sheet_'+i+'_date', false)" :disabled="isEdit()&&!isEdit('attend_sheet_'+i+'_date')">
                                     <span class="octicon octicon-pencil"></span> {{editText('attend_sheet_'+i+'_date')}}
                                 </button>
-                                <button v-for="date in attendances_dates.dates" :class="['btn', 'btn-secondary', {'active':!date.sel}]" @click="date.sel=!date.sel" :disabled="!isEdit('attend_sheet_'+i+'_date')">
+                                <button v-for="date in attendances.dates" :class="['btn', 'btn-secondary', {'active':!date.sel}]" @click="date.sel=!date.sel" :disabled="!isEdit('attend_sheet_'+i+'_date')">
                                     <span :class="['octicon', date.sel?'octicon-check':'octicon-x']"></span> {{date.text}}
                                 </button>
                             </div>
@@ -127,7 +127,7 @@ var app = new Vue({
             return !this.isEdit() && !deepequal(this.config, this.init_config);
         },
         n_sel_dates: function(){
-            return this.config.attendances_dates.reduce(function(a, b){
+            return this.config.attendances.reduce(function(a, b){
                 return a + b.dates.reduce(function(c, d){
                     return c + (d.sel? 1: 0);
                 }, 0);
@@ -173,20 +173,19 @@ var app = new Vue({
         },
         modDates: function(i){
             return function(){
-                /* TODO: rename attendnaces_dates */
-                var attendance_dates = this.config.attendances_dates[i];
-                var init_attendance_dates = this.init_config.attendances_dates[i];
-                return runGetAttendances(attendance_dates.sheetId, true).then(function(dates){
-                    var as_init = attendance_dates.sheetId === init_attendance_dates.sheetId;
+                var attendances = this.config.attendances[i];
+                var init_attendances = this.init_config.attendances[i];
+                return runGetAttendances(attendances.sheetId, true).then(function(dates){
+                    var as_init = attendances.sheetId === init_attendances.sheetId;
                     for(var j in dates){
                         var date = dates[j];
-                        app.$set('config.attendances_dates[' + i + '].dates[' + j + '].text', date);
-                        app.$set('config.attendances_dates[' + i + '].dates[' + j + '].sel',
-                            as_init? init_attendance_dates.dates[j].sel: true
+                        app.$set('config.attendances[' + i + '].dates[' + j + '].text', date);
+                        app.$set('config.attendances[' + i + '].dates[' + j + '].sel',
+                            as_init? init_attendances.dates[j].sel: true
                         );
                     }
                 }).catch(function(err){
-                    app.$set('config.attendance_dates[' + i + '].dates', []);
+                    app.$set('config.attendances[' + i + '].dates', []);
                 });
             }.bind(this);
         },
@@ -246,24 +245,24 @@ function init(){
                 }).then(function(title){
             app.$set('config.list.title', title);
             Loading.on('Load attendance titles');
-            return Promise.map(app.config.attendances_dates, function(attendance_dates){
-                return runGetTitle(attendance_dates.sheetId);
+            return Promise.map(app.config.attendances, function(attendances){
+                return runGetTitle(attendances.sheetId);
             });
         }).then(function(titles){
             for(var i in titles){
                 var title = titles[i];
-                app.$set('config.attendances_dates[' + i + '].title', title);
+                app.$set('config.attendances[' + i + '].title', title);
             }
             Loading.on('Load attendance dates');
-            return Promise.map(app.config.attendances_dates, function(attendance_dates){
-                return runGetAttendances(attendance_dates.sheetId, true);
+            return Promise.map(app.config.attendances, function(attendances){
+                return runGetAttendances(attendances.sheetId, true);
             });
         }).then(function(many_dates){
             for(var i in many_dates){
                 var dates = many_dates[i];
                 for(var j in dates){
                     var date = dates[j];
-                    app.$set('config.attendances_dates[' + i + '].dates[' + j + '].text', date);
+                    app.$set('config.attendances[' + i + '].dates[' + j + '].text', date);
                 }
             }
             Loading.off();
