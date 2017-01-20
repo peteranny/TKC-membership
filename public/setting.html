@@ -155,7 +155,6 @@ var app = new Vue({
                             app.$set('config.'+target+'.title', err);
                         });
                     }).then(function(){
-                        /* TODO: not tested */
                         if(nextStep) return nextStep();
                     }).catch(function(err){
                         log(err);
@@ -172,19 +171,18 @@ var app = new Vue({
         editText: function(target){
             return this.isEdit(target)? this.text.save: this.text.edit;
         },
-        /* TODO: not tested */
         modDates: function(i){
             return function(){
                 /* TODO: rename attendnaces_dates */
                 var attendance_dates = this.config.attendances_dates[i];
                 var init_attendance_dates = this.init_config.attendances_dates[i];
                 return runGetAttendances(attendance_dates.sheetId, true).then(function(dates){
-                    var as_init = attendance_dates.sheetId === init_attendnace_dates.sheetId;
+                    var as_init = attendance_dates.sheetId === init_attendance_dates.sheetId;
                     for(var j in dates){
                         var date = dates[j];
                         app.$set('config.attendances_dates[' + i + '].dates[' + j + '].text', date);
                         app.$set('config.attendances_dates[' + i + '].dates[' + j + '].sel',
-                            as_init? init_attendnace_dates.dates[j].sel: true
+                            as_init? init_attendance_dates.dates[j].sel: true
                         );
                     }
                 }).catch(function(err){
