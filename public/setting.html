@@ -213,7 +213,10 @@ var app = new Vue({
             window.open(url);
         },
         addAttendancesSheet: function(){
-            log('This funcion has not completed yet');
+            this.attenances.push({
+                sheetId: '',
+                dates: [],
+            });
         },
     },
 });
