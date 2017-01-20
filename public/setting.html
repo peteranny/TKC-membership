@@ -177,6 +177,7 @@ var app = new Vue({
                 var init_attendances = this.init_config.attendances[i];
                 return runGetAttendances(attendances.sheetId, true).then(function(dates){
                     var as_init = attendances.sheetId === init_attendances.sheetId;
+                    app.$set('config.attendances[' + i + '].dates', []);
                     for(var j in dates){
                         var date = dates[j];
                         app.$set('config.attendances[' + i + '].dates[' + j + '].text', date);
