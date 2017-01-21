@@ -257,7 +257,13 @@ function init(){
                     'config.attendances[' + i + '].title',
                     'config.attendances[' + i + '].sheetId',
                     attendances.sheetId
-                );
+                ).then(function(){
+                    return loadDates(
+                        'config.attendances[' + i + '].dates',
+                        attendances.sheetId,
+                        attendances.dates
+                    );
+                });
             });
         }).catch(function(err){
             Loading.off(err);
@@ -284,7 +290,7 @@ function loadDates(dates_path, sheetId, init_dates){
             var date = dates[j];
             app.$set(dates_path + '[' + j + '].text', date);
             app.$set(dates_path + '[' + j + '].sel',
-                init_dates? init_dates[j].sel: true
+                init_dates && init_dates[j]? init_dates[j].sel: true
             );
         }
     }).catch(function(err){
