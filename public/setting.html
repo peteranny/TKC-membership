@@ -151,26 +151,21 @@ var app = new Vue({
                 this.editing = '';
                 if(toGetTitle){
                     Loading.on('Load sheet title');
-                    var sheetId = eval('app.config.'+target+'.sheetId');
-                    sheetId = sheetId.replace(/^https:\/\/docs.google.com\/spreadsheets\/d\/(.*?)\/.*$/, '$1');
-                    app.$set('config.'+target+'.sheetId', sheetId);
                     runGoogleAuth(
                         this.config.api.client_id,
                         this.config.api.scopes,
                         false
                     ).then(function(){
-                        return runGetTitle(sheetId).then(function(title){
-                            app.$set('config.'+target+'.title', title);
-                        }).catch(function(err){
-                            app.$set('config.'+target+'.title', err);
-                        });
-                    }).then(function(){
-                        if(nextStep) return nextStep();
-                    }).catch(function(err){
-                        log(err);
-                        return;
+                        var title_path = 'config.' + target + '.title';
+                        var sheetId_path = 'config.' + target + '.sheetId';
+                        var sheetId = eval('app.' + sheetId_path);
+                        return loadSheet(
+                            title_path, sheetId_path, sheetId, nextStep
+                        );
                     }).then(function(){
                         Loading.off();
+                    }).catch(function(err){
+                        Loading.off(err);
                     });
                 }
             }
@@ -256,35 +251,34 @@ function init(){
             Loading.on('Load Google sheet API');
             return runLoadSheetsApi(app.config.api.discovery);
         }).then(function(){
-                    Loading.on('Load list title');
-                    return runGetTitle(app.config.list.sheetId);
-                }).then(function(title){
+            Loading.on('Load list title');
+            return runGetTitle(app.config.list.sheetId);
+        }).then(function(title){
             app.$set('config.list.title', title);
             Loading.on('Load attendance titles');
-            return Promise.map(app.config.attendances, function(attendances){
-                return runGetTitle(attendances.sheetId);
+            return Promise.map(app.config.attendances, function(attendances, i){
+                return loadSheet(
+                    'config.attendances[' + i + '].title',
+                    'config.attendances[' + i + '].sheetId',
+                    attendances.sheetId
+                );
             });
-        }).then(function(titles){
-            for(var i in titles){
-                var title = titles[i];
-                app.$set('config.attendances[' + i + '].title', title);
-            }
-            Loading.on('Load attendance dates');
-            return Promise.map(app.config.attendances, function(attendances){
-                return runGetAttendances(attendances.sheetId, true);
-            });
-        }).then(function(many_dates){
-            for(var i in many_dates){
-                var dates = many_dates[i];
-                for(var j in dates){
-                    var date = dates[j];
-                    app.$set('config.attendances[' + i + '].dates[' + j + '].text', date);
-                }
-            }
-            Loading.off();
         }).catch(function(err){
             Loading.off(err);
+        }).then(function(){
+            Loading.off();
         });
+    });
+}
+function loadSheet(title_path, sheetId_path, sheetId, nextStep){
+    sheetId = sheetId.replace(/^https:\/\/docs.google.com\/spreadsheets\/d\/(.*?)\/.*$/, '$1');
+    app.$set(sheetId_path, sheetId);
+    return runGetTitle(sheetId).then(function(title){
+        app.$set(title_path, title);
+    }).catch(function(err){
+        app.$set(title_path, err);
+    }).then(function(){
+        if(nextStep) return nextStep();
     });
 }
         </script>
