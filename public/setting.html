@@ -5,7 +5,7 @@
         <link rel="stylesheet" href="css/index.css" />
     </head>
     <body>
-        <div id="main" class="container-fluid">
+        <div id="main" class="container-fluid mb-1">
             <p class="text-xs-right">
             <em v-if="canSave">尚未儲存資料，請按儲存以確認變更</em>
             <button class="btn btn-success" :disabled="!canSave" @click="save">儲存</button>
@@ -80,13 +80,15 @@
                                 </span>
                             </div>
                             <div class="form-group btn-group">
-                                <button :class="['btn', isEdit('attend_sheet_'+i+'_date')?'btn-success':'btn-secondary']" @click="edit('attend_sheet_'+i+'_date', false)" :disabled="isEdit()&&!isEdit('attend_sheet_'+i+'_date')">
+                                <button :class="['btn', isEdit('attend_sheet_'+i+'_date')?'btn-success':'btn-secondary']" @click="edit('attend_sheet_'+i+'_date', false)" :disabled="attendances.dates.length==0||isEdit()&&!isEdit('attend_sheet_'+i+'_date')">
                                     <span class="octicon octicon-pencil"></span> {{editText('attend_sheet_'+i+'_date')}}
                                 </button>
                                 <button v-for="date in attendances.dates" :class="['btn', 'btn-secondary', {'active':!date.sel}]" @click="date.sel=!date.sel" :disabled="!isEdit('attend_sheet_'+i+'_date')">
                                     <span :class="['octicon', date.sel?'octicon-check':'octicon-x']"></span> {{date.text}}
                                 </button>
                             </div>
+                        </div>
+                        <div class="card-footer">
                             <button class="btn btn-secondary" @click="deleteAttendancesSheet(i)">刪除此主日出席表</button>
                         </div>
                     </div>
