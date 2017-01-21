@@ -26,6 +26,17 @@ function runLoadSheetsApi(discovery){
 }
 
 function runGetMembers(sheetId) {
+    var genDate = function(date){
+        if(!date) return null;
+        return new Date(
+            date
+            .replace(/(\D)(\d)(?=\D|$)/g, "$10$2")
+            .replace(/\D/g, '-')
+        );
+    }
+    var ch2n = function(ch){
+        return ch.charCodeAt(0) - 'A'.charCodeAt(0);
+    }
     return new Promise(function(resolve, reject){
         gapi.client.sheets.spreadsheets.values.get({
             spreadsheetId: sheetId,
@@ -34,10 +45,11 @@ function runGetMembers(sheetId) {
             var rows = response.result.values;
             var list = rows.map(function(row){
                 return {
-                    no: parseInt(row[0]),
-                    nickname: row[1],
-                    name: row[2],
-                    date_of_last_fee_paid: row[9],
+                    no: parseInt(row[ch2n('A')]),
+                    nickname: row[ch2n('B')],
+                    name: row[ch2n('C')],
+                    date_of_last_fee_paid: genDate(row[ch2n('J')]),
+                    date_of_ejected: genDate(row[ch2n('K')]),
                 };
             });
             resolve(list);

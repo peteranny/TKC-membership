@@ -40,7 +40,11 @@ function run(){
             Loading.on('Load members');
             return runGetMembers(
                 config.list.sheetId
-            );
+            ).then(function(members){
+                return members.filter(function(member){
+                    return member.name!=='' && !member.date_of_ejected;
+                });
+            });
         }).then(function(members){
             var members_dict = {};
             for(var i in members){
@@ -85,7 +89,6 @@ function run(){
             ).then(function(many){
                 var dates = [];
                 var member_attendances_dict = {};
-                Loading.on('Concatenate attendances');
                 for(i in many){
                     var one = many[i];
                     one.member_attendances.forEach(function(m_a){
@@ -106,7 +109,6 @@ function run(){
                     [].push.apply(dates, one.dates);
                 }
                 // group attendances according to nickname
-                Loading.on('Concatenate attendances');
                 for(var nickname in member_attendances_dict){
                     for(var group in member_attendances_dict[nickname]){
                         var attendance = member_attendances_dict[nickname][group];
@@ -120,7 +122,6 @@ function run(){
                     }
                 }
                 // append meta data to members
-                Loading.on('Generate meta data');
                 for(var i in members){
                     var member = members[i];
                     var nickname = member.nickname;

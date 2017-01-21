@@ -99,9 +99,6 @@ var app = new Vue({
         },
         hasFeePaid: function(member){
             var dof = member.date_of_last_fee_paid;
-            if(dof) dof = dof.replace(/(\D)(\d)(?=\D|$)/g, "$10$2");
-            if(dof) dof = dof.replace(/\D/g, '-');
-            if(dof) dof = new Date(dof);
             return (
                 dof?
                 dof.getFullYear() == this.paid_year:
