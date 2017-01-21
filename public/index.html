@@ -58,7 +58,7 @@
                             <td>
                                 <button class="btn btn-danger unsolved" v-if="member.candidates.length > 1" @click="solveConflict(member)">
                                     <span class="octicon octicon-question"></span>
-                                    無法自動辨識 {{member.no}}. {{member.name}}({{member.nickname}}) 的主日出席記錄，點選我以手動辨識
+                                    無法自動辨識 {{member.no}}. {{member.name}}({{member.nickname}}) 的主日出席記錄，點選我以手動選擇
                                 </button>
                                 <button class="btn btn-warning unconfirmed" v-if="member.candidates.length==0" @click="confirmAbsence(member)">
                                     <span class="octicon octicon-issue-opened"></span>
