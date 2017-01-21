@@ -180,18 +180,14 @@ var app = new Vue({
             return function(){
                 var attendances = this.config.attendances[i];
                 var init_attendances = this.init_config.attendances[i];
-                return runGetAttendances(attendances.sheetId, true).then(function(dates){
-                    var as_init = init_attendances && attendances.sheetId === init_attendances.sheetId;
-                    app.$set('config.attendances[' + i + '].dates', []);
-                    for(var j in dates){
-                        var date = dates[j];
-                        app.$set('config.attendances[' + i + '].dates[' + j + '].text', date);
-                        app.$set('config.attendances[' + i + '].dates[' + j + '].sel',
-                            as_init? init_attendances.dates[j].sel: true
-                        );
-                    }
-                }).catch(function(err){
-                    app.$set('config.attendances[' + i + '].dates', []);
+                var as_init = init_attendances && attendances.sheetId === init_attendances.sheetId;
+                var dates_path = 'config.attendances[' + i + '].dates';
+                return loadDates(
+                    dates_path,
+                    attendances.sheetId,
+                    as_init? init_attendances.dates: null
+                ).then(function(){
+                    Loading.off();
                 });
             }.bind(this);
         },
@@ -279,6 +275,20 @@ function loadSheet(title_path, sheetId_path, sheetId, nextStep){
         app.$set(title_path, err);
     }).then(function(){
         if(nextStep) return nextStep();
+    });
+}
+function loadDates(dates_path, sheetId, init_dates){
+    return runGetAttendances(sheetId, true).then(function(dates){
+        app.$set(dates_path, []);
+        for(var j in dates){
+            var date = dates[j];
+            app.$set(dates_path + '[' + j + '].text', date);
+            app.$set(dates_path + '[' + j + '].sel',
+                init_dates? init_dates[j].sel: true
+            );
+        }
+    }).catch(function(err){
+        app.$set(dates_path, []);
     });
 }
         </script>
