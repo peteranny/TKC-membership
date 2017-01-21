@@ -5,95 +5,101 @@
         <link rel="stylesheet" href="css/index.css" />
     </head>
     <body>
-        <div id="main" class="container-fluid mb-1">
-            <p class="text-xs-right">
-            <em v-if="canSave">尚未儲存資料，請按儲存以確認變更</em>
-            <button class="btn btn-success" :disabled="!canSave" @click="save">儲存</button>
-            <button class="btn btn-danger" :disabled="!canSave" @click="reset">重置</button>
-            <button class="btn btn-primary" @click="gotoIndex"><span class="octicon octicon-home"></span> 回首頁</button>
-            </p>
-            <p>
-            <ul class="nav nav-tabs">
-                <li class="nav-item">
-                    <a class="nav-link active" data-toggle="tab" href="#sheets">Google sheet settings</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" data-toggle="tab" href="#api">API configures</a>
-                </li>
-            </ul>
-            </p>
-            <div class="tab-content">
-                <div class="tab-pane" id="api">
-                    <div class="form-group input-group">
-                        <span class="input-group-addon">Client ID</span>
-                        <input class="form-control" v-model="config.api.client_id" disabled>
-                    </div>
-                    <div class="form-group input-group">
-                        <span class="input-group-addon">Scopes</span>
-                        <input class="form-control" v-for="scope in config.api.scopes" v-model="scope" disabled>
-                    </div>
-                    <div class="form-group input-group">
-                        <span class="input-group-addon">Discovery</span>
-                        <input class="form-control" v-model="config.api.discovery" disabled>
-                    </div>
+        <div id="main">
+            <div id="search-bar" class="text-xs-right" style="width:100%">
+                <em v-if="canSave">尚未儲存資料，請按儲存以確認變更</em>
+                <div class="btn-group">
+                    <button class="btn btn-success" :disabled="!canSave" @click="save">儲存</button>
+                    <button class="btn btn-danger" :disabled="!canSave" @click="reset">重置</button>
+                    <a class="btn btn-primary" @click="gotoIndex" style="color:white">
+                        <span class="octicon octicon-home"></span> 回首頁
+                    </a>
                 </div>
-                <div class="tab-pane active" id="sheets">
-                    <div class="card">
-                        <div class="card-header">
-                            {{text.list}}{{config.list.title? ' : ' + config.list.title: ''}}
+            </div>
+            <div class="container-fluid">
+                <p>
+                <ul class="nav nav-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-toggle="tab" href="#sheets">Google sheet settings</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#api">API configures</a>
+                    </li>
+                </ul>
+                </p>
+                <div class="tab-content">
+                    <div class="tab-pane" id="api">
+                        <div class="form-group input-group">
+                            <span class="input-group-addon">Client ID</span>
+                            <input class="form-control" v-model="config.api.client_id" disabled>
                         </div>
-                        <div class="card-block">
-                            <div class="form-group input-group">
-                                <span class="input-group-btn">
-                                    <button :class="['btn', isEdit('list')?'btn-success':'btn-secondary']" @click="edit('list', true)" :disabled="isEdit() && !isEdit('list')">
-                                        <span class="octicon octicon-pencil"></span> {{editText('list')}}
-                                    </button>
-                                </span>
-                                <input class="form-control" v-model="config.list.sheetId" :disabled="!isEdit('list')">
-                                <span class="input-group-btn">
-                                    <button class="btn btn-secondary" @click="gotoSheet(config.list.sheetId)">
-                                        <span class="octicon octicon-eye"></span> {{text.view}}
-                                    </button>
-                                </span>
-                            </div>
+                        <div class="form-group input-group">
+                            <span class="input-group-addon">Scopes</span>
+                            <input class="form-control" v-for="scope in config.api.scopes" v-model="scope" disabled>
                         </div>
-                    </div>
-                    <p class="alert alert-info">
-                        已選取 {{n_sel_dates}} 個主日
-                    </p>
-                    <div class="card" v-for="(i, attendances) in config.attendances">
-                        <div class="card-header">
-                            {{text.attend}}{{attendances.title? ' : ' + attendances.title: ''}}
-                        </div>
-                        <div class="card-block">
-                            <div class="form-group input-group">
-                                <span class="input-group-btn">
-                                    <button :class="['btn', isEdit('attendances['+i+']')?'btn-success':'btn-secondary']" @click="edit('attendances['+i+']', true, modDates(i))" :disabled="isEdit()&&!isEdit('attendances['+i+']')">
-                                        <span class="octicon octicon-pencil"></span> {{editText('attendances['+i+']')}}
-                                    </button>
-                                </span>
-                                <input class="form-control" v-model="attendances.sheetId" :disabled="!isEdit('attendances['+i+']')">
-                                <span class="input-group-btn">
-                                    <button class="btn btn-secondary" @click="gotoSheet(attendances.sheetId)">
-                                        <span class="octicon octicon-eye"></span> {{text.view}}
-                                    </button>
-                                </span>
-                            </div>
-                            <div class="form-group btn-group">
-                                <button :class="['btn', isEdit('attend_sheet_'+i+'_date')?'btn-success':'btn-secondary']" @click="edit('attend_sheet_'+i+'_date', false)" :disabled="attendances.dates.length==0||isEdit()&&!isEdit('attend_sheet_'+i+'_date')">
-                                    <span class="octicon octicon-pencil"></span> {{editText('attend_sheet_'+i+'_date')}}
-                                </button>
-                                <button v-for="date in attendances.dates" :class="['btn', 'btn-secondary', {'active':!date.sel}]" @click="date.sel=!date.sel" :disabled="!isEdit('attend_sheet_'+i+'_date')">
-                                    <span :class="['octicon', date.sel?'octicon-check':'octicon-x']"></span> {{date.text}}
-                                </button>
-                            </div>
-                        </div>
-                        <div class="card-footer">
-                            <button class="btn btn-secondary" @click="deleteAttendancesSheet(i)">刪除此主日出席表</button>
+                        <div class="form-group input-group">
+                            <span class="input-group-addon">Discovery</span>
+                            <input class="form-control" v-model="config.api.discovery" disabled>
                         </div>
                     </div>
-                    <div>
-                        <button class="btn btn-secondary" @click="addAttendancesSheet"><span class="octicon octicon-plus"></span> 新增更多主日出席表</button>
+                    <div class="tab-pane active" id="sheets">
+                        <div class="card">
+                            <div class="card-header">
+                                {{text.list}}{{config.list.title? ' : ' + config.list.title: ''}}
+                            </div>
+                            <div class="card-block">
+                                <div class="form-group input-group">
+                                    <span class="input-group-btn">
+                                        <button :class="['btn', isEdit('list')?'btn-success':'btn-secondary']" @click="edit('list', true)" :disabled="isEdit() && !isEdit('list')">
+                                            <span class="octicon octicon-pencil"></span> {{editText('list')}}
+                                        </button>
+                                    </span>
+                                    <input class="form-control" v-model="config.list.sheetId" :disabled="!isEdit('list')">
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-secondary" @click="gotoSheet(config.list.sheetId)">
+                                            <span class="octicon octicon-eye"></span> {{text.view}}
+                                        </button>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="alert alert-info">
+                            已選取 {{n_sel_dates}} 個主日
+                        </p>
+                        <div class="card" v-for="(i, attendances) in config.attendances">
+                            <div class="card-header">
+                                {{text.attend}}{{attendances.title? ' : ' + attendances.title: ''}}
+                            </div>
+                            <div class="card-block">
+                                <div class="form-group input-group">
+                                    <span class="input-group-btn">
+                                        <button :class="['btn', isEdit('attendances['+i+']')?'btn-success':'btn-secondary']" @click="edit('attendances['+i+']', true, modDates(i))" :disabled="isEdit()&&!isEdit('attendances['+i+']')">
+                                            <span class="octicon octicon-pencil"></span> {{editText('attendances['+i+']')}}
+                                        </button>
+                                    </span>
+                                    <input class="form-control" v-model="attendances.sheetId" :disabled="!isEdit('attendances['+i+']')">
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-secondary" @click="gotoSheet(attendances.sheetId)">
+                                            <span class="octicon octicon-eye"></span> {{text.view}}
+                                        </button>
+                                    </span>
+                                </div>
+                                <div class="form-group btn-group">
+                                    <button :class="['btn', isEdit('attend_sheet_'+i+'_date')?'btn-success':'btn-secondary']" @click="edit('attend_sheet_'+i+'_date', false)" :disabled="attendances.dates.length==0||isEdit()&&!isEdit('attend_sheet_'+i+'_date')">
+                                        <span class="octicon octicon-pencil"></span> {{editText('attend_sheet_'+i+'_date')}}
+                                    </button>
+                                    <button v-for="date in attendances.dates" :class="['btn', 'btn-secondary', {'active':!date.sel}]" @click="date.sel=!date.sel" :disabled="!isEdit('attend_sheet_'+i+'_date')">
+                                        <span :class="['octicon', date.sel?'octicon-check':'octicon-x']"></span> {{date.text}}
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <button class="btn btn-secondary" @click="deleteAttendancesSheet(i)">刪除此主日出席表</button>
+                            </div>
+                        </div>
+                        <div>
+                            <button class="btn btn-secondary" @click="addAttendancesSheet"><span class="octicon octicon-plus"></span> 新增更多主日出席表</button>
+                        </div>
                     </div>
                 </div>
             </div>
