@@ -25,7 +25,6 @@ var app = new Vue({
         dates: [],
         query: '',
         filters,
-        console_uri: 'TODO',
         attendance_threshold: 6,
         paid_year: 2017,
     },

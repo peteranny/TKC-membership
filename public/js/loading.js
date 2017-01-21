@@ -50,10 +50,10 @@ var Loading = {
                 .append(
                     $('<h2>').append($('<blockquote>').text(err))
                 ).append(
-                    $('<a>')
+                    $('<button>')
                     .addClass('btn btn-danger btn-lg')
                     .text(Loading.console_text)
-                    .attr('href', app.console_uri)
+                    .click(app.gotoConfig)
                 );
         }
     },
