@@ -42,7 +42,7 @@ io.on('connection', function(socket){
             socket.emit('saved', err);
         });
     });
-    let timer = null;
+    var timer = null;
     socket.on('download', function(data){
         log('Receive', 'DOWNLOAD');
         clearTimeout(timer);
