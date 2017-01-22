@@ -188,6 +188,7 @@ var app = new Vue({
                 var init_attendances = this.init_config.attendances[i];
                 var as_init = init_attendances && attendances.sheetId === init_attendances.sheetId;
                 var dates_path = 'config.attendances[' + i + '].dates';
+                Loading.on('Load dates');
                 return loadDates(
                     dates_path,
                     attendances.sheetId,
