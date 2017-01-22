@@ -109,7 +109,7 @@ var app = new Vue({
             }, 0);
         },
         isValid: function(member){
-            return this.attendanceSum(member) >= config.attendance_threshold;
+            return this.attendanceSum(member) >= parseInt(config.attendance_threshold);
         },
         canVote: function(member){
             return this.hasFeePaid(member) && this.isValid(member);
