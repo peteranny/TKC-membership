@@ -1,6 +1,7 @@
-function runGoogleAuth(client_id, scopes, immediate) {
+function runGoogleAuth(client_id, scopes, immediate, reject_on_blocked) {
     return new Promise(function(resolve, reject){
-        var timer = setTimeout(function(){
+        var timer = null;
+        if(reject_on_blocked) timer = setTimeout(function(){
             log('這個頁面需要彈出新視窗，\n但你的瀏覽器可能封鎖彈出新視窗了。\n\n請讓瀏覽器允許彈出新視窗之後，重新整理此頁面。');
             reject('Login timeout');
         }, 3000);
@@ -9,7 +10,7 @@ function runGoogleAuth(client_id, scopes, immediate) {
             scope: scopes.join(' '),
             immediate,
         }, function(authResult){
-            clearTimeout(timer);
+            if(timer) clearTimeout(timer);
             if(authResult && !authResult.error){
                 resolve();
             }

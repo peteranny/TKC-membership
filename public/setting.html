@@ -255,8 +255,9 @@ function init(){
         runGoogleAuth(
                 app.config.api.client_id,
                 app.config.api.scopes,
-                false
-                ).then(function(){
+                false,
+                true
+        ).then(function(){
             Loading.on('Load Google sheet API');
             return runLoadSheetsApi(app.config.api.discovery);
         }).then(function(){
