@@ -148,3 +148,25 @@ function run(){
             Loading.off(err);
         });
 }
+
+var socket = io();
+function sendDownload(filename, content){
+    socket.emit('download', {
+        filename: filename + '.csv',
+        content: content,
+    });
+}
+socket.on('downloaded', function(filename){
+    if(!filename){
+        log('ERROR on download');
+        return;
+    }
+    $('<a>')
+        .attr('id', 'download')
+        .attr('href', filename)
+        .prop('download', filename.slice(filename.lastIndexOf('/')+1))
+        .hide()
+        .appendTo('body');
+    $('#download').get(0).click();
+    $('#download').remove();
+});

@@ -14,7 +14,9 @@ const server = app.listen(app.get('port'), function() {
 const socketIO = require('socket.io');
 const io = socketIO.listen(server);
 const fs = require('fs');
-const configPath = './public/config.json';
+const publicDirPath = './public/';
+const configPath = publicDirPath + 'config.json';
+const tmpDirPath = 'tmp/';
 
 function log(){
     const msg = Array.from(arguments).reduce((a,b) => a + ' ' + (
@@ -37,6 +39,20 @@ io.on('connection', function(socket){
             if(err) log('ERROR', err);
             else log('Done writing', configPath);
             socket.emit('saved', err);
+        });
+    });
+    socket.on('download', function(data){
+        log('Receive', 'DOWNLOAD');
+        const downloadPath = tmpDirPath + data.filename;
+        fs.writeFile(publicDirPath + downloadPath, data.content, function(err){
+            if(err){
+                log('ERROR', err);
+                socket.emit('downloaded', null);
+            }
+            else{
+                log('Done writing', downloadPath);
+                socket.emit('downloaded', downloadPath);
+            }
         });
     });
 });

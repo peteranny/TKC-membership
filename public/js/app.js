@@ -61,12 +61,28 @@ var app = new Vue({
     },
     methods:{
         copyList: function(){
-            $('#clipboard').text(
-                this.queried_members.map(function(member){
-                    return member.name+"("+member.nickname+")";
-                }).join('\n')
-            );
-            $('.modal').modal('show');
+            var escape = function(x){ return x.replace(/"/g, '""') }
+            var filename = Object.keys(this.filters).filter(function(k){
+                return this.filters[k].sel;
+            }.bind(this)).map(function(k){
+                return this.filters[k].text;
+            }.bind(this)).join('和');
+            var content =
+                '"名字",' +
+                '"外號",' +
+                '"主日出席次數",' +
+                '"已繳會費",' +
+                '"有投票權"' + '\n';
+            content += this.queried_members.map(function(member){
+                return (
+                    '"' + escape(member.name) + '",' +
+                    '"' + escape(member.nickname) + '",' +
+                    '"' + escape(this.attendanceSum(member).toString()) + '",' +
+                    '"' + escape(this.hasFeePaid(member).toString()) + '",' +
+                    '"' + escape(this.canVote(member).toString()) + '"'
+                );
+            }.bind(this)).join('\n');
+            sendDownload(filename, content);
         },
         gotoConfig: function(){
             document.location = 'setting.html';
