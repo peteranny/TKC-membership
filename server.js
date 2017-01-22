@@ -14,9 +14,10 @@ const server = app.listen(app.get('port'), function() {
 const socketIO = require('socket.io');
 const io = socketIO.listen(server);
 const fs = require('fs');
+const rmdir = require('rimraf');
 const publicDirPath = './public/';
 const configPath = publicDirPath + 'config.json';
-const tmpDirPath = 'tmp/';
+const tmpDirLink = 'tmp/';
 
 function log(){
     const msg = Array.from(arguments).reduce((a,b) => a + ' ' + (
@@ -41,17 +42,27 @@ io.on('connection', function(socket){
             socket.emit('saved', err);
         });
     });
+    let timer = null;
     socket.on('download', function(data){
         log('Receive', 'DOWNLOAD');
-        const downloadPath = tmpDirPath + data.filename;
-        fs.writeFile(publicDirPath + downloadPath, data.content, function(err){
+        clearTimeout(timer);
+        const downloadLink = tmpDirLink + data.filename;
+        const downloadPath = publicDirPath + downloadLink;
+        const tmpDirPath = publicDirPath + tmpDirLink;
+        if(!fs.existsSync(tmpDirPath)) fs.mkdirSync(tmpDirPath);
+        fs.writeFile(downloadPath, data.content, function(err){
             if(err){
                 log('ERROR', err);
                 socket.emit('downloaded', null);
             }
             else{
                 log('Done writing', downloadPath);
-                socket.emit('downloaded', downloadPath);
+                socket.emit('downloaded', downloadLink);
+                timer = setTimeout(function(){
+                    rmdir(tmpDirPath, function(){
+                        log('Deleted', tmpDirPath);
+                    });
+                }, 60*1000);
             }
         });
     });
