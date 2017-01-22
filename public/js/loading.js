@@ -32,7 +32,7 @@ var Loading = {
                 );
             if(message)
                 Loading.$el.append(
-                    $('<h2>').append($('<blockquote>').text(message))
+                    $('<h2>').append($('<blockquote>').css('white-space', 'pre-line').text(message))
                 );
             if(Loading.timer) clearTimeout(Loading.timer);
             var j = (i + 1) % Loading.indicators.length;

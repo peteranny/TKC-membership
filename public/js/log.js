@@ -23,7 +23,7 @@ function log(){
             'position': 'fixed',
             'top': '0px',
             'left': '0px',
-            'z-index': 999,
+            'z-index': 1000,
         })
         .corner()
         .css('cursor', 'pointer')
