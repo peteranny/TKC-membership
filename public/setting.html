@@ -63,8 +63,19 @@
                                 </div>
                             </div>
                         </div>
-                        <p class="alert alert-info">
-                            已選取 {{n_sel_dates}} 個主日
+                        <hr>
+                        <p>
+                            <div class="input-group form-gruop">
+                                <span class="input-group-addon alert-info">
+                                    <span class="octicon octicon-hubot">
+                                        已選取 {{n_sel_dates}} 個主日，需要參加其中
+                                    </span>
+                                </span>
+                                <input class="form-control alert-info" type="number" v-model="config.attendance_threshold">
+                                <span class="input-group-addon alert-info">
+                                    次主日方可成為有效會員
+                                </span>
+                            </div>
                         </p>
                         <div class="card" v-for="(i, attendances) in config.attendances">
                             <div class="card-header">

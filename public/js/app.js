@@ -25,7 +25,6 @@ var app = new Vue({
         dates: [],
         query: '',
         filters,
-        attendance_threshold: 6,
         paid_year: 2017,
     },
     computed:{
@@ -110,7 +109,7 @@ var app = new Vue({
             }, 0);
         },
         isValid: function(member){
-            return this.attendanceSum(member) >= this.attendance_threshold;
+            return this.attendanceSum(member) >= config.attendance_threshold;
         },
         canVote: function(member){
             return this.hasFeePaid(member) && this.isValid(member);
