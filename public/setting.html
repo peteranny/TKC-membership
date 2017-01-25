@@ -245,45 +245,49 @@ var app = new Vue({
         <script>
 function deepcopy(x){ return JSON.parse(JSON.stringify(x)) }
 function init(){
-    Loading.on('Load config');
-    $.getJSON('config.json', function(json){
-        app.init_config = json;
-        app.config = deepcopy(app.init_config);
+    sendConfig(function(json){
+        if(!json){
+            log('Error on sendConfig', json);
+        }
+        else{
+            app.init_config = json;
+            app.config = deepcopy(app.init_config);
 
-        // start promise chain
-        Loading.on('Load Google authentication');
-        runGoogleAuth(
-                app.config.api.client_id,
-                app.config.api.scopes,
-                false,
-                true
-        ).then(function(){
-            Loading.on('Load Google sheet API');
-            return runLoadSheetsApi(app.config.api.discovery);
-        }).then(function(){
-            Loading.on('Load list title');
-            return runGetTitle(app.config.list.sheetId);
-        }).then(function(title){
-            app.$set('config.list.title', title);
-            Loading.on('Load attendance titles');
-            return Promise.map(app.config.attendances, function(attendances, i){
-                return loadSheet(
-                    'config.attendances[' + i + '].title',
-                    'config.attendances[' + i + '].sheetId',
-                    attendances.sheetId
-                ).then(function(){
-                    return loadDates(
-                        'config.attendances[' + i + '].dates',
-                        attendances.sheetId,
-                        attendances.dates
-                    );
+            // start promise chain
+            Loading.on('Load Google authentication');
+            runGoogleAuth(
+                    app.config.api.client_id,
+                    app.config.api.scopes,
+                    false,
+                    true
+            ).then(function(){
+                Loading.on('Load Google sheet API');
+                return runLoadSheetsApi(app.config.api.discovery);
+            }).then(function(){
+                Loading.on('Load list title');
+                return runGetTitle(app.config.list.sheetId);
+            }).then(function(title){
+                app.$set('config.list.title', title);
+                Loading.on('Load attendance titles');
+                return Promise.map(app.config.attendances, function(attendances, i){
+                    return loadSheet(
+                        'config.attendances[' + i + '].title',
+                        'config.attendances[' + i + '].sheetId',
+                        attendances.sheetId
+                    ).then(function(){
+                        return loadDates(
+                            'config.attendances[' + i + '].dates',
+                            attendances.sheetId,
+                            attendances.dates
+                        );
+                    });
                 });
+            }).catch(function(err){
+                Loading.off(err);
+            }).then(function(){
+                Loading.off();
             });
-        }).catch(function(err){
-            Loading.off(err);
-        }).then(function(){
-            Loading.off();
-        });
+        }
     });
 }
 function loadSheet(title_path, sheetId_path, sheetId, nextStep){
@@ -316,13 +320,23 @@ function loadDates(dates_path, sheetId, init_dates){
         <script src="/socket.io/socket.io.js"></script>
         <script>
 var socket = io();
-function sendSave(config){
-    socket.emit('save', config);
+function sendConfig(callback){
+    Loading.on('Load config');
+    socket.emit('config');
+    socket.on('got-config', function(config){
+        Loading.off();
+        callback(config);
+    });
 }
-socket.on('saved', function(){
-    app.init_config = app.config;
-    app.config = deepcopy(app.init_config);
-});
+function sendSave(config){
+    Loading.on('Save config');
+    socket.emit('save', config);
+    socket.on('saved', function(){
+        Loading.off();
+        app.init_config = app.config;
+        app.config = deepcopy(app.init_config);
+    });
+}
         </script>
         <!-- Google sheet -->
         <script src="js/google-sheet.js"></script>

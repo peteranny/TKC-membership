@@ -2,11 +2,11 @@ Loading.on();
 
 var config = null;
 function init(){
-    $.getJSON('config.json')
-        .fail(function(err){
-            log('Error on JSON:', err);
-        })
-        .done(function(json) {
+    sendConfig(function(json){
+        if(!json){
+            Loading.off('Error on sendConfig', json);
+        }
+        else{
             config = json;
             runGoogleAuth(
                 config.api.client_id,
@@ -17,7 +17,8 @@ function init(){
             }, function(err){
                 Loading.off();
             });
-        });
+        }
+    });
 }
 
 function initClick(){
@@ -150,23 +151,33 @@ function run(){
 }
 
 var socket = io();
+function sendConfig(callback){
+    Loading.on('Load config');
+    socket.emit('config');
+    socket.on('got-config', function(config){
+        Loading.off();
+        callback(config);
+    });
+}
 function sendDownload(filename, content){
+    Loading.on('Download file');
     socket.emit('download', {
         filename: filename + '.csv',
         content: content,
     });
+    socket.on('downloaded', function(filename){
+        Loading.off();
+        if(!filename){
+            log('ERROR on download');
+            return;
+        }
+        $('<a>')
+            .attr('id', 'download')
+            .attr('href', filename)
+            .prop('download', filename.slice(filename.lastIndexOf('/')+1))
+            .hide()
+            .appendTo('body');
+        $('#download').get(0).click();
+        $('#download').remove();
+    });
 }
-socket.on('downloaded', function(filename){
-    if(!filename){
-        log('ERROR on download');
-        return;
-    }
-    $('<a>')
-        .attr('id', 'download')
-        .attr('href', filename)
-        .prop('download', filename.slice(filename.lastIndexOf('/')+1))
-        .hide()
-        .appendTo('body');
-    $('#download').get(0).click();
-    $('#download').remove();
-});

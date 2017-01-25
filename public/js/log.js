@@ -1,6 +1,6 @@
 function log(){
     var text = Array.from(arguments).reduce(function(x,y){
-        return x + (
+        return x + ' ' + (
             y instanceof Error? y.toString():
             typeof y=='object'? JSON.stringify(y, null, 2):
             y
