@@ -6,7 +6,7 @@
     </head>
     <body>
         <div id="main">
-            <div id="search-bar" class="text-xs-right" style="width:100%">
+            <div id="search-bar" style="right:0px">
                 <em v-if="canSave">尚未儲存資料，請按儲存以確認變更</em>
                 <div class="btn-group">
                     <button class="btn btn-success" :disabled="!canSave" @click="save">儲存</button>
